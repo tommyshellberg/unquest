@@ -9,7 +9,7 @@ export default function OnboardingScreen() {
       headerBackgroundColor={{ light: "#2C3E50", dark: "#1A2530" }}
       headerImage={
         <Image
-          source={require("@/assets/images/onboarding-bg.png")}
+          source={require("@/assets/images/onboarding-bg-1.jpg")}
           style={styles.backgroundImage}
         />
       }
