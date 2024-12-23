@@ -2,8 +2,11 @@ import { Image, StyleSheet, Platform, Pressable, View } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import { useRouter } from "expo-router";
 
 export default function OnboardingScreen() {
+  const router = useRouter();
+
   return (
     <View style={styles.container}>
       <Image
@@ -48,6 +51,7 @@ export default function OnboardingScreen() {
               styles.ctaButton,
               pressed && styles.ctaButtonPressed,
             ]}
+            onPress={() => router.push("/onboarding/choose-character")}
           >
             <ThemedText style={styles.ctaText}>Begin Your Journey</ThemedText>
           </Pressable>
