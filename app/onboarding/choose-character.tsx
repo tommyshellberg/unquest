@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
-import { CHARACTERS, Character } from "../../constants/characters";
+import { CHARACTERS } from "../../constants/characters";
 
 export default function ChooseCharacterScreen() {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
@@ -17,80 +17,79 @@ export default function ChooseCharacterScreen() {
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      <ThemedView
-        style={[styles.overlay, { backgroundColor: "rgba(0, 0, 0, 0.5)" }]}
+      <ScrollView
+        contentContainerStyle={styles.scrollContent}
+        style={styles.scrollView}
       >
-        <ScrollView
-          contentContainerStyle={styles.scrollContent}
-          style={styles.scrollView}
-        >
-          <ThemedView
-            style={[styles.header, { backgroundColor: "transparent" }]}
-          >
-            <ThemedText type="title" style={styles.title}>
-              Choose your Character
-            </ThemedText>
-            <ThemedText style={styles.description}>
-              Select the hero who will grow stronger with every minute you spend
-              offline. Each character has unique traits and abilities that
-              develop differently.
-            </ThemedText>
-          </ThemedView>
+        <ThemedView style={[styles.header, { backgroundColor: "transparent" }]}>
+          <ThemedText type="title" style={styles.title}>
+            Choose your Character
+          </ThemedText>
+          <ThemedText style={styles.description}>
+            Choose the character you feel best represents the best version of
+            yourself. Each embodies different virtues that grow stronger as you
+            spend time away.
+          </ThemedText>
+        </ThemedView>
 
-          <View style={[styles.grid, { backgroundColor: "transparent" }]}>
-            {CHARACTERS.map((character) => (
-              <Pressable
-                key={character.id}
-                style={[
-                  styles.characterCard,
-                  selectedCharacter === character.id && styles.selectedCard,
-                ]}
-                onPress={() => setSelectedCharacter(character.id)}
-              >
-                <Image
-                  source={character.image}
-                  style={styles.characterImage}
-                  resizeMode="cover"
-                />
-                <ThemedView
-                  style={[
-                    styles.characterInfo,
-                    { backgroundColor: "transparent" },
-                  ]}
-                >
-                  <ThemedText style={styles.characterName}>
-                    {character.name}
-                  </ThemedText>
-                  <ThemedText style={styles.characterTitle}>
+        <View style={[styles.grid, { backgroundColor: "transparent" }]}>
+          {CHARACTERS.map((character) => (
+            <Pressable
+              key={character.id}
+              style={[
+                styles.characterCard,
+                selectedCharacter === character.id && styles.selectedCard,
+              ]}
+              onPress={() => setSelectedCharacter(character.id)}
+            >
+              <Image
+                source={character.image}
+                style={styles.characterImage}
+                resizeMode="cover"
+              />
+              {selectedCharacter === character.id && (
+                <View style={styles.characterOverlay}>
+                  <ThemedText style={styles.characterOverlayTitle}>
                     {character.title}
                   </ThemedText>
-                </ThemedView>
-              </Pressable>
-            ))}
-          </View>
-
-          <ThemedView
-            style={[styles.footer, { backgroundColor: "transparent" }]}
-          >
-            <Pressable
-              style={[
-                styles.continueButton,
-                !selectedCharacter && styles.continueButtonDisabled,
-              ]}
-              disabled={!selectedCharacter}
-            >
-              <ThemedText
+                  <ThemedText style={styles.characterDescription}>
+                    {character.description}
+                  </ThemedText>
+                </View>
+              )}
+              <ThemedView
                 style={[
-                  styles.continueButtonText,
-                  !selectedCharacter && styles.continueButtonTextDisabled,
+                  styles.characterInfo,
+                  { backgroundColor: "transparent" },
                 ]}
               >
-                Continue
-              </ThemedText>
+                <ThemedText style={styles.characterName}>
+                  {character.name}
+                </ThemedText>
+              </ThemedView>
             </Pressable>
-          </ThemedView>
-        </ScrollView>
-      </ThemedView>
+          ))}
+        </View>
+
+        <ThemedView style={[styles.footer, { backgroundColor: "transparent" }]}>
+          <Pressable
+            style={[
+              styles.continueButton,
+              !selectedCharacter && styles.continueButtonDisabled,
+            ]}
+            disabled={!selectedCharacter}
+          >
+            <ThemedText
+              style={[
+                styles.continueButtonText,
+                !selectedCharacter && styles.continueButtonTextDisabled,
+              ]}
+            >
+              Continue
+            </ThemedText>
+          </Pressable>
+        </ThemedView>
+      </ScrollView>
     </View>
   );
 }
@@ -105,9 +104,6 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-  },
   scrollView: {
     flex: 1,
   },
@@ -121,14 +117,14 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: FontSizes.xxl,
-    color: Colors.cream,
+    color: Colors.forest,
     textAlign: "center",
+    fontWeight: "600",
   },
   description: {
     fontSize: FontSizes.md,
-    color: Colors.cream,
+    color: Colors.forest,
     textAlign: "center",
-    opacity: 0.8,
     lineHeight: 24,
   },
   grid: {
@@ -140,23 +136,58 @@ const styles = StyleSheet.create({
   },
   characterCard: {
     width: "45%",
-    aspectRatio: 3 / 4,
+    aspectRatio: 2 / 3.5,
     backgroundColor: Colors.forest,
-    borderRadius: BorderRadius.md,
+    borderRadius: BorderRadius.lg,
     overflow: "hidden",
     borderWidth: 2,
     borderColor: "transparent",
+    elevation: 5,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   selectedCard: {
     borderColor: Colors.cream,
+    transform: [{ scale: 1.02 }],
   },
   characterImage: {
     width: "100%",
-    height: "80%",
+    height: "85%",
+  },
+  characterOverlay: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: "15%",
+    backgroundColor: "rgba(0, 0, 0, 0.75)",
+    padding: Spacing.md,
+    justifyContent: "center",
+    alignItems: "center",
+    gap: Spacing.sm,
+  },
+  characterOverlayTitle: {
+    color: Colors.cream,
+    fontSize: FontSizes.sm,
+    fontWeight: "600",
+    textAlign: "center",
+    marginBottom: Spacing.xs,
+  },
+  characterDescription: {
+    color: Colors.cream,
+    textAlign: "center",
+    fontSize: FontSizes.sm,
+    lineHeight: 20,
+    opacity: 0.9,
   },
   characterInfo: {
     padding: Spacing.sm,
-    height: "20%",
+    height: "15%",
     justifyContent: "center",
   },
   characterName: {
@@ -164,12 +195,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.cream,
     fontWeight: "600",
-  },
-  characterTitle: {
-    textAlign: "center",
-    fontSize: FontSizes.sm,
-    color: Colors.cream,
-    opacity: 0.8,
   },
   footer: {
     paddingTop: Spacing.xl,
