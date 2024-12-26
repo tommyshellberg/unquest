@@ -3,12 +3,14 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
+import { useQuestStore, FIRST_QUEST } from "@/store/quest-store";
 
 export default function FirstQuestScreen() {
   const router = useRouter();
+  const startQuest = useQuestStore((state) => state.startQuest);
 
   const handleAcceptQuest = () => {
-    // TODO: Start the quest timer/tracking
+    startQuest(FIRST_QUEST);
     router.push("/home");
   };
 
