@@ -1,14 +1,14 @@
 import { Image, StyleSheet, Pressable, View, ScrollView } from "react-native";
-import { useState } from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { CHARACTERS } from "../../constants/characters";
+import { useRouter } from "expo-router";
+import { useOnboardingStore } from "@/store/onboarding-store";
 
 export default function ChooseCharacterScreen() {
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
-    null
-  );
+  const router = useRouter();
+  const { selectedCharacterId, setSelectedCharacter } = useOnboardingStore();
 
   return (
     <View style={styles.container}>
@@ -38,7 +38,7 @@ export default function ChooseCharacterScreen() {
               key={character.id}
               style={[
                 styles.characterCard,
-                selectedCharacter === character.id && styles.selectedCard,
+                selectedCharacterId === character.id && styles.selectedCard,
               ]}
               onPress={() => setSelectedCharacter(character.id)}
             >
@@ -47,7 +47,7 @@ export default function ChooseCharacterScreen() {
                 style={styles.characterImage}
                 resizeMode="cover"
               />
-              {selectedCharacter === character.id && (
+              {selectedCharacterId === character.id && (
                 <View style={styles.characterOverlay}>
                   <ThemedText style={styles.characterOverlayTitle}>
                     {character.title}
@@ -75,14 +75,15 @@ export default function ChooseCharacterScreen() {
           <Pressable
             style={[
               styles.continueButton,
-              !selectedCharacter && styles.continueButtonDisabled,
+              !selectedCharacterId && styles.continueButtonDisabled,
             ]}
-            disabled={!selectedCharacter}
+            disabled={!selectedCharacterId}
+            onPress={() => router.push("/onboarding/screen-time-goal")}
           >
             <ThemedText
               style={[
                 styles.continueButtonText,
-                !selectedCharacter && styles.continueButtonTextDisabled,
+                !selectedCharacterId && styles.continueButtonTextDisabled,
               ]}
             >
               Continue

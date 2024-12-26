@@ -17,6 +17,20 @@ export default function Layout() {
           animation: "fade",
         }}
       />
+      <Stack.Screen
+        name="onboarding/screen-time-goal"
+        options={{
+          headerShown: false,
+          animation: "fade",
+        }}
+      />
+      <Stack.Screen
+        name="onboarding/first-quest"
+        options={{
+          headerShown: false,
+          animation: "fade",
+        }}
+      />
     </Stack>
   );
 }
