@@ -4,35 +4,65 @@ import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
+import {
+  updateQuestProgressNotification,
+  removeQuestProgressNotification,
+  requestNotificationPermissions,
+} from "@/services/notification-service";
 
-export function ActiveQuest() {
+type Props = {
+  onComplete: (quest: any) => void;
+};
+
+export function ActiveQuest({ onComplete }: Props) {
   const activeQuest = useQuestStore((state) => state.activeQuest);
-  const completeQuest = useQuestStore((state) => state.completeQuest);
   const [remainingMinutes, setRemainingMinutes] = useState(0);
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
-    if (!activeQuest?.startedAt) return;
+    requestNotificationPermissions();
+  }, []);
 
-    const updateTimer = () => {
+  useEffect(() => {
+    if (!activeQuest?.startedAt) {
+      removeQuestProgressNotification();
+      return;
+    }
+
+    const updateTimer = async () => {
       const now = Date.now();
       const elapsedMs = now - activeQuest.startedAt;
       const remainingMs = activeQuest.durationMinutes * 60 * 1000 - elapsedMs;
 
       if (remainingMs <= 0) {
-        completeQuest();
+        await removeQuestProgressNotification();
+        onComplete(activeQuest);
         return;
       }
 
-      setRemainingMinutes(Math.floor(remainingMs / (60 * 1000)));
-      setRemainingSeconds(Math.floor((remainingMs % (60 * 1000)) / 1000));
+      const newRemainingMinutes = Math.floor(remainingMs / (60 * 1000));
+      const newRemainingSeconds = Math.floor(
+        (remainingMs % (60 * 1000)) / 1000
+      );
+
+      setRemainingMinutes(newRemainingMinutes);
+      setRemainingSeconds(newRemainingSeconds);
+
+      await updateQuestProgressNotification(
+        activeQuest.title,
+        newRemainingMinutes,
+        activeQuest.durationMinutes
+      );
     };
 
     updateTimer();
     const interval = setInterval(updateTimer, 1000);
 
-    return () => clearInterval(interval);
-  }, [activeQuest]);
+    return () => {
+      clearInterval(interval);
+      removeQuestProgressNotification();
+    };
+  }, [activeQuest, onComplete]);
 
   if (!activeQuest) return null;
 

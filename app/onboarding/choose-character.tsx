@@ -4,11 +4,32 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { CHARACTERS } from "../../constants/characters";
 import { useRouter } from "expo-router";
-import { useOnboardingStore } from "@/store/onboarding-store";
+import { useCharacterStore } from "@/store/character-store";
+import { CharacterType } from "@/store/types";
+import { useState } from "react";
 
 export default function ChooseCharacterScreen() {
   const router = useRouter();
-  const { selectedCharacterId, setSelectedCharacter } = useOnboardingStore();
+  const createCharacter = useCharacterStore((state) => state.createCharacter);
+  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
+    null
+  );
+
+  const handleContinue = () => {
+    if (!selectedCharacter) return;
+
+    // Get character details from CHARACTERS constant
+    const character = CHARACTERS.find((c) => c.id === selectedCharacter);
+    if (!character) return;
+
+    // Create character in store
+    createCharacter(
+      character.id as CharacterType, // Make sure CHARACTERS ids match CharacterType
+      character.name
+    );
+
+    router.push("/onboarding/screen-time-goal");
+  };
 
   return (
     <View style={styles.container}>
@@ -38,7 +59,7 @@ export default function ChooseCharacterScreen() {
               key={character.id}
               style={[
                 styles.characterCard,
-                selectedCharacterId === character.id && styles.selectedCard,
+                selectedCharacter === character.id && styles.selectedCard,
               ]}
               onPress={() => setSelectedCharacter(character.id)}
             >
@@ -47,7 +68,7 @@ export default function ChooseCharacterScreen() {
                 style={styles.characterImage}
                 resizeMode="cover"
               />
-              {selectedCharacterId === character.id && (
+              {selectedCharacter === character.id && (
                 <View style={styles.characterOverlay}>
                   <ThemedText style={styles.characterOverlayTitle}>
                     {character.title}
@@ -75,15 +96,15 @@ export default function ChooseCharacterScreen() {
           <Pressable
             style={[
               styles.continueButton,
-              !selectedCharacterId && styles.continueButtonDisabled,
+              !selectedCharacter && styles.continueButtonDisabled,
             ]}
-            disabled={!selectedCharacterId}
-            onPress={() => router.push("/onboarding/screen-time-goal")}
+            disabled={!selectedCharacter}
+            onPress={handleContinue}
           >
             <ThemedText
               style={[
                 styles.continueButtonText,
-                !selectedCharacterId && styles.continueButtonTextDisabled,
+                !selectedCharacter && styles.continueButtonTextDisabled,
               ]}
             >
               Continue

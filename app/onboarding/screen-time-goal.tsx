@@ -5,7 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import { useOnboardingStore } from "@/store/onboarding-store";
+import { useAccountStore } from "@/store/account-store";
 
 // Generate time options in 15-minute increments (0h to 12h)
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
@@ -19,12 +19,14 @@ const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
 
 export default function ScreenTimeGoalScreen() {
   const router = useRouter();
-  const { setScreenTimes } = useOnboardingStore();
-  const [currentTime, setCurrentTime] = useState(240); // Default 4h
-  const [targetTime, setTargetTime] = useState(120); // Default 2h
+  const createAccount = useAccountStore((state) => state.createAccount);
+  const [currentTime, setCurrentTime] = useState(240); // 4h default
+  const [targetTime, setTargetTime] = useState(120); // 2h default
 
   const handleContinue = () => {
-    setScreenTimes(currentTime, targetTime);
+    // Save screen time goals to account store
+    createAccount(currentTime, targetTime);
+
     router.push("/onboarding/first-quest");
   };
 
