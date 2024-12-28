@@ -26,7 +26,13 @@ export interface Character {
   xpToNextLevel: XP;
 }
 
-export type CharacterType = "warrior" | "monk" | "ranger" | "scholar";
+export type CharacterType =
+  | "alchemist"
+  | "bard"
+  | "druid"
+  | "knight"
+  | "scholar"
+  | "wizard";
 
 export interface Account {
   id: string;

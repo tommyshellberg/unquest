@@ -15,7 +15,7 @@ export const CHARACTERS: Character[] = [
     title: "Master of Transformation",
     description:
       "Transforms idle time into powerful elixirs and mystical concoctions.",
-    image: require("../assets/images/characters/alchemist-character.jpg"),
+    image: require("../assets/images/characters/alchemist.jpg"),
   },
   {
     id: "druid",
@@ -23,7 +23,7 @@ export const CHARACTERS: Character[] = [
     title: "Guardian of Nature",
     description:
       "Grows stronger through harmony with the natural world and peaceful moments.",
-    image: require("../assets/images/characters/druid-character.jpg"),
+    image: require("../assets/images/characters/druid.jpg"),
   },
   {
     id: "scholar",
@@ -31,7 +31,7 @@ export const CHARACTERS: Character[] = [
     title: "Seeker of Knowledge",
     description:
       "Gains wisdom and unlocks ancient secrets through contemplation.",
-    image: require("../assets/images/characters/scholar-character.jpg"),
+    image: require("../assets/images/characters/scholar.jpg"),
   },
   {
     id: "wizard",
@@ -39,20 +39,20 @@ export const CHARACTERS: Character[] = [
     title: "Wielder of Magic",
     description:
       "Channels the power of focus into devastating magical abilities.",
-    image: require("../assets/images/characters/wizard-character.jpg"),
+    image: require("../assets/images/characters/wizard.jpg"),
   },
   {
     id: "knight",
     name: "Knight",
     title: "Paragon of Discipline",
     description: "Builds strength and honor through dedication and restraint.",
-    image: require("../assets/images/characters/knight-character.jpg"),
+    image: require("../assets/images/characters/knight.jpg"),
   },
   {
     id: "bard",
     name: "Bard",
     title: "Voice of Inspiration",
     description: "Creates harmony from silence and inspiration from solitude.",
-    image: require("../assets/images/characters/bard-character.jpg"),
+    image: require("../assets/images/characters/bard.jpg"),
   },
 ];

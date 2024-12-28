@@ -7,11 +7,13 @@ import Animated, {
   useSharedValue,
   runOnJS,
 } from "react-native-reanimated";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { Quest } from "@/store/types";
+import { LevelProgress } from "./LevelProgress";
+import { useCharacterStore } from "@/store/character-store";
 
 type Props = {
   quest: Quest;
@@ -21,6 +23,8 @@ type Props = {
 export function QuestComplete({ quest, onClaim }: Props) {
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
+  const [showingProgress, setShowingProgress] = useState(false);
+  const character = useCharacterStore((state) => state.character);
 
   useEffect(() => {
     scale.value = withSequence(withSpring(1.2), withSpring(1));
@@ -36,6 +40,20 @@ export function QuestComplete({ quest, onClaim }: Props) {
   }));
 
   const questDuration = quest.durationMinutes;
+
+  const handleClaim = () => {
+    setShowingProgress(true);
+  };
+
+  if (showingProgress && character) {
+    return (
+      <LevelProgress
+        character={character}
+        xpGained={quest.reward.xp}
+        onComplete={onClaim}
+      />
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -74,7 +92,7 @@ export function QuestComplete({ quest, onClaim }: Props) {
             styles.claimButton,
             pressed && styles.claimButtonPressed,
           ]}
-          onPress={onClaim}
+          onPress={handleClaim}
         >
           <ThemedText style={styles.claimButtonText}>Claim XP</ThemedText>
         </Pressable>

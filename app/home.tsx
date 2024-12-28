@@ -25,7 +25,7 @@ export default function HomeScreen() {
   const handleClaimReward = () => {
     if (!completedQuest) return;
 
-    // Add XP from quest reward
+    // Add XP before completing quest
     addXP(completedQuest.reward.xp);
 
     // Mark quest as complete
