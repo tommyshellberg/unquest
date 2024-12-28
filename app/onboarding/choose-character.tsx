@@ -34,7 +34,7 @@ export default function ChooseCharacterScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("@/assets/images/unquest-onboarding-bg-2.jpg")}
+        source={require("@/assets/images/onboarding-bg-2.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />

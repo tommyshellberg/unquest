@@ -3,14 +3,14 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import { useQuestStore, FIRST_QUEST } from "@/store/quest-store";
+import { AVAILABLE_QUESTS, useQuestStore } from "@/store/quest-store";
 
 export default function FirstQuestScreen() {
   const router = useRouter();
   const setActiveQuest = useQuestStore((state) => state.setActiveQuest);
 
   const handleAcceptQuest = () => {
-    setActiveQuest(FIRST_QUEST);
+    setActiveQuest(AVAILABLE_QUESTS[0]);
     router.push("/home");
   };
 

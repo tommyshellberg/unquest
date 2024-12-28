@@ -15,6 +15,7 @@ export interface Quest {
   durationMinutes: Minutes;
   reward: Reward;
   startedAt: Timestamp | null;
+  minLevel: number;
 }
 
 export interface Character {
