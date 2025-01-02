@@ -49,6 +49,109 @@ export const AVAILABLE_QUESTS: Array<Omit<Quest, "startedAt">> = [
     },
     minLevel: 2,
   },
+  {
+    id: "gratitude-reflection",
+    title: "The Grateful Sage",
+    description:
+      "Spend 15 minutes reflecting on three things you're grateful for. Write them down and consider how they’ve impacted your life.",
+    durationMinutes: 15,
+    reward: {
+      xp: 200,
+    },
+    minLevel: 3,
+  },
+  {
+    id: "create-something",
+    title: "The Inspired Artisan",
+    description:
+      "Spend 15 minutes creating something—draw, write, or build. Let your imagination guide you without distractions.",
+    durationMinutes: 15,
+    reward: {
+      xp: 200,
+    },
+    minLevel: 3,
+  },
+  {
+    id: "learn-something-new",
+    title: "The Curious Scholar",
+    description:
+      "Dedicate 15 minutes to learning something new. Read an article, watch an educational video, or try a new skill.",
+    durationMinutes: 15,
+    reward: {
+      xp: 200,
+    },
+    minLevel: 3,
+  },
+
+  // Level 4 Quests
+  {
+    id: "forest-bathing",
+    title: "The Nature Walker",
+    description:
+      "Spend 20 minutes walking in nature. Leave your phone behind and immerse yourself in the sights, sounds, and smells of the natural world.",
+    durationMinutes: 20,
+    reward: {
+      xp: 250,
+    },
+    minLevel: 4,
+  },
+  {
+    id: "declutter-space",
+    title: "The Order Bringer",
+    description:
+      "Take 20 minutes to declutter a small area of your home or workspace. Create a sense of order and calm in your surroundings.",
+    durationMinutes: 20,
+    reward: {
+      xp: 250,
+    },
+    minLevel: 4,
+  },
+  {
+    id: "practice-kindness",
+    title: "The Heartful Companion",
+    description:
+      "Spend 20 minutes practicing kindness. Write a thoughtful message, help someone in need, or connect with a loved one.",
+    durationMinutes: 20,
+    reward: {
+      xp: 250,
+    },
+    minLevel: 4,
+  },
+
+  // Level 5 Quests
+  {
+    id: "cook-a-meal",
+    title: "The Culinary Alchemist",
+    description:
+      "Spend 25 minutes preparing a simple meal from scratch. Focus on the ingredients, the process, and the joy of creating something nourishing.",
+    durationMinutes: 25,
+    reward: {
+      xp: 300,
+    },
+    minLevel: 5,
+  },
+  {
+    id: "focus-deep-work",
+    title: "The Silent Mastermind",
+    description:
+      "Set aside 25 minutes for deep, focused work on a project or task. No distractions—just you and your goal.",
+    durationMinutes: 25,
+    reward: {
+      xp: 300,
+    },
+    minLevel: 5,
+  },
+  {
+    id: "self-care-ritual",
+    title: "The Healing Mystic",
+    description:
+      "Dedicate 25 minutes to a self-care ritual. Take a bath, practice skincare, or simply relax in a way that rejuvenates you.",
+    durationMinutes: 25,
+    reward: {
+      xp: 300,
+    },
+    minLevel: 5,
+  },
 ];
 
 interface QuestState {
