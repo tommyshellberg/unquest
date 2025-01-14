@@ -36,25 +36,21 @@ export default function OnboardingScreen() {
             ]}
           >
             <ThemedText style={styles.description}>
-              The only game that rewards you for not playing it. Put down your
-              phone and watch your hero rise.
-            </ThemedText>
-
-            <ThemedText style={styles.subDescription}>
-              UnQuest isn't just another app—it's the antidote to them. Every
-              minute offline powers your character's next adventure.
+              The only game that rewards you for not playing it.
             </ThemedText>
           </ThemedView>
 
-          <Pressable
-            style={({ pressed }) => [
-              styles.ctaButton,
-              pressed && styles.ctaButtonPressed,
-            ]}
-            onPress={() => router.push("/onboarding/choose-character")}
-          >
-            <ThemedText style={styles.ctaText}>Begin Your Journey</ThemedText>
-          </Pressable>
+          <View style={styles.buttonContainer}>
+            <Pressable
+              style={({ pressed }) => [
+                styles.ctaButton,
+                pressed && styles.ctaButtonPressed,
+              ]}
+              onPress={() => router.push("/onboarding/choose-character")}
+            >
+              <ThemedText style={styles.ctaText}>Begin Your Journey</ThemedText>
+            </Pressable>
+          </View>
         </ThemedView>
       </ThemedView>
     </View>
@@ -78,12 +74,11 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: Spacing.xl,
-    justifyContent: "center",
-    gap: Spacing.xl,
   },
   heroSection: {
     gap: Spacing.md,
     alignItems: "center",
+    marginTop: "15%",
   },
   appName: {
     fontSize: FontSizes.xxxl,
@@ -99,6 +94,7 @@ const styles = StyleSheet.create({
   },
   descriptionSection: {
     gap: Spacing.lg,
+    marginTop: "25%",
   },
   description: {
     fontSize: FontSizes.lg,
@@ -106,12 +102,11 @@ const styles = StyleSheet.create({
     lineHeight: 28,
     color: Colors.text.light,
   },
-  subDescription: {
-    fontSize: FontSizes.md,
-    textAlign: "center",
-    color: Colors.text.light,
-    opacity: 0.8,
-    lineHeight: 24,
+  buttonContainer: {
+    position: "absolute",
+    bottom: "10%",
+    left: Spacing.xl,
+    right: Spacing.xl,
   },
   ctaButton: {
     backgroundColor: Colors.primary,
@@ -119,7 +114,6 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.pill,
     alignItems: "center",
-    marginTop: Spacing.md,
   },
   ctaButtonPressed: {
     backgroundColor: Colors.secondary,

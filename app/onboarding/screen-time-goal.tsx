@@ -124,8 +124,9 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   header: {
-    gap: Spacing.md,
+    gap: Spacing.sm,
     alignItems: "center",
+    marginTop: "10%",
   },
   title: {
     fontSize: FontSizes.xxl,
@@ -141,8 +142,8 @@ const styles = StyleSheet.create({
   },
   pickerSection: {
     flex: 1,
-    gap: Spacing.xl,
-    justifyContent: "center",
+    gap: Spacing.lg,
+    marginTop: "5%",
   },
   pickerLabel: {
     fontSize: FontSizes.lg,

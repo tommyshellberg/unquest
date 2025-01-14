@@ -11,7 +11,8 @@ import Animated, {
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
-import { Character, CharacterType } from "@/store/types";
+import { Character } from "@/store/types";
+import { CHARACTERS } from "@/constants/characters";
 
 type Props = {
   character: Character;
@@ -19,21 +20,14 @@ type Props = {
   onComplete: () => void;
 };
 
-// Add character image mapping
-const CHARACTER_IMAGES: Record<CharacterType, any> = {
-  alchemist: require("@/assets/images/characters/alchemist.jpg"),
-  bard: require("@/assets/images/characters/bard.jpg"),
-  druid: require("@/assets/images/characters/druid.jpg"),
-  knight: require("@/assets/images/characters/knight.jpg"),
-  scholar: require("@/assets/images/characters/scholar.jpg"),
-  wizard: require("@/assets/images/characters/wizard.jpg"),
-};
-
 export function LevelProgress({ character, xpGained, onComplete }: Props) {
   const progressWidth = useSharedValue(0);
   const xpCounter = useSharedValue(0);
   const scale = useSharedValue(1);
   const currentLevel = useSharedValue(character.level);
+
+  // Find character details from CHARACTERS array
+  const characterDetails = CHARACTERS.find((c) => c.id === character.type);
 
   // Calculate final XP and potential level up
   const totalXP = character.currentXP + xpGained;
@@ -74,10 +68,6 @@ export function LevelProgress({ character, xpGained, onComplete }: Props) {
     width: `${progressWidth.value * 100}%`,
   }));
 
-  const xpTextStyle = useAnimatedStyle(() => ({
-    text: `+${Math.floor(xpCounter.value)} XP`,
-  }));
-
   const levelTextStyle = useAnimatedStyle(() => ({
     fontSize: FontSizes.lg,
     color: Colors.forest,
@@ -89,11 +79,13 @@ export function LevelProgress({ character, xpGained, onComplete }: Props) {
     <ThemedView style={[styles.container, containerStyle]}>
       <View style={styles.characterInfo}>
         <View style={styles.characterImageContainer}>
-          <Image
-            source={CHARACTER_IMAGES[character.type]}
-            style={styles.characterImage}
-            resizeMode="contain"
-          />
+          {characterDetails && (
+            <Image
+              source={characterDetails.image}
+              style={styles.characterImage}
+              resizeMode="contain"
+            />
+          )}
           <Animated.View
             style={[
               styles.characterImageOverlay,
@@ -106,7 +98,9 @@ export function LevelProgress({ character, xpGained, onComplete }: Props) {
       </View>
 
       <View style={styles.xpSection}>
-        <Animated.Text style={[styles.xpGained, xpTextStyle]} />
+        <Animated.Text style={[styles.xpGained]}>
+          +{Math.floor(xpCounter.value)} XP
+        </Animated.Text>
 
         <View style={styles.levelProgressContainer}>
           <View style={styles.levelLabels}>
