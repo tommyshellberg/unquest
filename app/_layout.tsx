@@ -1,36 +1,22 @@
 import { Stack } from "expo-router";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
+import { ProfileBadge } from "@/components/ProfileBadge";
 
 export default function RootLayout() {
   return (
     <OnboardingGuard>
-      <Stack
-        screenOptions={{
-          headerShown: false,
-          animation: "fade",
-        }}
-      >
-        <Stack.Screen name="index" />
-        <Stack.Screen name="onboarding" />
+      <Stack>
         <Stack.Screen
-          name="onboarding/choose-character"
+          name="home"
           options={{
-            headerShown: false,
-            animation: "fade",
+            headerRight: () => <ProfileBadge />,
           }}
         />
         <Stack.Screen
-          name="onboarding/screen-time-goal"
+          name="profile"
           options={{
-            headerShown: false,
-            animation: "fade",
-          }}
-        />
-        <Stack.Screen
-          name="onboarding/first-quest"
-          options={{
-            headerShown: false,
-            animation: "fade",
+            presentation: "modal",
+            title: "Character Progress",
           }}
         />
       </Stack>
