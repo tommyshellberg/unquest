@@ -3,11 +3,12 @@ import Animated, {
   withSpring,
   withSequence,
   withDelay,
+  withTiming,
   useAnimatedStyle,
   useSharedValue,
-  runOnJS,
+  interpolate,
 } from "react-native-reanimated";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { ThemedText } from "./ThemedText";
 import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
@@ -17,18 +18,31 @@ import { useCharacterStore } from "@/store/character-store";
 
 type Props = {
   quest: Quest;
+  story: string;
   onClaim: () => void;
 };
 
-export function QuestComplete({ quest, onClaim }: Props) {
+export function QuestComplete({ quest, story, onClaim }: Props) {
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
-  const [showingProgress, setShowingProgress] = useState(false);
+  const storyProgress = useSharedValue(0);
   const character = useCharacterStore((state) => state.character);
 
+  // Split story into sentences for animated reveal
+  const sentences = story.split(/(?<=[.!?])\s+/);
+
   useEffect(() => {
+    // Initial celebration animations
     scale.value = withSequence(withSpring(1.2), withSpring(1));
     opacity.value = withDelay(300, withSpring(1));
+
+    // Animate story reveal
+    storyProgress.value = withDelay(
+      1000,
+      withTiming(1, {
+        duration: 3000, // Adjust timing for desired reveal speed
+      })
+    );
   }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -39,13 +53,31 @@ export function QuestComplete({ quest, onClaim }: Props) {
     opacity: opacity.value,
   }));
 
+  // Create animated styles for each sentence
+  const sentenceStyles = sentences.map((_, index) => {
+    return useAnimatedStyle(() => {
+      const sentenceOpacity = interpolate(
+        storyProgress.value,
+        [index / sentences.length, (index + 0.5) / sentences.length],
+        [0, 1]
+      );
+
+      const translateY = interpolate(
+        storyProgress.value,
+        [index / sentences.length, (index + 0.5) / sentences.length],
+        [20, 0]
+      );
+
+      return {
+        opacity: sentenceOpacity,
+        transform: [{ translateY }],
+      };
+    });
+  });
+
   const questDuration = quest.durationMinutes;
 
-  const handleClaim = () => {
-    setShowingProgress(true);
-  };
-
-  if (showingProgress && character) {
+  if (character) {
     return (
       <LevelProgress
         character={character}
@@ -63,38 +95,34 @@ export function QuestComplete({ quest, onClaim }: Props) {
         </Animated.View>
 
         <ThemedText style={styles.title}>Quest Complete!</ThemedText>
-
         <ThemedText style={styles.subtitle}>
-          Congratulations, brave adventurer!
+          A Tale of {character?.name}'s Adventure
         </ThemedText>
 
-        <ThemedView style={styles.card}>
-          <ThemedText style={styles.achievementText}>
-            You successfully stayed away from your phone for{" "}
-            {questDuration >= 1
-              ? `${questDuration} minutes`
-              : `${Math.round(questDuration * 60)} seconds`}
-            !
-          </ThemedText>
+        <View style={styles.storyCard}>
+          {sentences.map((sentence, index) => (
+            <Animated.View key={index} style={sentenceStyles[index]}>
+              <ThemedText style={styles.storyText}>{sentence} </ThemedText>
+            </Animated.View>
+          ))}
+        </View>
 
+        <Animated.View style={[styles.rewardCard, contentStyle]}>
           <ThemedText style={styles.rewardText}>
             Reward: {quest.reward.xp} XP
           </ThemedText>
-
-          <ThemedText style={styles.encouragementText}>
-            Every moment spent away from your screen is a step toward mindful
-            living. Your character has grown stronger through your dedication.
-          </ThemedText>
-        </ThemedView>
+        </Animated.View>
 
         <Pressable
           style={({ pressed }) => [
             styles.claimButton,
             pressed && styles.claimButtonPressed,
           ]}
-          onPress={handleClaim}
+          onPress={onClaim}
         >
-          <ThemedText style={styles.claimButtonText}>Claim XP</ThemedText>
+          <ThemedText style={styles.claimButtonText}>
+            Continue Journey
+          </ThemedText>
         </Pressable>
       </Animated.View>
     </View>
@@ -106,6 +134,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: "center",
     padding: Spacing.xl,
+    backgroundColor: Colors.background.light,
   },
   content: {
     alignItems: "center",
@@ -127,32 +156,39 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.9,
   },
-  card: {
-    backgroundColor: Colors.forest,
-    padding: Spacing.lg,
+  storyCard: {
+    backgroundColor: Colors.cream,
+    padding: Spacing.xl,
     borderRadius: BorderRadius.lg,
-    gap: Spacing.md,
     marginVertical: Spacing.lg,
+    borderWidth: 1,
+    borderColor: Colors.mist,
   },
-  achievementText: {
+  storyText: {
     fontSize: FontSizes.md,
-    color: Colors.cream,
+    color: Colors.stone,
+    lineHeight: 24,
     textAlign: "center",
-    fontWeight: "600",
+    fontStyle: "italic",
   },
-  encouragementText: {
-    fontSize: FontSizes.sm,
+  rewardCard: {
+    backgroundColor: Colors.forest,
+    padding: Spacing.md,
+    borderRadius: BorderRadius.lg,
+    marginTop: Spacing.md,
+  },
+  rewardText: {
+    fontSize: FontSizes.lg,
     color: Colors.cream,
     textAlign: "center",
-    opacity: 0.9,
-    lineHeight: 22,
+    fontWeight: "bold",
   },
   claimButton: {
     backgroundColor: Colors.primary,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xxl,
     borderRadius: BorderRadius.pill,
-    marginTop: Spacing.md,
+    marginTop: Spacing.xl,
   },
   claimButtonPressed: {
     backgroundColor: Colors.secondary,
@@ -173,12 +209,5 @@ const styles = StyleSheet.create({
   },
   celebrationEmoji: {
     fontSize: 50,
-  },
-  rewardText: {
-    fontSize: FontSizes.lg,
-    color: Colors.cream,
-    textAlign: "center",
-    fontWeight: "bold",
-    marginVertical: Spacing.sm,
   },
 });

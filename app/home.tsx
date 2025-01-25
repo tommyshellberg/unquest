@@ -13,7 +13,7 @@ import { Quest } from "@/store/types";
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const completeQuest = useQuestStore((state) => state.completeQuest);
-  const setActiveQuest = useQuestStore((state) => state.setActiveQuest);
+  const startQuest = useQuestStore((state) => state.startQuest);
   const refreshAvailableQuests = useQuestStore(
     (state) => state.refreshAvailableQuests
   );
@@ -52,11 +52,17 @@ export default function HomeScreen() {
   };
 
   const handleSelectQuest = (quest: Omit<Quest, "startedAt">) => {
-    setActiveQuest(quest);
+    startQuest(quest);
   };
 
-  if (showingCompletion && completedQuest) {
-    return <QuestComplete quest={completedQuest} onClaim={handleClaimReward} />;
+  if (showingCompletion && completedQuest && character) {
+    return (
+      <QuestComplete
+        quest={completedQuest}
+        story={completedQuest.generateStory(character)}
+        onClaim={handleClaimReward}
+      />
+    );
   }
 
   return (
@@ -74,7 +80,9 @@ export default function HomeScreen() {
           {activeQuest ? (
             <>
               <View style={styles.header}>
-                <ThemedText style={styles.title}>Active Quest</ThemedText>
+                <ThemedText style={styles.title} type="title">
+                  Active Quest
+                </ThemedText>
                 <ThemedText style={styles.subtitle}>
                   Your character is growing stronger while you're away
                 </ThemedText>
@@ -88,7 +96,9 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.availableQuestsContainer}>
               <View style={styles.header}>
-                <ThemedText style={styles.title}>Available Quests</ThemedText>
+                <ThemedText style={styles.title} type="title">
+                  Available Quests
+                </ThemedText>
                 <ThemedText style={styles.subtitle}>
                   Choose your next mindful adventure
                 </ThemedText>

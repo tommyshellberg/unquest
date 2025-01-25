@@ -16,6 +16,7 @@ export interface Quest {
   reward: Reward;
   startedAt: Timestamp | null;
   minLevel: number;
+  generateStory: (character: Character) => string;
 }
 
 export interface Character {

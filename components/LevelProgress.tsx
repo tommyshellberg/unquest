@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { StyleSheet, View, Pressable, Image } from "react-native";
+import { StyleSheet, View, Pressable, Image, SafeAreaView } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -87,63 +87,69 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
           <View style={styles.whiteOverlay} />
         </>
       )}
-      <View style={styles.content}>
-        <View style={styles.characterInfo}>
-          <ThemedText style={styles.characterName}>{character.name}</ThemedText>
-          <Animated.Text style={levelTextStyle} />
-        </View>
-
-        <View style={styles.xpSection}>
-          {xpGained > 0 && (
-            <Animated.Text style={styles.xpGained}>
-              +{Math.floor(xpCounter.value)} XP
-            </Animated.Text>
-          )}
-
-          <View style={styles.levelProgressContainer}>
-            <View style={styles.levelLabels}>
-              <ThemedText style={styles.levelLabel}>
-                Level {character.level}
-              </ThemedText>
-              <ThemedText style={styles.levelLabel}>
-                Level {character.level + 1}
-              </ThemedText>
-            </View>
-
-            <View style={styles.progressBarContainer}>
-              <Animated.View style={[styles.progressBar, progressStyle]} />
-              <View style={styles.progressMarkers}>
-                {[...Array(5)].map((_, i) => (
-                  <View
-                    key={i}
-                    style={[
-                      styles.marker,
-                      i === 0 && styles.markerStart,
-                      i === 4 && styles.markerEnd,
-                    ]}
-                  />
-                ))}
-              </View>
-            </View>
-
-            <ThemedText style={styles.xpText}>
-              {character.currentXP} / {character.xpToNextLevel} XP
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.content}>
+          <View style={styles.characterInfo}>
+            <ThemedText style={styles.characterName} type="title">
+              {character.name}
             </ThemedText>
+            <Animated.Text style={levelTextStyle} />
           </View>
-        </View>
 
-        {onComplete && (
-          <Pressable
-            style={({ pressed }) => [
-              styles.continueButton,
-              pressed && styles.continueButtonPressed,
-            ]}
-            onPress={onComplete}
-          >
-            <ThemedText style={styles.continueButtonText}>Continue</ThemedText>
-          </Pressable>
-        )}
-      </View>
+          <View style={styles.xpSection}>
+            {xpGained > 0 && (
+              <Animated.Text style={styles.xpGained}>
+                +{Math.floor(xpCounter.value)} XP
+              </Animated.Text>
+            )}
+
+            <View style={styles.levelProgressContainer}>
+              <View style={styles.levelLabels}>
+                <ThemedText style={styles.levelLabel}>
+                  Level {character.level}
+                </ThemedText>
+                <ThemedText style={styles.levelLabel}>
+                  Level {character.level + 1}
+                </ThemedText>
+              </View>
+
+              <View style={styles.progressBarContainer}>
+                <Animated.View style={[styles.progressBar, progressStyle]} />
+                <View style={styles.progressMarkers}>
+                  {[...Array(5)].map((_, i) => (
+                    <View
+                      key={i}
+                      style={[
+                        styles.marker,
+                        i === 0 && styles.markerStart,
+                        i === 4 && styles.markerEnd,
+                      ]}
+                    />
+                  ))}
+                </View>
+              </View>
+
+              <ThemedText style={styles.xpText}>
+                {character.currentXP} / {character.xpToNextLevel} XP
+              </ThemedText>
+            </View>
+          </View>
+
+          {onComplete && (
+            <Pressable
+              style={({ pressed }) => [
+                styles.continueButton,
+                pressed && styles.continueButtonPressed,
+              ]}
+              onPress={onComplete}
+            >
+              <ThemedText style={styles.continueButtonText}>
+                Continue
+              </ThemedText>
+            </Pressable>
+          )}
+        </View>
+      </SafeAreaView>
     </View>
   );
 }
@@ -152,6 +158,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: Colors.background.dark,
+  },
+  safeArea: {
+    flex: 1,
   },
   backgroundImage: {
     ...StyleSheet.absoluteFillObject,
@@ -170,7 +179,8 @@ const styles = StyleSheet.create({
   characterInfo: {
     alignItems: "center",
     gap: Spacing.sm,
-    marginTop: Spacing.xxl,
+    marginTop: Spacing.md,
+    paddingTop: Spacing.md,
   },
   characterName: {
     fontSize: FontSizes.xxl,

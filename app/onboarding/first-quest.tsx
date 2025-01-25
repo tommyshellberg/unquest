@@ -7,10 +7,10 @@ import { AVAILABLE_QUESTS, useQuestStore } from "@/store/quest-store";
 
 export default function FirstQuestScreen() {
   const router = useRouter();
-  const setActiveQuest = useQuestStore((state) => state.setActiveQuest);
+  const startQuest = useQuestStore((state) => state.startQuest);
 
   const handleAcceptQuest = () => {
-    setActiveQuest(AVAILABLE_QUESTS[0]);
+    startQuest(AVAILABLE_QUESTS[0]);
     router.push("/home");
   };
 
