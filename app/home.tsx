@@ -1,14 +1,15 @@
 import { useState, useEffect } from "react";
-import { StyleSheet, View, ScrollView, Image } from "react-native";
+import { StyleSheet, View, ScrollView, Image, Pressable } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ActiveQuest } from "@/components/ActiveQuest";
 import { QuestComplete } from "@/components/QuestComplete";
 import { QuestList } from "@/components/QuestList";
-import { Colors, FontSizes, Spacing } from "@/constants/theme";
+import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
-import { Quest } from "@/store/types";
+import { Quest, QuestCompletion } from "@/store/types";
+import Constants from "expo-constants";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -23,7 +24,8 @@ export default function HomeScreen() {
   const addXP = useCharacterStore((state) => state.addXP);
 
   const [showingCompletion, setShowingCompletion] = useState(false);
-  const [completedQuest, setCompletedQuest] = useState<Quest | null>(null);
+  const [currentCompletion, setCurrentCompletion] =
+    useState<QuestCompletion | null>(null);
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
@@ -32,35 +34,45 @@ export default function HomeScreen() {
     }
   }, [activeQuest, character]);
 
-  const handleQuestComplete = (quest: Quest) => {
-    setCompletedQuest(quest);
-    setShowingCompletion(true);
+  const handleQuestComplete = () => {
+    const completion = useQuestStore.getState().completeQuest();
+    if (completion) {
+      setCurrentCompletion(completion);
+      setShowingCompletion(true);
+    }
   };
 
   const handleClaimReward = () => {
-    if (!completedQuest) return;
+    if (!currentCompletion) return;
 
     // Add XP before completing quest
-    addXP(completedQuest.reward.xp);
+    addXP(currentCompletion.quest.reward.xp);
 
     // Mark quest as complete
     completeQuest();
 
     // Reset completion state
     setShowingCompletion(false);
-    setCompletedQuest(null);
+    setCurrentCompletion(null);
   };
 
   const handleSelectQuest = (quest: Omit<Quest, "startedAt">) => {
     startQuest(quest);
   };
 
-  if (showingCompletion && completedQuest && character) {
+  // Development helper function
+  const handleDevComplete = () => {
+    if (activeQuest) {
+      handleQuestComplete();
+    }
+  };
+
+  if (showingCompletion && currentCompletion) {
     return (
       <QuestComplete
-        quest={completedQuest}
-        story={completedQuest.generateStory(character)}
+        quest={currentCompletion.quest}
         onClaim={handleClaimReward}
+        story={currentCompletion.story}
       />
     );
   }
@@ -88,6 +100,16 @@ export default function HomeScreen() {
                 </ThemedText>
               </View>
               <ActiveQuest onComplete={handleQuestComplete} />
+
+              {/* Development Mode Button */}
+              {Constants.expoConfig?.extra?.development && (
+                <Pressable style={styles.devButton} onPress={handleDevComplete}>
+                  <ThemedText style={styles.devButtonText}>
+                    [DEV] Complete Quest Now
+                  </ThemedText>
+                </Pressable>
+              )}
+
               <ThemedText style={styles.instruction}>
                 Close the app and return when your quest timer is complete. Your
                 progress will be saved automatically.
@@ -197,5 +219,17 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.9,
     lineHeight: 24,
+  },
+  devButton: {
+    backgroundColor: "#FF0000",
+    padding: Spacing.md,
+    borderRadius: BorderRadius.md,
+    marginTop: Spacing.xl,
+    opacity: 0.8,
+  },
+  devButtonText: {
+    color: Colors.cream,
+    textAlign: "center",
+    fontWeight: "600",
   },
 });

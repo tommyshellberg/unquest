@@ -1,3 +1,6 @@
+import { QuestCompletion } from "./quest-store";
+export type { QuestCompletion };
+
 // Shared types
 export type XP = number;
 export type Minutes = number;

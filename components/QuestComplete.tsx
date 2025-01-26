@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable } from "react-native";
+import { StyleSheet, View, ScrollView, Pressable } from "react-native";
 import Animated, {
   withSpring,
   withSequence,
@@ -75,56 +75,47 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
     });
   });
 
-  const questDuration = quest.durationMinutes;
-
-  if (character) {
-    return (
-      <LevelProgress
-        character={character}
-        xpGained={quest.reward.xp}
-        onComplete={onClaim}
-      />
-    );
-  }
-
   return (
     <View style={styles.container}>
-      <Animated.View style={[styles.content, contentStyle]}>
-        <Animated.View style={[styles.celebrationCircle, animatedStyle]}>
-          <ThemedText style={styles.celebrationEmoji}>🎉</ThemedText>
-        </Animated.View>
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <Animated.View style={[styles.content, contentStyle]}>
+          <ThemedText style={styles.celebrationEmoji} type="subtitle">
+            🎉
+          </ThemedText>
 
-        <ThemedText style={styles.title}>Quest Complete!</ThemedText>
-        <ThemedText style={styles.subtitle}>
-          A Tale of {character?.name}'s Adventure
-        </ThemedText>
+          <ThemedText style={styles.title} type="title">
+            Quest Complete!
+          </ThemedText>
+          <ThemedText style={styles.subtitle}>A Tale of Adventure</ThemedText>
 
-        <View style={styles.storyCard}>
           {sentences.map((sentence, index) => (
-            <Animated.View key={index} style={sentenceStyles[index]}>
-              <ThemedText style={styles.storyText}>{sentence} </ThemedText>
+            <Animated.View key={index} style={styles.storyLine}>
+              <ThemedText style={styles.storyText}>{sentence}</ThemedText>
             </Animated.View>
           ))}
-        </View>
 
-        <Animated.View style={[styles.rewardCard, contentStyle]}>
-          <ThemedText style={styles.rewardText}>
-            Reward: {quest.reward.xp} XP
-          </ThemedText>
+          <View style={styles.footer}>
+            <ThemedText style={styles.rewardText}>
+              Reward: {quest.reward.xp} XP
+            </ThemedText>
+
+            <Pressable
+              style={({ pressed }) => [
+                styles.continueButton,
+                pressed && styles.continueButtonPressed,
+              ]}
+              onPress={onClaim}
+            >
+              <ThemedText style={styles.continueButtonText}>
+                Continue Journey
+              </ThemedText>
+            </Pressable>
+          </View>
         </Animated.View>
-
-        <Pressable
-          style={({ pressed }) => [
-            styles.claimButton,
-            pressed && styles.claimButtonPressed,
-          ]}
-          onPress={onClaim}
-        >
-          <ThemedText style={styles.claimButtonText}>
-            Continue Journey
-          </ThemedText>
-        </Pressable>
-      </Animated.View>
+      </ScrollView>
     </View>
   );
 }
@@ -132,82 +123,71 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: "center",
-    padding: Spacing.xl,
     backgroundColor: Colors.background.light,
   },
-  content: {
-    alignItems: "center",
-    gap: Spacing.lg,
+  scrollView: {
+    flex: 1,
   },
-  animation: {
-    width: 200,
-    height: 200,
+  scrollContent: {
+    flexGrow: 1,
+    padding: Spacing.xl,
+  },
+  content: {
+    flex: 1,
+    alignItems: "center",
+  },
+  celebrationEmoji: {
+    fontSize: 40,
+    marginBottom: Spacing.lg,
   },
   title: {
     fontSize: FontSizes.xxl,
     fontWeight: "bold",
     color: Colors.forest,
     textAlign: "center",
+    marginBottom: Spacing.sm,
   },
   subtitle: {
     fontSize: FontSizes.lg,
     color: Colors.forest,
     textAlign: "center",
     opacity: 0.9,
+    marginBottom: Spacing.xl,
   },
-  storyCard: {
-    backgroundColor: Colors.cream,
-    padding: Spacing.xl,
-    borderRadius: BorderRadius.lg,
-    marginVertical: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.mist,
+  storyLine: {
+    width: "100%",
+    marginBottom: Spacing.md,
   },
   storyText: {
     fontSize: FontSizes.md,
     color: Colors.stone,
     lineHeight: 24,
-    textAlign: "center",
     fontStyle: "italic",
   },
-  rewardCard: {
-    backgroundColor: Colors.forest,
-    padding: Spacing.md,
-    borderRadius: BorderRadius.lg,
-    marginTop: Spacing.md,
+  footer: {
+    width: "100%",
+    marginTop: "auto",
+    gap: Spacing.lg,
   },
   rewardText: {
     fontSize: FontSizes.lg,
-    color: Colors.cream,
+    color: Colors.forest,
     textAlign: "center",
-    fontWeight: "bold",
   },
-  claimButton: {
+  continueButton: {
     backgroundColor: Colors.primary,
     paddingVertical: Spacing.md,
     paddingHorizontal: Spacing.xxl,
     borderRadius: BorderRadius.pill,
-    marginTop: Spacing.xl,
+    width: "100%",
   },
-  claimButtonPressed: {
+  continueButtonPressed: {
     backgroundColor: Colors.secondary,
   },
-  claimButtonText: {
+  continueButtonText: {
     color: Colors.cream,
     fontSize: FontSizes.lg,
     fontWeight: "600",
-  },
-  celebrationCircle: {
-    width: 120,
-    height: 120,
-    borderRadius: 60,
-    backgroundColor: Colors.forest,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: Spacing.xl,
-  },
-  celebrationEmoji: {
-    fontSize: 50,
+    textAlign: "center",
   },
 });

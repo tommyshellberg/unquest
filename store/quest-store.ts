@@ -7,8 +7,8 @@ import { useCharacterStore } from "./character-store";
 // Create a QuestTemplate type that doesn't include startedAt
 export type QuestTemplate = Omit<Quest, "startedAt">;
 
-interface QuestCompletion {
-  questId: string;
+export interface QuestCompletion {
+  quest: Quest; // Store the full quest object in completion
   completedAt: number;
   story: string;
 }
@@ -17,8 +17,8 @@ interface QuestState {
   activeQuest: Quest | null;
   availableQuests: Quest[];
   completedQuests: QuestCompletion[];
-  startQuest: (quest: QuestTemplate) => void; // Changed parameter type
-  completeQuest: () => void;
+  startQuest: (quest: QuestTemplate) => void;
+  completeQuest: () => QuestCompletion | null;
   refreshAvailableQuests: (characterLevel: number) => void;
 }
 
@@ -28,7 +28,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     id: "forest-meditation",
     title: "The Whispering Woods",
     description:
-      "A peaceful journey through an ancient forest to find inner wisdom.",
+      "Take 15 minutes to step away from your phone and into the world around you. Let your thoughts roam free as you walk, observe the beauty of your surroundings, and reconnect with the present moment.",
     durationMinutes: 15,
     reward: { xp: 100 },
     minLevel: 1,
@@ -81,19 +81,20 @@ export const useQuestStore = create<QuestState>()(
         const character = useCharacterStore.getState().character;
 
         if (activeQuest && character) {
-          const story = activeQuest.generateStory(character);
+          const completion: QuestCompletion = {
+            quest: activeQuest, // Store the full quest
+            completedAt: Date.now(),
+            story: activeQuest.generateStory(character),
+          };
+
           set((state) => ({
             activeQuest: null,
-            completedQuests: [
-              ...state.completedQuests,
-              {
-                questId: activeQuest.id,
-                completedAt: Date.now(),
-                story,
-              },
-            ],
+            completedQuests: [...state.completedQuests, completion],
           }));
+
+          return completion;
         }
+        return null;
       },
 
       refreshAvailableQuests: (characterLevel) => {

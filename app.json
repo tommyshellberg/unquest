@@ -19,6 +19,9 @@
       },
       "package": "com.anonymous.unquestapp"
     },
+    "extra": {
+      "development": true
+    },
     "web": {
       "bundler": "metro",
       "output": "static",
