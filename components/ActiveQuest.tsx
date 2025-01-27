@@ -1,14 +1,9 @@
+import React, { useEffect, useState } from "react";
 import { View, StyleSheet } from "react-native";
-import { useEffect, useState } from "react";
 import { ThemedText } from "./ThemedText";
 import { QuestCard } from "./QuestCard";
 import { Colors, FontSizes, Spacing } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
-import {
-  updateQuestProgressNotification,
-  removeQuestProgressNotification,
-  requestNotificationPermissions,
-} from "@/services/notification-service";
 
 type Props = {
   onComplete: (quest: any) => void;
@@ -20,54 +15,27 @@ export function ActiveQuest({ onComplete }: Props) {
   const [remainingSeconds, setRemainingSeconds] = useState(0);
 
   useEffect(() => {
-    requestNotificationPermissions();
-  }, []);
+    if (activeQuest) {
+      const timer = setInterval(() => {
+        const now = Date.now();
+        const timeElapsed = (now - activeQuest.startedAt!) / 1000;
+        const totalDuration = activeQuest.durationMinutes * 60;
+        const timeLeft = totalDuration - timeElapsed;
 
-  useEffect(() => {
-    if (!activeQuest?.startedAt) {
-      removeQuestProgressNotification();
-      return;
+        if (timeLeft <= 0) {
+          clearInterval(timer);
+          onComplete(activeQuest);
+        } else {
+          setRemainingMinutes(Math.ceil(timeLeft / 60));
+          setRemainingSeconds(Math.floor(timeLeft % 60));
+        }
+      }, 1000);
+
+      return () => {
+        clearInterval(timer);
+      };
     }
-
-    const updateTimer = async () => {
-      if (!activeQuest?.startedAt) {
-        removeQuestProgressNotification();
-        return;
-      }
-
-      const now = Date.now();
-      const elapsedMs = now - activeQuest.startedAt;
-      const remainingMs = activeQuest.durationMinutes * 60 * 1000 - elapsedMs;
-
-      if (remainingMs <= 0) {
-        await removeQuestProgressNotification();
-        onComplete(activeQuest);
-        return;
-      }
-
-      const newRemainingMinutes = Math.floor(remainingMs / (60 * 1000));
-      const newRemainingSeconds = Math.floor(
-        (remainingMs % (60 * 1000)) / 1000
-      );
-
-      setRemainingMinutes(newRemainingMinutes);
-      setRemainingSeconds(newRemainingSeconds);
-
-      await updateQuestProgressNotification(
-        activeQuest.title,
-        newRemainingMinutes,
-        activeQuest.durationMinutes
-      );
-    };
-
-    updateTimer();
-    const interval = setInterval(updateTimer, 1000);
-
-    return () => {
-      clearInterval(interval);
-      removeQuestProgressNotification();
-    };
-  }, [activeQuest, onComplete]);
+  }, [activeQuest]);
 
   if (!activeQuest) return null;
 

@@ -15,11 +15,14 @@ export interface QuestCompletion {
 
 interface QuestState {
   activeQuest: Quest | null;
-  availableQuests: Quest[];
+  availableQuests: QuestTemplate[];
   completedQuests: QuestCompletion[];
-  startQuest: (quest: QuestTemplate) => void;
+  failedQuest: Quest | null;
+  startQuest: (questTemplate: QuestTemplate, startedAt?: number) => void;
   completeQuest: () => QuestCompletion | null;
   refreshAvailableQuests: (characterLevel: number) => void;
+  failQuest: () => void;
+  resetFailedQuest: () => void;
 }
 
 // Use QuestTemplate type for available quests
@@ -29,7 +32,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "The Whispering Woods",
     description:
       "Take 15 minutes to step away from your phone and into the world around you. Let your thoughts roam free as you walk, observe the beauty of your surroundings, and reconnect with the present moment.",
-    durationMinutes: 15,
+    durationMinutes: 2,
     reward: { xp: 100 },
     minLevel: 1,
     generateStory: (character) => {
@@ -45,7 +48,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     id: "helping-stranger",
     title: "The Unexpected Friend",
     description: "Choose to help someone in need along your path.",
-    durationMinutes: 20,
+    durationMinutes: 3,
     reward: { xp: 150 },
     minLevel: 2,
     generateStory: (character) => {
@@ -66,12 +69,12 @@ export const useQuestStore = create<QuestState>()(
       activeQuest: null,
       availableQuests: [],
       completedQuests: [],
+      failedQuest: null,
 
-      startQuest: (questTemplate) => {
-        // Convert QuestTemplate to Quest by adding startedAt
+      startQuest: (questTemplate, startedAt?: number) => {
         const quest: Quest = {
           ...questTemplate,
-          startedAt: Date.now(),
+          startedAt: startedAt ?? Date.now(),
         };
         set({ activeQuest: quest });
       },
@@ -81,10 +84,22 @@ export const useQuestStore = create<QuestState>()(
         const character = useCharacterStore.getState().character;
 
         if (activeQuest && character) {
+          // Retrieve the original quest template
+          const questTemplate = AVAILABLE_QUESTS.find(
+            (quest) => quest.id === activeQuest.id
+          );
+
+          if (!questTemplate || !questTemplate.generateStory) {
+            console.error(
+              `generateStory not found for quest with id ${activeQuest.id}`
+            );
+            return null;
+          }
+
           const completion: QuestCompletion = {
-            quest: activeQuest, // Store the full quest
+            quest: activeQuest, // Store the full quest object (without functions)
             completedAt: Date.now(),
-            story: activeQuest.generateStory(character),
+            story: questTemplate.generateStory(character),
           };
 
           set((state) => ({
@@ -101,14 +116,24 @@ export const useQuestStore = create<QuestState>()(
         const availableQuests = AVAILABLE_QUESTS.filter(
           (quest) => quest.minLevel <= characterLevel
         )
-          .map((quest) => ({
-            ...quest,
-            startedAt: Date.now(), // Convert to full Quest when making available
-          }))
           .sort(() => Math.random() - 0.5)
           .slice(0, 3);
 
         set({ availableQuests });
+      },
+
+      failQuest: () => {
+        const { activeQuest } = get();
+        if (activeQuest) {
+          set({
+            failedQuest: activeQuest,
+            activeQuest: null,
+          });
+        }
+      },
+
+      resetFailedQuest: () => {
+        set({ failedQuest: null });
       },
     }),
     {

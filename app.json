@@ -20,7 +20,13 @@
       "package": "com.anonymous.unquestapp"
     },
     "extra": {
-      "development": true
+      "development": true,
+      "router": {
+        "origin": false
+      },
+      "eas": {
+        "projectId": "977f470c-f6db-4fab-8d27-dfefa5b3d5ec"
+      }
     },
     "web": {
       "bundler": "metro",

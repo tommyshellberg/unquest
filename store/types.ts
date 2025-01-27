@@ -1,5 +1,5 @@
-import { QuestCompletion } from "./quest-store";
-export type { QuestCompletion };
+import { QuestCompletion, QuestTemplate } from "./quest-store";
+export type { QuestCompletion, QuestTemplate };
 
 // Shared types
 export type XP = number;

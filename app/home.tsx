@@ -5,11 +5,13 @@ import { ThemedText } from "@/components/ThemedText";
 import { ActiveQuest } from "@/components/ActiveQuest";
 import { QuestComplete } from "@/components/QuestComplete";
 import { QuestList } from "@/components/QuestList";
+import { QuestFailed } from "@/components/QuestFailed";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
-import { Quest, QuestCompletion } from "@/store/types";
+import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
+import { useLockStateDetection } from "@/hooks/useLockStateDetection";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -19,6 +21,8 @@ export default function HomeScreen() {
     (state) => state.refreshAvailableQuests
   );
   const availableQuests = useQuestStore((state) => state.availableQuests);
+  const failedQuest = useQuestStore((state) => state.failedQuest);
+  const resetFailedQuest = useQuestStore((state) => state.resetFailedQuest);
 
   const character = useCharacterStore((state) => state.character);
   const addXP = useCharacterStore((state) => state.addXP);
@@ -26,6 +30,8 @@ export default function HomeScreen() {
   const [showingCompletion, setShowingCompletion] = useState(false);
   const [currentCompletion, setCurrentCompletion] =
     useState<QuestCompletion | null>(null);
+
+  useLockStateDetection();
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
@@ -35,7 +41,7 @@ export default function HomeScreen() {
   }, [activeQuest, character]);
 
   const handleQuestComplete = () => {
-    const completion = useQuestStore.getState().completeQuest();
+    const completion = completeQuest();
     if (completion) {
       setCurrentCompletion(completion);
       setShowingCompletion(true);
@@ -48,17 +54,18 @@ export default function HomeScreen() {
     // Add XP before completing quest
     addXP(currentCompletion.quest.reward.xp);
 
-    // Mark quest as complete
-    completeQuest();
-
     // Reset completion state
     setShowingCompletion(false);
     setCurrentCompletion(null);
   };
 
-  const handleSelectQuest = (quest: Omit<Quest, "startedAt">) => {
-    startQuest(quest);
-  };
+    const handleSelectQuest = (quest: QuestTemplate) => {
+      startQuest(quest);
+    };
+
+    const handleAcknowledgeFailure = () => {
+      resetFailedQuest();
+    };
 
   // Development helper function
   const handleDevComplete = () => {
@@ -66,6 +73,17 @@ export default function HomeScreen() {
       handleQuestComplete();
     }
   };
+
+  // Render logic
+  if (failedQuest) {
+    // Render the QuestFailed component when a quest has failed
+    return (
+      <QuestFailed
+        quest={failedQuest}
+        onAcknowledge={handleAcknowledgeFailure}
+      />
+    );
+  }
 
   if (showingCompletion && currentCompletion) {
     return (
