@@ -1,4 +1,5 @@
-import { useState } from "react";
+import React, { useState } from "react";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router";
 import {
   Pressable,
@@ -16,31 +17,37 @@ export default function RootLayout() {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   return (
-    <SafeAreaView style={{ flex: 1 }}>
-      <OnboardingGuard>
-        <Stack
-          screenOptions={{
-            headerRight: () => <ProfileInfo />,
-            headerLeft: () => (
-              <TouchableOpacity
-                onPressOut={() => {
-                  setIsDrawerOpen(true);
-                }}
-                hitSlop={20}
-                style={styles.menuButton}
-              >
-                <Ionicons name="menu-outline" size={24} color={Colors.forest} />
-              </TouchableOpacity>
-            ),
-            headerTitle: "",
-          }}
-        />
-        <CustomDrawer
-          isOpen={isDrawerOpen}
-          onClose={() => setIsDrawerOpen(false)}
-        />
-      </OnboardingGuard>
-    </SafeAreaView>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <SafeAreaView style={{ flex: 1 }}>
+        <OnboardingGuard>
+          <Stack
+            screenOptions={{
+              headerRight: () => <ProfileInfo />,
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPressOut={() => {
+                    setIsDrawerOpen(true);
+                  }}
+                  hitSlop={20}
+                  style={styles.menuButton}
+                >
+                  <Ionicons
+                    name="menu-outline"
+                    size={24}
+                    color={Colors.forest}
+                  />
+                </TouchableOpacity>
+              ),
+              headerTitle: "",
+            }}
+          />
+          <CustomDrawer
+            isOpen={isDrawerOpen}
+            onClose={() => setIsDrawerOpen(false)}
+          />
+        </OnboardingGuard>
+      </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 

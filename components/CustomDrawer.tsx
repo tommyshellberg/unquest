@@ -15,7 +15,7 @@ import { Colors, Spacing, FontSizes } from "@/constants/theme";
 type DrawerItem = {
   label: string;
   icon: keyof typeof Ionicons.glyphMap;
-  route: "home" | "profile";
+  route: "home" | "profile" | "map";
 };
 
 const DRAWER_ITEMS: DrawerItem[] = [
@@ -28,6 +28,11 @@ const DRAWER_ITEMS: DrawerItem[] = [
     label: "Character",
     icon: "person-outline",
     route: "profile",
+  },
+  {
+    label: "Map",
+    icon: "map-outline",
+    route: "map",
   },
 ];
 
