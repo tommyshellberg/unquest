@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { StyleSheet, View, ScrollView, Image, Pressable } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -59,13 +59,13 @@ export default function HomeScreen() {
     setCurrentCompletion(null);
   };
 
-    const handleSelectQuest = (quest: QuestTemplate) => {
-      startQuest(quest);
-    };
+  const handleSelectQuest = (quest: QuestTemplate) => {
+    startQuest(quest);
+  };
 
-    const handleAcknowledgeFailure = () => {
-      resetFailedQuest();
-    };
+  const handleAcknowledgeFailure = () => {
+    resetFailedQuest();
+  };
 
   // Development helper function
   const handleDevComplete = () => {
