@@ -1,5 +1,11 @@
 import { useEffect } from "react";
-import { View, StyleSheet, Pressable } from "react-native";
+import {
+  View,
+  StyleSheet,
+  Pressable,
+  Alert,
+  TouchableOpacity,
+} from "react-native";
 import { useRouter } from "expo-router";
 import { Ionicons } from "@expo/vector-icons";
 import Animated, {
@@ -11,6 +17,9 @@ import Animated, {
 import { ThemedText } from "./ThemedText";
 import { ProfileInfo } from "./ProfileInfo";
 import { Colors, Spacing, FontSizes } from "@/constants/theme";
+import { useQuestStore } from "@/store/quest-store";
+import { usePOIStore } from "@/store/poi-store";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type DrawerItem = {
   label: string;
@@ -81,6 +90,35 @@ export function CustomDrawer({ isOpen, onClose }: Props) {
     onClose();
   };
 
+  const resetAppData = () => {
+    Alert.alert(
+      "Reset App Data",
+      "Are you sure you want to reset the app data? This will delete all your progress.",
+      [
+        { text: "Cancel", style: "cancel" },
+        { text: "Reset", style: "destructive", onPress: handleReset },
+      ]
+    );
+  };
+
+  const handleReset = async () => {
+    try {
+      // Clear AsyncStorage
+      await AsyncStorage.clear();
+
+      // Reset Zustand stores
+      useQuestStore.getState().reset();
+      usePOIStore.getState().reset();
+
+      // Reset any other stores here
+
+      Alert.alert("App Data Reset", "The app data has been reset.");
+    } catch (error) {
+      console.error("Failed to reset app data:", error);
+      Alert.alert("Error", "Failed to reset app data. Please try again.");
+    }
+  };
+
   return (
     <View style={[styles.container, !isOpen && styles.hidden]}>
       <Animated.View
@@ -105,6 +143,13 @@ export function CustomDrawer({ isOpen, onClose }: Props) {
             <ThemedText style={styles.drawerItemText}>{item.label}</ThemedText>
           </Pressable>
         ))}
+        {__DEV__ && (
+          <TouchableOpacity onPress={resetAppData} style={styles.resetButton}>
+            <ThemedText style={styles.resetButtonText}>
+              Reset App Data
+            </ThemedText>
+          </TouchableOpacity>
+        )}
       </Animated.View>
     </View>
   );
@@ -150,5 +195,12 @@ const styles = StyleSheet.create({
     marginLeft: Spacing.md,
     fontSize: FontSizes.lg,
     color: Colors.forest,
+  },
+  resetButton: {
+    padding: 16,
+  },
+  resetButtonText: {
+    color: "red",
+    fontWeight: "bold",
   },
 });

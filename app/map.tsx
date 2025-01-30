@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   StyleSheet,
   Image,
@@ -19,45 +19,23 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import MaskedView from "@react-native-masked-view/masked-view";
-import Svg, {
-  Defs,
-  RadialGradient,
-  Stop,
-  Rect,
-  Circle,
-  ClipPath,
-} from "react-native-svg";
+import { usePOIStore } from "@/store/poi-store";
 
-const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-const imageWidth = 2000;
-const imageHeight = 2000;
-
-// Dimensions of your mask image
-const maskWidth = 400; // Adjust to your mask image width
-const maskHeight = 400; // Adjust to your mask image height
-
-// Define your POIs
-const POIs = [
-  {
-    id: "poi-1",
-    name: "The Twilight Spire",
-    x: 320, // x-coordinate on the image
-    y: 320, // y-coordinate on the image
-  },
-  {
-    id: "poi-2",
-    name: "Dragon's Cave",
-    x: 1500,
-    y: 500,
-  },
-  // Add more POIs as needed
-];
-
-// Define Explored Areas
-type ExploredArea = {
+// @todo: reapply the changes to the map because it broke the masking.
+// import the pois from the poi store.
+// loop through the pois and add them to the explored areas.
+interface ExploredArea {
   x: number;
   y: number;
-};
+}
+
+const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
+const imageWidth = 1200;
+const imageHeight = 1200;
+
+// Dimensions of your mask image
+const maskWidth = 200; // Adjust to your mask image width
+const maskHeight = 200; // Adjust to your mask image height
 
 export default function MapScreen() {
   const translateX = useSharedValue(0);
@@ -67,10 +45,16 @@ export default function MapScreen() {
   const maxTranslateX = 0;
   const minTranslateX = screenWidth - imageWidth;
   const maxTranslateY = 0;
-  const minTranslateY = screenHeight - imageHeight;
+  const minTranslateY = screenHeight - imageHeight - 200; // @todo: find a real fix for the bottom getting cut off.
 
   const panGesture = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
     onStart: (_, ctx: any) => {
+      // Initialize starting position to bottom right
+      if (!ctx.hasInitialPosition) {
+        translateX.value = minTranslateX;
+        translateY.value = minTranslateY;
+        ctx.hasInitialPosition = true;
+      }
       ctx.startX = translateX.value;
       ctx.startY = translateY.value;
     },
@@ -97,21 +81,16 @@ export default function MapScreen() {
     ],
   }));
 
-  const [exploredAreas, setExploredAreas] = useState<ExploredArea[]>([
-    // Start with the initial explored area
-    { x: 300, y: 300 },
-    { x: 600, y: 600 },
-  ]);
+  const pois = usePOIStore((state) => state.pois);
 
-  // Function to reveal a new area
-  function revealArea(x: number, y: number) {
-    setExploredAreas((prevAreas) => [...prevAreas, { x, y }]);
-  }
+  const [exploredAreas, setExploredAreas] = useState<ExploredArea[]>([
+    // Create a grid of explored points every 100 units until 1000
+    { x: 840, y: 1100 },
+  ]);
 
   function handlePOIPress(poi: any) {
     // Handle POI interaction
     console.log("POI pressed:", poi.name);
-    revealArea(poi.x, poi.y);
   }
 
   return (
@@ -144,27 +123,29 @@ export default function MapScreen() {
             <Animated.View style={[styles.mapWrapper, imageStyle]}>
               {/* The entire map image */}
               <RNImage
-                source={require("../assets/images/map.jpg")}
+                source={require("../assets/images/map-downscaled.jpg")}
                 style={styles.mapImage}
               />
 
               {/* POI Elements */}
-              {POIs.map((poi) => (
-                <View
-                  key={poi.id}
-                  style={[
-                    styles.poiContainer,
-                    {
-                      left: poi.x,
-                      top: poi.y,
-                    },
-                  ]}
-                >
-                  <Pressable onPress={() => handlePOIPress(poi)}>
-                    <Text style={styles.poiText}>{poi.name}</Text>
-                  </Pressable>
-                </View>
-              ))}
+              {pois
+                .filter((poi) => poi.isRevealed)
+                .map((poi) => (
+                  <View
+                    key={poi.slug}
+                    style={[
+                      styles.poiContainer,
+                      {
+                        left: poi.x,
+                        top: poi.y,
+                      },
+                    ]}
+                  >
+                    <Pressable onPress={() => handlePOIPress(poi)}>
+                      <Text style={styles.poiText}>{poi.name}</Text>
+                    </Pressable>
+                  </View>
+                ))}
             </Animated.View>
           </MaskedView>
         </Animated.View>

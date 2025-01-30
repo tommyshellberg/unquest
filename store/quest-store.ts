@@ -3,7 +3,8 @@ import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Quest } from "./types";
 import { useCharacterStore } from "./character-store";
-
+import { AVAILABLE_QUESTS } from "@/app/data/quests";
+import { usePOIStore } from "./poi-store";
 // Create a QuestTemplate type that doesn't include startedAt
 export type QuestTemplate = Omit<Quest, "startedAt">;
 
@@ -23,45 +24,8 @@ interface QuestState {
   refreshAvailableQuests: (characterLevel: number) => void;
   failQuest: () => void;
   resetFailedQuest: () => void;
+  reset: () => void;
 }
-
-// Use QuestTemplate type for available quests
-export const AVAILABLE_QUESTS: QuestTemplate[] = [
-  {
-    id: "forest-meditation",
-    title: "The Whispering Woods",
-    description:
-      "Take 15 minutes to step away from your phone and into the world around you. Let your thoughts roam free as you walk, observe the beauty of your surroundings, and reconnect with the present moment.",
-    durationMinutes: 2,
-    reward: { xp: 100 },
-    minLevel: 1,
-    generateStory: (character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `In a moment of profound stillness, ${character.name} discovered more than just peace in the Whispering Woods. 
-      As the ancient trees swayed gently overhead, their wisdom seemed to seep into ${character.name}'s very being. 
-      Through this simple act of presence, ${character.name} found that true strength often lies in moments of quiet contemplation. 
-      The forest had taught a lesson that would resonate far beyond its peaceful borders.`;
-    },
-  },
-  {
-    id: "helping-stranger",
-    title: "The Unexpected Friend",
-    description: "Choose to help someone in need along your path.",
-    durationMinutes: 3,
-    reward: { xp: 150 },
-    minLevel: 2,
-    generateStory: (character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `What began as a simple act of kindness blossomed into something extraordinary. 
-      ${character.name} encountered a traveler struggling with their own journey, and without hesitation, offered assistance. 
-      In that moment of connection, both ${character.name} and the stranger were reminded that the greatest adventures often come 
-      from reaching out to others. Sometimes the most heroic acts are the smallest ones.`;
-    },
-  },
-  // Add more quests with their own unique story generators
-];
 
 export const useQuestStore = create<QuestState>()(
   persist(
@@ -102,6 +66,8 @@ export const useQuestStore = create<QuestState>()(
             story: questTemplate.generateStory(character),
           };
 
+          usePOIStore.getState().revealLocation(activeQuest.poiSlug);
+
           set((state) => ({
             activeQuest: null,
             completedQuests: [...state.completedQuests, completion],
@@ -134,6 +100,15 @@ export const useQuestStore = create<QuestState>()(
 
       resetFailedQuest: () => {
         set({ failedQuest: null });
+      },
+
+      reset: () => {
+        set({
+          activeQuest: null,
+          availableQuests: [],
+          completedQuests: [],
+          failedQuest: null,
+        });
       },
     }),
     {
