@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   Image,
@@ -17,17 +17,12 @@ import Animated, {
   useAnimatedGestureHandler,
   useAnimatedStyle,
   useSharedValue,
+  withTiming,
+  runOnJS,
 } from "react-native-reanimated";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { usePOIStore } from "@/store/poi-store";
-
-// @todo: reapply the changes to the map because it broke the masking.
-// import the pois from the poi store.
-// loop through the pois and add them to the explored areas.
-interface ExploredArea {
-  x: number;
-  y: number;
-}
+import { INITIAL_POIS } from "./data/pois";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const imageWidth = 1200;
@@ -47,29 +42,80 @@ export default function MapScreen() {
   const maxTranslateY = 0;
   const minTranslateY = screenHeight - imageHeight - 200; // @todo: find a real fix for the bottom getting cut off.
 
-  const panGesture = useAnimatedGestureHandler<PanGestureHandlerGestureEvent>({
-    onStart: (_, ctx: any) => {
-      // Initialize starting position to bottom right
-      if (!ctx.hasInitialPosition) {
-        translateX.value = minTranslateX;
-        translateY.value = minTranslateY;
-        ctx.hasInitialPosition = true;
+  const pois = usePOIStore((state) => state.pois);
+  const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);
+  const resetLastRevealedPOI = usePOIStore(
+    (state) => state.resetLastRevealedPOI
+  );
+
+  // Animated value for POI reveal
+  const poiScale = useSharedValue(1);
+
+  // Center map on initial location or last revealed POI
+  useEffect(() => {
+    if (lastRevealedPOISlug) {
+      const poi = pois.find((p) => p.slug === lastRevealedPOISlug);
+      if (poi) {
+        // Center the map on the POI
+        const centerX = -(poi.x - screenWidth / 2);
+        const centerY = -(poi.y - screenHeight / 2);
+
+        translateX.value = Math.max(
+          Math.min(centerX, maxTranslateX),
+          minTranslateX
+        );
+        translateY.value = Math.max(
+          Math.min(centerY, maxTranslateY),
+          minTranslateY
+        );
+
+        // Animate the POI reveal
+        poiScale.value = 0.1; // Start from a small scale
+        poiScale.value = withTiming(1, { duration: 1000 }, (isFinished) => {
+          if (isFinished) {
+            // Reset lastRevealedPOISlug after animation completes
+            runOnJS(resetLastRevealedPOI)();
+          }
+        });
       }
+    } else {
+      // Center on the first location (shrouded-forest) when no POI was just revealed
+      const initialPOI = INITIAL_POIS[0];
+      if (initialPOI) {
+        const centerX = -(initialPOI.x - screenWidth / 2);
+        const centerY = -(initialPOI.y - screenHeight / 2);
+
+        translateX.value = Math.max(
+          Math.min(centerX, maxTranslateX),
+          minTranslateX
+        );
+        translateY.value = Math.max(
+          Math.min(centerY, maxTranslateY),
+          minTranslateY
+        );
+      }
+    }
+  }, [lastRevealedPOISlug]);
+
+  const panGesture = useAnimatedGestureHandler<
+    PanGestureHandlerGestureEvent,
+    { startX: number; startY: number }
+  >({
+    onStart: (_, ctx) => {
       ctx.startX = translateX.value;
       ctx.startY = translateY.value;
     },
-    onActive: (event, ctx: any) => {
+    onActive: (event, ctx) => {
       const newTranslateX = ctx.startX + event.translationX;
       const newTranslateY = ctx.startY + event.translationY;
 
-      // Clamp the translation values to prevent scrolling past edges
-      translateX.value = Math.min(
-        Math.max(newTranslateX, minTranslateX),
-        maxTranslateX
+      translateX.value = Math.max(
+        Math.min(newTranslateX, maxTranslateX),
+        minTranslateX
       );
-      translateY.value = Math.min(
-        Math.max(newTranslateY, minTranslateY),
-        maxTranslateY
+      translateY.value = Math.max(
+        Math.min(newTranslateY, maxTranslateY),
+        minTranslateY
       );
     },
   });
@@ -81,28 +127,30 @@ export default function MapScreen() {
     ],
   }));
 
-  const pois = usePOIStore((state) => state.pois);
+  const revealedPOIS = pois.filter((poi) => poi.isRevealed);
+  console.log("revealedPOIS", revealedPOIS);
 
-  const [exploredAreas, setExploredAreas] = useState<ExploredArea[]>([
-    // Create a grid of explored points every 100 units until 1000
-    { x: 840, y: 1100 },
-  ]);
-
-  function handlePOIPress(poi: any) {
+  function handlePOIPress(slug: string) {
     // Handle POI interaction
-    console.log("POI pressed:", poi.name);
+    console.log("POI pressed:", slug);
   }
+
+  // Create a single animated style that all POIs will use
+  const poiAnimatedStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: poiScale.value }],
+    opacity: poiScale.value,
+  }));
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <PanGestureHandler onGestureEvent={panGesture}>
-        <Animated.View style={styles.container}>
+        <Animated.View style={[styles.container]}>
           <MaskedView
             style={{ flex: 1 }}
             androidRenderingMode="software" // Necessary for Android
             maskElement={
               <Animated.View style={[styles.mapWrapper, imageStyle]}>
-                {exploredAreas.map((area, index) => (
+                {revealedPOIS.map((poi, index) => (
                   <RNImage
                     key={index}
                     source={require("../assets/images/fog-mask-2.png")} // Your mask image
@@ -110,8 +158,8 @@ export default function MapScreen() {
                       styles.maskImage,
                       {
                         position: "absolute",
-                        left: area.x - maskWidth / 2,
-                        top: area.y - maskHeight / 2,
+                        left: poi.x - maskWidth / 2,
+                        top: poi.y - maskHeight / 2,
                       },
                     ]}
                   />
@@ -130,22 +178,33 @@ export default function MapScreen() {
               {/* POI Elements */}
               {pois
                 .filter((poi) => poi.isRevealed)
-                .map((poi) => (
-                  <View
-                    key={poi.slug}
-                    style={[
-                      styles.poiContainer,
-                      {
-                        left: poi.x,
-                        top: poi.y,
-                      },
-                    ]}
-                  >
-                    <Pressable onPress={() => handlePOIPress(poi)}>
-                      <Text style={styles.poiText}>{poi.name}</Text>
-                    </Pressable>
-                  </View>
-                ))}
+                .map((poi) => {
+                  const isLastRevealed = poi.slug === lastRevealedPOISlug;
+
+                  return (
+                    <Animated.View
+                      key={poi.slug}
+                      style={[
+                        styles.poiContainer,
+                        {
+                          left: poi.x,
+                          top: poi.y,
+                          backgroundColor: poi.isRevealed ? "white" : "grey",
+                          opacity: poi.isRevealed ? 1 : 0.5,
+                        },
+                        // Only apply the animation style to the last revealed POI
+                        isLastRevealed ? poiAnimatedStyle : undefined,
+                      ]}
+                    >
+                      <Pressable
+                        onPress={() => handlePOIPress(poi.slug)}
+                        disabled={!poi.isRevealed}
+                      >
+                        <Text style={styles.poiText}>{poi.name}</Text>
+                      </Pressable>
+                    </Animated.View>
+                  );
+                })}
             </Animated.View>
           </MaskedView>
         </Animated.View>
@@ -173,7 +232,6 @@ const styles = StyleSheet.create({
   },
   poiContainer: {
     position: "absolute",
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
     padding: 4,
     borderRadius: 4,
   },

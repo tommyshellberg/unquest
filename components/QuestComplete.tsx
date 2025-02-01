@@ -10,11 +10,8 @@ import Animated, {
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { ThemedText } from "./ThemedText";
-import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { Quest } from "@/store/types";
-import { LevelProgress } from "./LevelProgress";
-import { useCharacterStore } from "@/store/character-store";
 
 type Props = {
   quest: Quest;
@@ -22,11 +19,12 @@ type Props = {
   onClaim: () => void;
 };
 
+// @todo: scrolling is not working.
+
 export function QuestComplete({ quest, story, onClaim }: Props) {
   const scale = useSharedValue(0);
   const opacity = useSharedValue(0);
   const storyProgress = useSharedValue(0);
-  const character = useCharacterStore((state) => state.character);
 
   // Split story into sentences for animated reveal
   const sentences = story.split(/(?<=[.!?])\s+/);

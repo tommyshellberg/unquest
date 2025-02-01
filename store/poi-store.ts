@@ -13,7 +13,9 @@ export type POI = {
 
 interface POIState {
   pois: POI[];
+  lastRevealedPOISlug: string | null;
   revealLocation: (slug: string) => void;
+  resetLastRevealedPOI: () => void;
   reset: () => void;
 }
 
@@ -21,17 +23,25 @@ export const usePOIStore = create<POIState>()(
   persist(
     (set, get) => ({
       pois: INITIAL_POIS,
+      lastRevealedPOISlug: null,
 
       revealLocation: (slug) => {
         set((state) => ({
           pois: state.pois.map((poi) =>
             poi.slug === slug ? { ...poi, isRevealed: true } : poi
           ),
+          lastRevealedPOISlug: slug,
         }));
       },
+
+      resetLastRevealedPOI: () => {
+        set({ lastRevealedPOISlug: null });
+      },
+
       reset: () => {
         set({
           pois: INITIAL_POIS,
+          lastRevealedPOISlug: null,
         });
       },
     }),

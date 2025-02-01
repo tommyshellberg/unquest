@@ -18,7 +18,6 @@ export interface Quest {
   durationMinutes: Minutes;
   reward: Reward;
   startedAt: Timestamp | null;
-  minLevel: number;
   poiSlug: string;
   generateStory: (character: Character) => string;
 }

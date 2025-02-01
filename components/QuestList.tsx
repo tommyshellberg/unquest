@@ -2,11 +2,11 @@ import { StyleSheet, View, Pressable } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { QuestCard } from "./QuestCard";
 import { Colors, FontSizes, Spacing } from "@/constants/theme";
-import { Quest } from "@/store/types";
+import { QuestTemplate } from "@/store/types";
 
 type Props = {
-  quests: Array<Omit<Quest, "startedAt">>;
-  onSelectQuest: (quest: Omit<Quest, "startedAt">) => void;
+  quests: Array<QuestTemplate>;
+  onSelectQuest: (quest: QuestTemplate) => void;
 };
 
 export function QuestList({ quests, onSelectQuest }: Props) {

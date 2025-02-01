@@ -24,7 +24,7 @@ export function QuestFailed({ quest, onAcknowledge }: Props) {
           styles.button,
           pressed && styles.buttonPressed,
         ]}
-        onPress={onAcknowledge}
+        onPressOut={onAcknowledge}
       >
         <ThemedText style={styles.buttonText}>OK</ThemedText>
       </Pressable>

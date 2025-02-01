@@ -1,3 +1,4 @@
+import React from "react";
 import { View, Image, StyleSheet } from "react-native";
 import { ThemedText } from "./ThemedText";
 import { Colors, Spacing, FontSizes } from "@/constants/theme";
@@ -13,7 +14,7 @@ export function ProfileInfo({ size = "small" }: Props) {
   if (!character) return null;
 
   const characterDetails = CHARACTERS.find((c) => c.id === character.type);
-  const imageSize = size === "small" ? 64 : 128;
+  const imageSize = size === "small" ? 48 : 96;
 
   return (
     <View style={styles.container}>
@@ -31,10 +32,14 @@ export function ProfileInfo({ size = "small" }: Props) {
           />
         )}
       </View>
-      <ThemedText style={styles.name}>{character.name}</ThemedText>
-      <ThemedText style={styles.level}>
-        Level {character.level} {characterDetails?.name}
-      </ThemedText>
+      {size !== "small" && (
+        <>
+          <ThemedText style={styles.name}>{character.name}</ThemedText>
+          <ThemedText style={styles.level}>
+            Level {character.level} {characterDetails?.name}
+          </ThemedText>
+        </>
+      )}
     </View>
   );
 }

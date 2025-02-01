@@ -1,28 +1,36 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Quest } from "./types";
-import { useCharacterStore } from "./character-store";
+import { Minutes, Quest, Reward } from "./types";
 import { AVAILABLE_QUESTS } from "@/app/data/quests";
-import { usePOIStore } from "./poi-store";
-// Create a QuestTemplate type that doesn't include startedAt
-export type QuestTemplate = Omit<Quest, "startedAt">;
+import { Character } from "@/store/types"; // Ensure this import exists
+import { usePOIStore } from "@/store/poi-store"; // Import the POI store
+import { useCharacterStore } from "./character-store";
 
 export interface QuestCompletion {
-  quest: Quest; // Store the full quest object in completion
-  completedAt: number;
+  quest: Quest;
   story: string;
+}
+
+export interface QuestTemplate {
+  id: string;
+  title: string;
+  description: string;
+  durationMinutes: Minutes;
+  reward: Reward;
+  poiSlug: string;
+  generateStory: (character: Character) => string;
 }
 
 interface QuestState {
   activeQuest: Quest | null;
   availableQuests: QuestTemplate[];
-  completedQuests: QuestCompletion[];
-  failedQuest: Quest | null;
-  startQuest: (questTemplate: QuestTemplate, startedAt?: number) => void;
-  completeQuest: () => QuestCompletion | null;
-  refreshAvailableQuests: (characterLevel: number) => void;
+  completedQuestIds: string[];
   failQuest: () => void;
+  failedQuest: Quest | null;
+  startQuest: (quest: Quest) => void;
+  completeQuest: (ignoreDuration?: boolean) => QuestCompletion | null;
+  refreshAvailableQuests: () => void;
   resetFailedQuest: () => void;
   reset: () => void;
 }
@@ -32,69 +40,70 @@ export const useQuestStore = create<QuestState>()(
     (set, get) => ({
       activeQuest: null,
       availableQuests: [],
-      completedQuests: [],
+      completedQuestIds: [],
       failedQuest: null,
 
-      startQuest: (questTemplate, startedAt?: number) => {
-        const quest: Quest = {
-          ...questTemplate,
-          startedAt: startedAt ?? Date.now(),
-        };
+      startQuest: (quest: Quest) => {
         set({ activeQuest: quest });
+        set({ availableQuests: [] });
       },
 
-      completeQuest: () => {
-        const { activeQuest } = get();
+      completeQuest: (ignoreDuration = false) => {
+        const { activeQuest, completedQuestIds } = get();
+        console.log("activeQuest", activeQuest);
+        console.log("completedQuestIds", completedQuestIds);
         const character = useCharacterStore.getState().character;
+        if (activeQuest && activeQuest.startedAt && character) {
+          const completionTime = Date.now();
+          const duration = (completionTime - activeQuest.startedAt) / 1000;
+          if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
+            // Quest completed successfully
+            console.log("Quest completed successfully");
+            set({
+              activeQuest: null,
+              completedQuestIds: [...completedQuestIds, activeQuest.id],
+            });
+            // Generate the story
+            const story = activeQuest.generateStory(character);
 
-        if (activeQuest && character) {
-          // Retrieve the original quest template
-          const questTemplate = AVAILABLE_QUESTS.find(
-            (quest) => quest.id === activeQuest.id
-          );
+            // Reveal the associated POI
+            usePOIStore.getState().revealLocation(activeQuest.poiSlug);
 
-          if (!questTemplate || !questTemplate.generateStory) {
-            console.error(
-              `generateStory not found for quest with id ${activeQuest.id}`
-            );
+            // Return quest completion data for UI
+            return {
+              quest: activeQuest,
+              story,
+            };
+          } else {
+            // Quest failed
+            console.log("Quest failed");
+            get().failQuest();
             return null;
           }
-
-          const completion: QuestCompletion = {
-            quest: activeQuest, // Store the full quest object (without functions)
-            completedAt: Date.now(),
-            story: questTemplate.generateStory(character),
-          };
-
-          usePOIStore.getState().revealLocation(activeQuest.poiSlug);
-
-          set((state) => ({
-            activeQuest: null,
-            completedQuests: [...state.completedQuests, completion],
-          }));
-
-          return completion;
         }
         return null;
-      },
-
-      refreshAvailableQuests: (characterLevel) => {
-        const availableQuests = AVAILABLE_QUESTS.filter(
-          (quest) => quest.minLevel <= characterLevel
-        )
-          .sort(() => Math.random() - 0.5)
-          .slice(0, 3);
-
-        set({ availableQuests });
       },
 
       failQuest: () => {
         const { activeQuest } = get();
         if (activeQuest) {
-          set({
-            failedQuest: activeQuest,
-            activeQuest: null,
-          });
+          set({ failedQuest: activeQuest, activeQuest: null });
+        }
+      },
+
+      refreshAvailableQuests: () => {
+        const { activeQuest, completedQuestIds } = get();
+        if (!activeQuest) {
+          // Get the next quest in AVAILABLE_QUESTS that hasn't been completed
+          const nextQuest = AVAILABLE_QUESTS.find(
+            (quest) => !completedQuestIds.includes(quest.id)
+          );
+          if (nextQuest) {
+            set({ availableQuests: [nextQuest] });
+          } else {
+            // All quests completed
+            set({ availableQuests: [] });
+          }
         }
       },
 
@@ -106,7 +115,7 @@ export const useQuestStore = create<QuestState>()(
         set({
           activeQuest: null,
           availableQuests: [],
-          completedQuests: [],
+          completedQuestIds: [],
           failedQuest: null,
         });
       },

@@ -12,6 +12,7 @@ import { useCharacterStore } from "@/store/character-store";
 import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
 import { useLockStateDetection } from "@/hooks/useLockStateDetection";
+import { router } from "expo-router";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -35,13 +36,14 @@ export default function HomeScreen() {
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
-    if (!activeQuest && character) {
-      refreshAvailableQuests(character.level);
+    if (!activeQuest) {
+      refreshAvailableQuests();
     }
-  }, [activeQuest, character]);
+  }, [activeQuest]);
 
-  const handleQuestComplete = () => {
-    const completion = completeQuest();
+  const handleQuestComplete = (ignoreDuration = false) => {
+    if (!character) return;
+    const completion = completeQuest(ignoreDuration);
     if (completion) {
       setCurrentCompletion(completion);
       setShowingCompletion(true);
@@ -49,18 +51,27 @@ export default function HomeScreen() {
   };
 
   const handleClaimReward = () => {
-    if (!currentCompletion) return;
+    console.log("handleClaimReward");
+    if (!currentCompletion || !character) return;
+    console.log("currentCompletion", currentCompletion);
+    console.log("character", character);
 
+    console.log(
+      "currentCompletion.quest.reward.xp",
+      currentCompletion.quest.reward.xp
+    );
     // Add XP before completing quest
     addXP(currentCompletion.quest.reward.xp);
 
     // Reset completion state
     setShowingCompletion(false);
     setCurrentCompletion(null);
+    // Navigate to level progress screen after claiming reward
+    router.push("/profile");
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {
-    startQuest(quest);
+    startQuest({ ...quest, startedAt: Date.now() });
   };
 
   const handleAcknowledgeFailure = () => {
@@ -70,7 +81,7 @@ export default function HomeScreen() {
   // Development helper function
   const handleDevComplete = () => {
     if (activeQuest) {
-      handleQuestComplete();
+      handleQuestComplete(true);
     }
   };
 
@@ -121,7 +132,10 @@ export default function HomeScreen() {
 
               {/* Development Mode Button */}
               {Constants.expoConfig?.extra?.development && (
-                <Pressable style={styles.devButton} onPress={handleDevComplete}>
+                <Pressable
+                  style={styles.devButton}
+                  onPressOut={handleDevComplete}
+                >
                   <ThemedText style={styles.devButtonText}>
                     [DEV] Complete Quest Now
                   </ThemedText>
@@ -137,10 +151,10 @@ export default function HomeScreen() {
             <View style={styles.availableQuestsContainer}>
               <View style={styles.header}>
                 <ThemedText style={styles.title} type="title">
-                  Available Quests
+                  Next Quest
                 </ThemedText>
                 <ThemedText style={styles.subtitle}>
-                  Choose your next mindful adventure
+                  Continue your journey
                 </ThemedText>
               </View>
 

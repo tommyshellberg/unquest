@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { StyleSheet, View, Pressable, Image, SafeAreaView } from "react-native";
 import Animated, {
   useSharedValue,
@@ -6,13 +6,12 @@ import Animated, {
   withSequence,
   withSpring,
   withTiming,
-  runOnJS,
 } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
-import { ThemedView } from "./ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { Character } from "@/store/types";
 import { CHARACTERS } from "@/constants/characters";
+import { router } from "expo-router";
 
 type Props = {
   character: Character;
@@ -135,19 +134,19 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
             </View>
           </View>
 
-          {onComplete && (
-            <Pressable
-              style={({ pressed }) => [
-                styles.continueButton,
-                pressed && styles.continueButtonPressed,
-              ]}
-              onPress={onComplete}
-            >
-              <ThemedText style={styles.continueButtonText}>
-                Continue
-              </ThemedText>
-            </Pressable>
-          )}
+          <Pressable
+            style={({ pressed }) => [
+              styles.continueButton,
+              pressed && styles.continueButtonPressed,
+            ]}
+            onPress={() => {
+              router.push("/map");
+            }}
+          >
+            <ThemedText style={styles.continueButtonText}>
+              Explore Map
+            </ThemedText>
+          </Pressable>
         </View>
       </SafeAreaView>
     </View>
