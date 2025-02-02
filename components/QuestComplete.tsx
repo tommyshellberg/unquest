@@ -11,7 +11,9 @@ import { useEffect } from "react";
 import { ThemedText } from "./ThemedText";
 import { StoryNarration } from "./StoryNarration";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import { layoutStyles } from "@/styles/layouts";
 import { Quest } from "@/store/types";
+import { buttonStyles } from "@/styles/buttons";
 
 type Props = {
   quest: Quest;
@@ -45,21 +47,24 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
   }));
 
   return (
-    <View style={styles.container}>
-      <View style={styles.backgroundContainer}>
+    <View style={layoutStyles.fullScreen}>
+      <View style={layoutStyles.backgroundImageContainer}>
         <Image
           source={require("@/assets/images/quest-completed-bg.jpg")}
-          style={styles.backgroundImage}
+          style={layoutStyles.backgroundImage}
           resizeMode="cover"
         />
-        <View style={styles.overlay} />
+        <View style={layoutStyles.lightOverlay} />
       </View>
 
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={layoutStyles.scrollView}
+        contentContainerStyle={[
+          layoutStyles.scrollContent,
+          styles.scrollContentCustom,
+        ]}
       >
-        <Animated.View style={[styles.content, contentStyle]}>
+        <Animated.View style={[layoutStyles.centeredContent, contentStyle]}>
           <ThemedText style={styles.title} type="title">
             Quest Complete!
           </ThemedText>
@@ -74,12 +79,12 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
 
             <Pressable
               style={({ pressed }) => [
-                styles.continueButton,
-                pressed && styles.continueButtonPressed,
+                buttonStyles.primary,
+                pressed && buttonStyles.primaryPressed,
               ]}
               onPress={onClaim}
             >
-              <ThemedText style={styles.continueButtonText}>
+              <ThemedText style={buttonStyles.primaryText}>
                 Continue Journey
               </ThemedText>
             </Pressable>
@@ -91,32 +96,8 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background.light,
-  },
-  backgroundContainer: {
-    ...StyleSheet.absoluteFillObject,
-  },
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.6)", // Adjust opacity as needed
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
+  scrollContentCustom: {
     padding: Spacing.xl,
-  },
-  content: {
-    flex: 1,
-    alignItems: "center",
   },
   title: {
     fontSize: FontSizes.xxl,
@@ -131,16 +112,6 @@ const styles = StyleSheet.create({
     textAlign: "center",
     opacity: 0.9,
     marginBottom: Spacing.xl,
-  },
-  storyLine: {
-    width: "100%",
-    marginBottom: Spacing.md,
-  },
-  storyText: {
-    fontSize: FontSizes.md,
-    color: Colors.forest,
-    lineHeight: 24,
-    fontStyle: "italic",
   },
   footer: {
     width: "100%",

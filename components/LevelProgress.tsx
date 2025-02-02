@@ -12,6 +12,8 @@ import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { Character } from "@/store/types";
 import { CHARACTERS } from "@/constants/characters";
 import { router } from "expo-router";
+import { buttonStyles } from "@/styles/buttons";
+import { layoutStyles } from "@/styles/layouts";
 
 type Props = {
   character: Character;
@@ -75,17 +77,16 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
   }));
 
   return (
-    <View style={styles.container}>
-      {characterDetails && (
-        <>
-          <Image
-            source={characterDetails.image}
-            style={styles.backgroundImage}
-            resizeMode="cover"
-          />
-          <View style={styles.whiteOverlay} />
-        </>
-      )}
+    <View style={layoutStyles.fullScreen}>
+      <View style={layoutStyles.backgroundImageContainer}>
+        <Image
+          source={characterDetails.image}
+          style={layoutStyles.backgroundImage}
+          resizeMode="cover"
+        />
+        <View style={layoutStyles.lightOverlay} />
+      </View>
+
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
           <View style={styles.characterInfo}>
@@ -136,14 +137,14 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
 
           <Pressable
             style={({ pressed }) => [
-              styles.continueButton,
-              pressed && styles.continueButtonPressed,
+              buttonStyles.primary,
+              pressed && buttonStyles.primaryPressed,
             ]}
             onPress={() => {
               router.push("/map");
             }}
           >
-            <ThemedText style={styles.continueButtonText}>
+            <ThemedText style={buttonStyles.primaryText}>
               Explore Map
             </ThemedText>
           </Pressable>
@@ -253,20 +254,5 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.forest,
     textAlign: "center",
-  },
-  continueButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-    borderRadius: BorderRadius.pill,
-    alignItems: "center",
-  },
-  continueButtonPressed: {
-    backgroundColor: Colors.secondary,
-  },
-  continueButtonText: {
-    color: Colors.cream,
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
   },
 });
