@@ -81,13 +81,11 @@ const styles = StyleSheet.create({
     marginTop: "15%",
   },
   appName: {
-    fontSize: FontSizes.xxxl,
     textAlign: "center",
     color: Colors.forest,
     fontWeight: "bold",
   },
   headline: {
-    fontSize: FontSizes.xl,
     textAlign: "center",
     color: Colors.text.light,
     opacity: 0.9,
@@ -97,7 +95,6 @@ const styles = StyleSheet.create({
     marginTop: "25%",
   },
   description: {
-    fontSize: FontSizes.lg,
     textAlign: "center",
     lineHeight: 28,
     color: Colors.text.light,

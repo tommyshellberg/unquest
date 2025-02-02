@@ -20,7 +20,7 @@ type Props = {
 // Average reading speed (words per second)
 const WORDS_PER_SECOND = 2.5;
 // Duration of each word's fade-in animation
-const FADE_DURATION = 300;
+const FADE_DURATION = 500;
 // Amount to slide up (in pixels)
 const SLIDE_UP_DISTANCE = 10;
 

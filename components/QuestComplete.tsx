@@ -1,4 +1,4 @@
-import { StyleSheet, View, ScrollView, Pressable } from "react-native";
+import { Image, StyleSheet, View, ScrollView, Pressable } from "react-native";
 import Animated, {
   withSpring,
   withSequence,
@@ -6,7 +6,6 @@ import Animated, {
   withTiming,
   useAnimatedStyle,
   useSharedValue,
-  interpolate,
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { ThemedText } from "./ThemedText";
@@ -27,9 +26,6 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
   const opacity = useSharedValue(0);
   const storyProgress = useSharedValue(0);
 
-  // Split story into sentences for animated reveal
-  const sentences = story.split(/(?<=[.!?])\s+/);
-
   useEffect(() => {
     // Initial celebration animations
     scale.value = withSequence(withSpring(1.2), withSpring(1));
@@ -44,47 +40,26 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
     );
   }, []);
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   const contentStyle = useAnimatedStyle(() => ({
     opacity: opacity.value,
   }));
 
-  // Create animated styles for each sentence
-  const sentenceStyles = sentences.map((_, index) => {
-    return useAnimatedStyle(() => {
-      const sentenceOpacity = interpolate(
-        storyProgress.value,
-        [index / sentences.length, (index + 0.5) / sentences.length],
-        [0, 1]
-      );
-
-      const translateY = interpolate(
-        storyProgress.value,
-        [index / sentences.length, (index + 0.5) / sentences.length],
-        [20, 0]
-      );
-
-      return {
-        opacity: sentenceOpacity,
-        transform: [{ translateY }],
-      };
-    });
-  });
-
   return (
     <View style={styles.container}>
+      <View style={styles.backgroundContainer}>
+        <Image
+          source={require("@/assets/images/quest-completed-bg.jpg")}
+          style={styles.backgroundImage}
+          resizeMode="cover"
+        />
+        <View style={styles.overlay} />
+      </View>
+
       <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
       >
         <Animated.View style={[styles.content, contentStyle]}>
-          <ThemedText style={styles.celebrationEmoji} type="subtitle">
-            🎉
-          </ThemedText>
-
           <ThemedText style={styles.title} type="title">
             Quest Complete!
           </ThemedText>
@@ -120,6 +95,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: Colors.background.light,
   },
+  backgroundContainer: {
+    ...StyleSheet.absoluteFillObject,
+  },
+  backgroundImage: {
+    ...StyleSheet.absoluteFillObject,
+    width: "100%",
+    height: "100%",
+  },
+  overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(255, 255, 255, 0.6)", // Adjust opacity as needed
+  },
   scrollView: {
     flex: 1,
   },
@@ -130,10 +117,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     alignItems: "center",
-  },
-  celebrationEmoji: {
-    fontSize: 40,
-    marginBottom: Spacing.lg,
   },
   title: {
     fontSize: FontSizes.xxl,
