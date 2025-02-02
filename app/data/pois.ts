@@ -37,8 +37,8 @@ export const INITIAL_POIS: POI[] = [
     isRevealed: false,
   },
   {
-    slug: "obsidian-crag",
-    name: "The Obsidian Crag",
+    slug: "rugged-outcropping",
+    name: "The Rugged Outcropping",
     x: 980,
     y: 920,
     isRevealed: false,

@@ -1,6 +1,3 @@
-import { QuestCompletion, QuestTemplate } from "./quest-store";
-export type { QuestCompletion, QuestTemplate };
-
 // Shared types
 export type XP = number;
 export type Minutes = number;
@@ -11,15 +8,23 @@ export interface Reward {
   // Future: items, achievements, etc.
 }
 
-export interface Quest {
+export interface QuestTemplate {
   id: string;
   title: string;
   description: string;
-  durationMinutes: Minutes;
+  durationMinutes: number;
   reward: Reward;
-  startedAt: Timestamp | null;
   poiSlug: string;
-  generateStory: (character: Character) => string;
+  story: string;
+}
+
+export interface Quest extends QuestTemplate {
+  startTime: number;
+}
+
+export interface QuestCompletion {
+  quest: Quest;
+  story: string;
 }
 
 export interface Character {

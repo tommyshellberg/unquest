@@ -18,7 +18,7 @@ export function ActiveQuest({ onComplete }: Props) {
     if (activeQuest) {
       const timer = setInterval(() => {
         const now = Date.now();
-        const timeElapsed = (now - activeQuest.startedAt!) / 1000;
+        const timeElapsed = (now - activeQuest.startTime) / 1000;
         const totalDuration = activeQuest.durationMinutes * 60;
         const timeLeft = totalDuration - timeElapsed;
 

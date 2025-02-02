@@ -58,7 +58,7 @@ export function useLockStateDetection() {
           // There was an active quest
           const questDurationInSeconds = activeQuest.durationMinutes * 60;
           const timeSinceQuestStarted =
-            (timeNow - activeQuest.startedAt!) / 1000;
+            (timeNow - activeQuest.startTime) / 1000;
 
           if (timeSinceQuestStarted >= questDurationInSeconds) {
             // Quest duration has passed, complete the quest
@@ -86,10 +86,10 @@ export function useLockStateDetection() {
   }, []);
 
   // Helper function to start a quest at a specific time
-  const startQuestAt = (questTemplate: QuestTemplate, startedAt: number) => {
+  const startQuestAt = (questTemplate: QuestTemplate, startTime: number) => {
     const quest: Quest = {
       ...questTemplate,
-      startedAt,
+      startTime,
     };
     useQuestStore.setState({ activeQuest: quest });
   };

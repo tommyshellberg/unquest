@@ -71,7 +71,7 @@ export default function HomeScreen() {
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {
-    startQuest({ ...quest, startedAt: Date.now() });
+    startQuest({ ...quest, startTime: Date.now() });
   };
 
   const handleAcknowledgeFailure = () => {

@@ -19,7 +19,7 @@ export interface QuestTemplate {
   durationMinutes: Minutes;
   reward: Reward;
   poiSlug: string;
-  generateStory: (character: Character) => string;
+  story: string;
 }
 
 interface QuestState {
@@ -53,9 +53,9 @@ export const useQuestStore = create<QuestState>()(
         console.log("activeQuest", activeQuest);
         console.log("completedQuestIds", completedQuestIds);
         const character = useCharacterStore.getState().character;
-        if (activeQuest && activeQuest.startedAt && character) {
+        if (activeQuest && activeQuest.startTime && character) {
           const completionTime = Date.now();
-          const duration = (completionTime - activeQuest.startedAt) / 1000;
+          const duration = (completionTime - activeQuest.startTime) / 1000;
           if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
             // Quest completed successfully
             console.log("Quest completed successfully");
@@ -64,7 +64,7 @@ export const useQuestStore = create<QuestState>()(
               completedQuestIds: [...completedQuestIds, activeQuest.id],
             });
             // Generate the story
-            const story = activeQuest.generateStory(character);
+            const story = activeQuest.story;
 
             // Reveal the associated POI
             usePOIStore.getState().revealLocation(activeQuest.poiSlug);

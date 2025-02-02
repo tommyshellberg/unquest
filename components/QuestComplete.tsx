@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useEffect } from "react";
 import { ThemedText } from "./ThemedText";
+import { StoryNarration } from "./StoryNarration";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { Quest } from "@/store/types";
 
@@ -89,11 +90,7 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
           </ThemedText>
           <ThemedText style={styles.subtitle}>A Tale of Adventure</ThemedText>
 
-          {sentences.map((sentence, index) => (
-            <Animated.View key={index} style={styles.storyLine}>
-              <ThemedText style={styles.storyText}>{sentence}</ThemedText>
-            </Animated.View>
-          ))}
+          <StoryNarration story={story} questId={quest.id} />
 
           <View style={styles.footer}>
             <ThemedText style={styles.rewardText}>
@@ -158,7 +155,7 @@ const styles = StyleSheet.create({
   },
   storyText: {
     fontSize: FontSizes.md,
-    color: Colors.stone,
+    color: Colors.forest,
     lineHeight: 24,
     fontStyle: "italic",
   },

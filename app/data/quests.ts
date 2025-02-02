@@ -1,5 +1,4 @@
 import { QuestTemplate } from "@/store/types";
-import { Character } from "@/store/types";
 
 export const AVAILABLE_QUESTS: QuestTemplate[] = [
   {
@@ -10,15 +9,11 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     durationMinutes: 3,
     reward: { xp: 100 },
     poiSlug: "darkwood-awakening",
-    generateStory: (character: Character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `
-      In the heart of a shadowed forest, ${character.name} awakens with a veil of confusion.
-      Memories lie hidden in the mists, yet the faint glow of a distant hut stirs a spark of hope.
-      With hesitant steps, the hero embarks on a journey into an uncertain destiny.
-      `;
-    },
+    story: `
+      In the quiet solitude of a mist-laden forest, you awaken with no memory of how you arrived. 
+      Amid the dew and silence, you discover a weathered map in your pocket. 
+      At first glance, it seems to chart only the immediate forest around you—but its intricate lines hint at a path beyond, toward a forgotten realm.
+    `,
   },
   {
     id: "quest-2",
@@ -28,15 +23,11 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     durationMinutes: 10,
     reward: { xp: 120 },
     poiSlug: "hut-of-whispers",
-    generateStory: (character: Character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `
-      Within the humble walls of the Hut of Whispers, ${character.name} finds shelter from the night.
+    story: `
+      Within the humble walls of the Hut of Whispers, you find shelter from the night.
       Amidst the quiet, a weathered map—its markings enigmatic—appears as if by magic,
       hinting at a path known only to those brave enough to seek its secrets.
-      `;
-    },
+    `,
   },
   {
     id: "quest-3",
@@ -46,15 +37,11 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     durationMinutes: 15,
     reward: { xp: 150 },
     poiSlug: "weary-crossing",
-    generateStory: (character: Character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `
-      With determination and raw ingenuity, ${character.name} fashions a crude raft from fallen logs.
-      Battling a furious current that roars like an untamed beast, the hero crosses the raging river.
-      On the far shore, amidst heavy breaths and pounding hearts, relief and resolve intertwine.
-      `;
-    },
+    story: `
+      With determination and raw ingenuity, you fashion a crude raft from fallen logs.
+      Battling a furious current that roars like an untamed beast, you cross the raging river.
+      On the far shore, amidst heavy breaths and a pounding heart, relief and resolve intertwine.
+    `,
   },
   {
     id: "quest-4",
@@ -64,32 +51,25 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     durationMinutes: 20,
     reward: { xp: 200 },
     poiSlug: "arch-of-echoes",
-    generateStory: (character: Character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `
-      As ${character.name} strolls along the shimmering shoreline, a monumental arch emerges from the mist.
+    story: `
+      As you stroll along the shimmering shoreline, a monumental arch emerges from the mist.
       Its weathered stones bear mysterious inscriptions that echo forgotten lore.
-      Each symbol kindles a question, inviting the hero to unravel a legacy woven into the very fabric of time.
-      `;
-    },
+      Each symbol kindles a question, inviting you to unravel a legacy woven into the very fabric of time.
+    `,
   },
   {
     id: "quest-5",
-    title: "The Obsidian Impasse",
+    title: "The Rugged Outcropping",
     description:
       "Venture inland until you confront a formidable rock crag at the edge of a tranquil lake, forcing you to turn back.",
     durationMinutes: 25,
     reward: { xp: 250 },
-    poiSlug: "obsidian-crag",
-    generateStory: (character: Character) => {
-      if (!character) throw new Error("Character not found");
-
-      return `
-      Trekking deeper into the unknown, ${character.name} arrives at a vast, impassable crag—The Obsidian Crag—
-      towering at the edge of a serene lake. Realizing the barrier cannot be surmounted,
-      the hero is compelled to reflect and retrace their steps, gleaning wisdom from the obstacle.
-      `;
-    },
+    poiSlug: "rugged-outcropping",
+    story: `As you journey inland, a rugged outcropping comes into view at the edge of a vast, 
+    tranquil lake. Unlike the river crossed earlier, 
+    the calm yet expansive waters now present a boundary too great to traverse. 
+    Recognizing that this serene lake offers no easy passage, you pause to reflect, 
+    understanding that sometimes progress lies in retracing one's steps and gathering new wisdom.
+    `,
   },
 ];
