@@ -1,4 +1,4 @@
-import { LevelProgress } from "@/components/LevelProgress";
+import { CharacterProgress } from "@/components/CharacterProgress";
 import { useCharacterStore } from "@/store/character-store";
 
 export default function ProfileScreen() {
@@ -6,5 +6,5 @@ export default function ProfileScreen() {
 
   if (!character) return null;
 
-  return <LevelProgress character={character} />;
+  return <CharacterProgress character={character} />;
 }

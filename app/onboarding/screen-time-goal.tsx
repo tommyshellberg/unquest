@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyleSheet, View, Image, Platform, Pressable } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { ThemedText } from "@/components/ThemedText";
@@ -6,6 +6,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useAccountStore } from "@/store/account-store";
+import { useNavigation } from "@react-navigation/native";
 
 // Generate time options in 15-minute increments (0h to 12h)
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
@@ -30,6 +31,16 @@ export default function ScreenTimeGoalScreen() {
     router.push("/onboarding/first-quest");
   };
 
+  const navigation = useNavigation();
+
+  // Hide header and drawer for onboarding flow
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      gestureEnabled: false, // Disable swipe gesture for drawer
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image
@@ -39,16 +50,14 @@ export default function ScreenTimeGoalScreen() {
       />
       <ThemedView style={[styles.content, { backgroundColor: "transparent" }]}>
         <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Set Your Goals
-          </ThemedText>
-          <ThemedText style={styles.description}>
+          <ThemedText type="title">Set Your Goals</ThemedText>
+          <ThemedText type="subtitle">
             The journey to better habits starts with acknowledging where we are.
           </ThemedText>
         </View>
 
         <View style={styles.pickerSection}>
-          <ThemedText style={styles.pickerLabel}>
+          <ThemedText type="body">
             What's your current daily screen time?
           </ThemedText>
           <View style={styles.pickerContainer}>
@@ -69,7 +78,7 @@ export default function ScreenTimeGoalScreen() {
             </Picker>
           </View>
 
-          <ThemedText style={[styles.pickerLabel, styles.secondPickerLabel]}>
+          <ThemedText type="body">
             What's your daily screen time goal?
           </ThemedText>
           <View style={styles.pickerContainer}>
@@ -99,9 +108,7 @@ export default function ScreenTimeGoalScreen() {
             ]}
             onPress={handleContinue}
           >
-            <ThemedText style={styles.continueButtonText}>
-              Set My Goal
-            </ThemedText>
+            <ThemedText type="bodyBold">Set My Goal</ThemedText>
           </Pressable>
         </View>
       </ThemedView>
@@ -128,30 +135,11 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: "10%",
   },
-  title: {
-    fontSize: FontSizes.xxl,
-    color: Colors.forest,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  description: {
-    fontSize: FontSizes.md,
-    color: Colors.forest,
-    textAlign: "center",
-    lineHeight: 24,
-  },
   pickerSection: {
     flex: 1,
     gap: Spacing.lg,
     marginTop: "5%",
   },
-  pickerLabel: {
-    fontSize: FontSizes.lg,
-    color: Colors.forest,
-    textAlign: "center",
-    fontWeight: "500",
-  },
-  secondPickerLabel: {},
   pickerContainer: {
     backgroundColor: Colors.cream,
     borderRadius: BorderRadius.lg,
@@ -190,10 +178,5 @@ const styles = StyleSheet.create({
   },
   continueButtonPressed: {
     backgroundColor: Colors.secondary,
-  },
-  continueButtonText: {
-    color: Colors.cream,
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
   },
 });

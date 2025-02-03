@@ -6,10 +6,12 @@ import { CHARACTERS } from "../../constants/characters";
 import { useRouter } from "expo-router";
 import { useCharacterStore } from "@/store/character-store";
 import { CharacterType } from "@/store/types";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function ChooseCharacterScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
   const createCharacter = useCharacterStore((state) => state.createCharacter);
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
     null
@@ -31,6 +33,14 @@ export default function ChooseCharacterScreen() {
     router.push("/onboarding/screen-time-goal");
   };
 
+  // Hide header and drawer for onboarding flow
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      gestureEnabled: false, // Disable swipe gesture for drawer
+    });
+  }, []);
+
   return (
     <View style={styles.container}>
       <Image
@@ -43,10 +53,8 @@ export default function ChooseCharacterScreen() {
         style={styles.scrollView}
       >
         <ThemedView style={[styles.header, { backgroundColor: "transparent" }]}>
-          <ThemedText type="title" style={styles.title}>
-            Choose your Character
-          </ThemedText>
-          <ThemedText style={styles.description}>
+          <ThemedText type="title">Choose your Character</ThemedText>
+          <ThemedText type="subtitle">
             Choose the character you feel best represents the best version of
             yourself. Each embodies different virtues that grow stronger as you
             spend time away.
@@ -101,14 +109,7 @@ export default function ChooseCharacterScreen() {
             disabled={!selectedCharacter}
             onPress={handleContinue}
           >
-            <ThemedText
-              style={[
-                styles.continueButtonText,
-                !selectedCharacter && styles.continueButtonTextDisabled,
-              ]}
-            >
-              Continue
-            </ThemedText>
+            <ThemedText type="bodyBold">Continue</ThemedText>
           </Pressable>
         </ThemedView>
       </ScrollView>
@@ -136,18 +137,6 @@ const styles = StyleSheet.create({
   header: {
     gap: Spacing.md,
     marginBottom: Spacing.xl,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    color: Colors.forest,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  description: {
-    fontSize: FontSizes.md,
-    color: Colors.forest,
-    textAlign: "center",
-    lineHeight: 24,
   },
   grid: {
     flexDirection: "row",
@@ -231,11 +220,6 @@ const styles = StyleSheet.create({
   continueButtonDisabled: {
     backgroundColor: Colors.button.disabled,
     opacity: 0.5,
-  },
-  continueButtonText: {
-    color: Colors.cream,
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
   },
   continueButtonTextDisabled: {
     opacity: 0.5,

@@ -8,9 +8,16 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
-import { Character } from "@/store/types";
+import {
+  Colors,
+  FontSizes,
+  Spacing,
+  BorderRadius,
+  Typography,
+} from "@/constants/theme";
+import { Character, Quest } from "@/store/types";
 import { CHARACTERS } from "@/constants/characters";
+import { useQuestStore } from "@/store/quest-store";
 import { router } from "expo-router";
 import { buttonStyles } from "@/styles/buttons";
 import { layoutStyles } from "@/styles/layouts";
@@ -21,11 +28,24 @@ type Props = {
   onComplete?: () => void;
 };
 
-export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
+export function CharacterProgress({
+  character,
+  xpGained = 0,
+  onComplete,
+}: Props) {
   const progressWidth = useSharedValue(0);
   const xpCounter = useSharedValue(0);
   const scale = useSharedValue(1);
   const currentLevel = useSharedValue(character.level);
+
+  // Get quest data
+  const completedQuests = useQuestStore((state) => state.getCompletedQuests());
+
+  // Calculate total minutes from completed quests
+  const totalMinutesOffPhone = completedQuests.reduce(
+    (total, quest) => total + quest.durationMinutes,
+    0
+  );
 
   // Find character details from CHARACTERS array
   const characterDetails = CHARACTERS.find((c) => c.id === character.type);
@@ -80,7 +100,7 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
     <View style={layoutStyles.fullScreen}>
       <View style={layoutStyles.backgroundImageContainer}>
         <Image
-          source={characterDetails.image}
+          source={characterDetails?.image}
           style={layoutStyles.backgroundImage}
           resizeMode="cover"
         />
@@ -90,10 +110,26 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.content}>
           <View style={styles.characterInfo}>
-            <ThemedText style={styles.characterName} type="title">
-              {character.name}
-            </ThemedText>
+            <ThemedText type="title">{character.name}</ThemedText>
             <Animated.Text style={levelTextStyle} />
+          </View>
+
+          <ThemedText
+            type="subtitle"
+            style={{ ...Typography.subtitle, textAlign: "center" }}
+          >
+            Stats
+          </ThemedText>
+          <View style={styles.statsContainer}>
+            <View style={styles.stat}>
+              <ThemedText type="subtitle">{completedQuests.length}</ThemedText>
+              <ThemedText type="bodyBold">Quests Completed</ThemedText>
+            </View>
+            <View style={styles.statDivider} />
+            <View style={styles.stat}>
+              <ThemedText type="subtitle">{totalMinutesOffPhone}</ThemedText>
+              <ThemedText type="bodyBold">Minutes Saved</ThemedText>
+            </View>
           </View>
 
           <View style={styles.xpSection}>
@@ -103,14 +139,10 @@ export function LevelProgress({ character, xpGained = 0, onComplete }: Props) {
               </Animated.Text>
             )}
 
-            <View style={styles.levelProgressContainer}>
+            <View style={styles.characterProgressContainer}>
               <View style={styles.levelLabels}>
-                <ThemedText style={styles.levelLabel}>
-                  Level {character.level}
-                </ThemedText>
-                <ThemedText style={styles.levelLabel}>
-                  Level {character.level + 1}
-                </ThemedText>
+                <ThemedText type="body">Level {character.level}</ThemedText>
+                <ThemedText type="body">Level {character.level + 1}</ThemedText>
               </View>
 
               <View style={styles.progressBarContainer}>
@@ -182,11 +214,6 @@ const styles = StyleSheet.create({
     marginTop: Spacing.md,
     paddingTop: Spacing.md,
   },
-  characterName: {
-    fontSize: FontSizes.xxl,
-    fontWeight: "600",
-    color: Colors.forest,
-  },
   xpSection: {
     width: "100%",
     alignItems: "center",
@@ -198,7 +225,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     color: Colors.primary,
   },
-  levelProgressContainer: {
+  characterProgressContainer: {
     width: "100%",
     gap: Spacing.xs,
   },
@@ -254,5 +281,23 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.forest,
     textAlign: "center",
+  },
+  statsContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+    marginVertical: Spacing.xl,
+    paddingHorizontal: Spacing.xl,
+  },
+  stat: {
+    alignItems: "center",
+    gap: Spacing.xs,
+  },
+  statDivider: {
+    width: 1,
+    height: "80%",
+    backgroundColor: Colors.forest,
+    opacity: 0.2,
+    marginHorizontal: Spacing.lg,
   },
 });

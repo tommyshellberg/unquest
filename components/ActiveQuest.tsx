@@ -18,7 +18,7 @@ export function ActiveQuest({ onComplete }: Props) {
     if (activeQuest) {
       const timer = setInterval(() => {
         const now = Date.now();
-        const timeElapsed = (now - activeQuest.startTime) / 1000;
+        const timeElapsed = (now - activeQuest.startedAt) / 1000;
         const totalDuration = activeQuest.durationMinutes * 60;
         const timeLeft = totalDuration - timeElapsed;
 
@@ -42,17 +42,15 @@ export function ActiveQuest({ onComplete }: Props) {
   return (
     <QuestCard>
       <View style={styles.header}>
-        <ThemedText style={styles.title}>{activeQuest.title}</ThemedText>
-        <ThemedText style={styles.timer}>
+        <ThemedText type="title">{activeQuest.title}</ThemedText>
+        <ThemedText type="subtitle">
           {remainingMinutes}:{remainingSeconds.toString().padStart(2, "0")}
         </ThemedText>
       </View>
 
-      <ThemedText style={styles.description}>
-        {activeQuest.description}
-      </ThemedText>
+      <ThemedText type="body">{activeQuest.description}</ThemedText>
 
-      <ThemedText style={styles.encouragement}>
+      <ThemedText type="bodyItalic">
         Your character grows stronger with every minute away.
       </ThemedText>
     </QuestCard>
@@ -64,29 +62,5 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-  },
-  title: {
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
-    color: Colors.cream,
-  },
-  timer: {
-    fontSize: FontSizes.xl,
-    fontWeight: "bold",
-    color: Colors.cream,
-  },
-  description: {
-    fontSize: FontSizes.md,
-    color: Colors.cream,
-    opacity: 0.9,
-    marginTop: Spacing.md,
-  },
-  encouragement: {
-    fontSize: FontSizes.sm,
-    fontStyle: "italic",
-    color: Colors.cream,
-    opacity: 0.8,
-    textAlign: "center",
-    marginTop: Spacing.lg,
   },
 });

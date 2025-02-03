@@ -1,151 +1,153 @@
 import { StyleSheet, View, Image, Pressable } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
-import { ThemedView } from "@/components/ThemedView";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import { QuestCard } from "@/components/QuestCard";
+import { Colors, FontSizes, Spacing } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import { AVAILABLE_QUESTS, useQuestStore } from "@/store/quest-store";
+import { useQuestStore } from "@/store/quest-store";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
+import { AVAILABLE_QUESTS } from "../data/quests";
+import React, { useEffect } from "react";
+import { layoutStyles } from "@/styles/layouts";
+import { buttonStyles } from "@/styles/buttons";
+
+const AnimatedQuestCard = Animated.createAnimatedComponent(QuestCard);
 
 export default function FirstQuestScreen() {
   const router = useRouter();
   const startQuest = useQuestStore((state) => state.startQuest);
+  const firstQuest = AVAILABLE_QUESTS[0];
+
+  // Animation values
+  const headerOpacity = useSharedValue(0);
+  const welcomeScale = useSharedValue(0.9);
+  const questCardOpacity = useSharedValue(0);
+  const questCardTranslateY = useSharedValue(50);
+  const buttonOpacity = useSharedValue(0);
+
+  // Start animations when component mounts
+  useEffect(() => {
+    headerOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
+    welcomeScale.value = withSequence(
+      withDelay(300, withSpring(1.1)),
+      withSpring(1)
+    );
+    questCardOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
+    questCardTranslateY.value = withDelay(800, withSpring(0));
+    buttonOpacity.value = withDelay(1200, withTiming(1, { duration: 500 }));
+  }, []);
 
   const handleAcceptQuest = () => {
-    startQuest(AVAILABLE_QUESTS[0]);
+    startQuest({ ...firstQuest, startedAt: Date.now() });
     router.push("/home");
   };
 
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ scale: welcomeScale.value }],
+  }));
+
+  const questCardStyle = useAnimatedStyle(() => ({
+    opacity: questCardOpacity.value,
+    transform: [{ translateY: questCardTranslateY.value }],
+  }));
+
+  const buttonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+  }));
+
   return (
-    <View style={styles.container}>
-      <Image
-        source={require("@/assets/images/onboarding-bg-1.jpg")}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      />
-      <ThemedView style={[styles.content, { backgroundColor: "transparent" }]}>
-        <View style={styles.header}>
-          <ThemedText type="title" style={styles.title}>
-            Your First Quest Awaits
-          </ThemedText>
-          <ThemedText style={styles.subtitle}>
-            Your journey begins here.
-          </ThemedText>
-        </View>
+    <View style={layoutStyles.fullScreen}>
+      <View style={layoutStyles.backgroundImageContainer}>
+        <Image
+          source={require("@/assets/images/onboarding-bg-1.jpg")}
+          style={layoutStyles.backgroundImage}
+          resizeMode="cover"
+        />
+        <View style={layoutStyles.darkOverlay} />
+      </View>
 
-        <View style={styles.questSection}>
-          <ThemedText style={styles.questTitle}>
-            The Mindful Explorer
+      <View style={styles.content}>
+        <Animated.View style={[styles.header, headerStyle]}>
+          <ThemedText type="title">Welcome to unQuest</ThemedText>
+          <ThemedText type="subtitle">
+            Your journey to mindful living begins here
           </ThemedText>
-          <ThemedText style={styles.questDescription}>
-            Take 15 minutes to step away from your phone and into the world
-            around you. Let your thoughts roam free as you walk, observe the
-            beauty of your surroundings, and reconnect with the present moment.
-          </ThemedText>
-          <ThemedText style={styles.questReward}>
-            Reward: Your character will earn enough experience to level up.
-          </ThemedText>
-        </View>
+        </Animated.View>
 
-        <View style={styles.footer}>
-          <Pressable
-            style={({ pressed }) => [
-              styles.acceptButton,
-              pressed && styles.acceptButtonPressed,
-            ]}
-            onPress={handleAcceptQuest}
-          >
-            <ThemedText style={styles.acceptButtonText}>
-              Accept Quest
-            </ThemedText>
-          </Pressable>
+        <View style={layoutStyles.centeredContent}>
+          <ThemedText type="body">
+            In unQuest, you'll embark on a unique adventure where the real
+            challenge is stepping away from your device. Each quest is an
+            opportunity to reconnect with the world around you.
+          </ThemedText>
+
+          <AnimatedQuestCard style={[styles.questCard, questCardStyle]}>
+            <ThemedText type="title">{firstQuest.title}</ThemedText>
+            <ThemedText type="body">{firstQuest.description}</ThemedText>
+            <View style={styles.questDetails}>
+              <ThemedText type="body">
+                Duration: {firstQuest.durationMinutes} minutes
+              </ThemedText>
+              <ThemedText type="body">
+                Reward: {firstQuest.reward.xp} XP
+              </ThemedText>
+            </View>
+          </AnimatedQuestCard>
+
+          <Animated.View style={[styles.footer, buttonStyle]}>
+            <Pressable
+              style={({ pressed }) => [
+                buttonStyles.primary,
+                pressed && buttonStyles.primaryPressed,
+              ]}
+              onPress={handleAcceptQuest}
+            >
+              <ThemedText type="bodyBold">Begin Your First Quest</ThemedText>
+            </Pressable>
+          </Animated.View>
         </View>
-      </ThemedView>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.background.dark,
-  },
-  backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
-    width: "100%",
-    height: "100%",
-  },
   content: {
     flex: 1,
     padding: Spacing.xl,
-    justifyContent: "space-between",
   },
   header: {
-    gap: Spacing.sm,
     alignItems: "center",
-    marginTop: Spacing.xl,
+    marginTop: Spacing.xxl,
+    gap: Spacing.sm,
   },
-  title: {
-    fontSize: FontSizes.xxl,
-    color: Colors.forest,
-    textAlign: "center",
-    fontWeight: "600",
+  questCard: {
+    marginVertical: Spacing.xl,
   },
-  subtitle: {
-    fontSize: FontSizes.lg,
-    color: Colors.forest,
-    textAlign: "center",
-    fontStyle: "italic",
+  questDetails: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginTop: Spacing.md,
   },
-  questSection: {
-    gap: Spacing.lg,
-    padding: Spacing.xl,
-    backgroundColor: "rgba(0, 0, 0, 0.7)",
-    borderRadius: BorderRadius.lg,
-    borderWidth: 1,
-    borderColor: Colors.cream,
-  },
-  questTitle: {
-    fontSize: FontSizes.xl,
+  questDuration: {
+    fontSize: FontSizes.sm,
     color: Colors.cream,
-    textAlign: "center",
-    fontWeight: "600",
-  },
-  questDescription: {
-    fontSize: FontSizes.md,
-    color: Colors.cream,
-    textAlign: "center",
-    lineHeight: 24,
+    opacity: 0.9,
   },
   questReward: {
     fontSize: FontSizes.sm,
     color: Colors.cream,
-    textAlign: "center",
-    fontStyle: "italic",
     opacity: 0.9,
-    marginTop: Spacing.sm,
   },
   footer: {
-    gap: Spacing.md,
-    alignItems: "center",
-  },
-  acceptButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
-    borderRadius: BorderRadius.pill,
-    alignItems: "center",
-  },
-  acceptButtonPressed: {
-    backgroundColor: Colors.secondary,
-  },
-  acceptButtonText: {
-    color: Colors.cream,
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
-  },
-  footerNote: {
-    fontSize: FontSizes.sm,
-    color: Colors.forest,
-    textAlign: "center",
-    fontStyle: "italic",
+    width: "100%",
+    marginTop: "auto",
   },
 });

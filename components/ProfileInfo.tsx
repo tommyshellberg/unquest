@@ -34,8 +34,8 @@ export function ProfileInfo({ size = "small" }: Props) {
       </View>
       {size !== "small" && (
         <>
-          <ThemedText style={styles.name}>{character.name}</ThemedText>
-          <ThemedText style={styles.level}>
+          <ThemedText type="title">{character.name}</ThemedText>
+          <ThemedText type="body">
             Level {character.level} {characterDetails?.name}
           </ThemedText>
         </>
@@ -57,16 +57,5 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: "100%",
-  },
-  name: {
-    fontSize: FontSizes.xl,
-    fontWeight: "600",
-    color: Colors.forest,
-    marginTop: Spacing.sm,
-  },
-  level: {
-    fontSize: FontSizes.md,
-    color: Colors.forest,
-    marginTop: Spacing.xs,
   },
 });

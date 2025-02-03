@@ -1,38 +1,22 @@
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { Minutes, Quest, Reward } from "./types";
+import { Quest, QuestTemplate } from "./types";
 import { AVAILABLE_QUESTS } from "@/app/data/quests";
-import { Character } from "@/store/types"; // Ensure this import exists
-import { usePOIStore } from "@/store/poi-store"; // Import the POI store
-import { useCharacterStore } from "./character-store";
-
-export interface QuestCompletion {
-  quest: Quest;
-  story: string;
-}
-
-export interface QuestTemplate {
-  id: string;
-  title: string;
-  description: string;
-  durationMinutes: Minutes;
-  reward: Reward;
-  poiSlug: string;
-  story: string;
-}
+import { usePOIStore } from "@/store/poi-store";
 
 interface QuestState {
   activeQuest: Quest | null;
   availableQuests: QuestTemplate[];
-  completedQuestIds: string[];
-  failQuest: () => void;
   failedQuest: Quest | null;
+  completedQuests: Quest[];
   startQuest: (quest: Quest) => void;
-  completeQuest: (ignoreDuration?: boolean) => QuestCompletion | null;
+  completeQuest: (ignoreDuration?: boolean) => Quest | null;
+  failQuest: () => void;
   refreshAvailableQuests: () => void;
   resetFailedQuest: () => void;
   reset: () => void;
+  getCompletedQuests: () => Quest[];
 }
 
 export const useQuestStore = create<QuestState>()(
@@ -40,43 +24,41 @@ export const useQuestStore = create<QuestState>()(
     (set, get) => ({
       activeQuest: null,
       availableQuests: [],
-      completedQuestIds: [],
       failedQuest: null,
+      completedQuests: [],
 
       startQuest: (quest: Quest) => {
-        set({ activeQuest: quest });
+        const startedQuest = {
+          ...quest,
+          startedAt: Date.now(),
+        };
+        set({ activeQuest: startedQuest });
         set({ availableQuests: [] });
       },
 
       completeQuest: (ignoreDuration = false) => {
-        const { activeQuest, completedQuestIds } = get();
-        console.log("activeQuest", activeQuest);
-        console.log("completedQuestIds", completedQuestIds);
-        const character = useCharacterStore.getState().character;
-        if (activeQuest && activeQuest.startTime && character) {
+        const { activeQuest } = get();
+        if (activeQuest && activeQuest.startedAt) {
           const completionTime = Date.now();
-          const duration = (completionTime - activeQuest.startTime) / 1000;
+          const duration = (completionTime - activeQuest.startedAt) / 1000;
           if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
             // Quest completed successfully
-            console.log("Quest completed successfully");
-            set({
+            const completedQuest = {
+              ...activeQuest,
+              completedAt: completionTime,
+            };
+
+            set((state) => ({
               activeQuest: null,
-              completedQuestIds: [...completedQuestIds, activeQuest.id],
-            });
-            // Generate the story
-            const story = activeQuest.story;
+              completedQuests: [...state.completedQuests, completedQuest],
+            }));
 
             // Reveal the associated POI
             usePOIStore.getState().revealLocation(activeQuest.poiSlug);
 
-            // Return quest completion data for UI
-            return {
-              quest: activeQuest,
-              story,
-            };
+            return completedQuest;
           } else {
             // Quest failed
-            console.log("Quest failed");
             get().failQuest();
             return null;
           }
@@ -92,11 +74,12 @@ export const useQuestStore = create<QuestState>()(
       },
 
       refreshAvailableQuests: () => {
-        const { activeQuest, completedQuestIds } = get();
+        const { activeQuest, completedQuests } = get();
         if (!activeQuest) {
           // Get the next quest in AVAILABLE_QUESTS that hasn't been completed
           const nextQuest = AVAILABLE_QUESTS.find(
-            (quest) => !completedQuestIds.includes(quest.id)
+            (quest) =>
+              !completedQuests.some((completed) => completed.id === quest.id)
           );
           if (nextQuest) {
             set({ availableQuests: [nextQuest] });
@@ -111,11 +94,15 @@ export const useQuestStore = create<QuestState>()(
         set({ failedQuest: null });
       },
 
+      getCompletedQuests: () => {
+        return get().completedQuests;
+      },
+
       reset: () => {
         set({
           activeQuest: null,
           availableQuests: [],
-          completedQuestIds: [],
+          completedQuests: [],
           failedQuest: null,
         });
       },

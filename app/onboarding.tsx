@@ -3,9 +3,20 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
+import { useEffect } from "react";
+import { useNavigation } from "@react-navigation/native";
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const navigation = useNavigation();
+
+  // Hide header and drawer for onboarding flow
+  useEffect(() => {
+    navigation.setOptions({
+      headerShown: false,
+      gestureEnabled: false, // Disable swipe gesture for drawer
+    });
+  }, []);
 
   return (
     <View style={styles.container}>
@@ -21,10 +32,10 @@ export default function OnboardingScreen() {
           <ThemedView
             style={[styles.heroSection, { backgroundColor: "transparent" }]}
           >
-            <ThemedText type="title" style={styles.appName}>
+            <ThemedText type="titleBold" style={styles.appName}>
               unQuest
             </ThemedText>
-            <ThemedText type="subtitle" style={styles.headline}>
+            <ThemedText type="title" style={styles.headline}>
               Level Up By Logging Off
             </ThemedText>
           </ThemedView>
@@ -88,7 +99,6 @@ const styles = StyleSheet.create({
   headline: {
     textAlign: "center",
     color: Colors.text.light,
-    opacity: 0.9,
   },
   descriptionSection: {
     gap: Spacing.lg,

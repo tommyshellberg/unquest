@@ -56,9 +56,51 @@ export const BorderRadius = {
   pill: 9999,
 };
 
+export const Typography = {
+  body: {
+    fontFamily: "inter-regular",
+    fontSize: FontSizes.md,
+  },
+  bodyItalic: {
+    fontFamily: "inter-regular",
+    fontStyle: "italic",
+    fontSize: FontSizes.md,
+  },
+  bodyMedium: {
+    fontFamily: "inter-medium",
+    fontSize: FontSizes.md,
+  },
+  bodySemibold: {
+    fontFamily: "inter-semibold",
+    fontSize: FontSizes.md,
+  },
+  bodyBold: {
+    fontFamily: "inter-bold",
+    fontSize: FontSizes.md,
+  },
+  bodyBoldItalic: {
+    fontFamily: "inter-bold",
+    fontStyle: "italic",
+    fontSize: FontSizes.md,
+  },
+  subtitle: {
+    fontFamily: "cinzel-regular",
+    fontSize: FontSizes.lg,
+  },
+  title: {
+    fontFamily: "cinzel-bold",
+    fontSize: FontSizes.xxl,
+  },
+  titleBlack: {
+    fontFamily: "cinzel-black",
+    fontSize: FontSizes.xxl,
+  },
+} as const;
+
 export default {
   Colors,
   Spacing,
   FontSizes,
   BorderRadius,
+  Typography,
 };

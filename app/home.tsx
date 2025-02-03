@@ -51,17 +51,10 @@ export default function HomeScreen() {
   };
 
   const handleClaimReward = () => {
-    console.log("handleClaimReward");
     if (!currentCompletion || !character) return;
-    console.log("currentCompletion", currentCompletion);
-    console.log("character", character);
 
-    console.log(
-      "currentCompletion.quest.reward.xp",
-      currentCompletion.quest.reward.xp
-    );
     // Add XP before completing quest
-    addXP(currentCompletion.quest.reward.xp);
+    addXP(currentCompletion.reward.xp);
 
     // Reset completion state
     setShowingCompletion(false);
@@ -71,7 +64,7 @@ export default function HomeScreen() {
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {
-    startQuest({ ...quest, startTime: Date.now() });
+    startQuest({ ...quest, startedAt: Date.now() });
   };
 
   const handleAcknowledgeFailure = () => {
@@ -99,7 +92,7 @@ export default function HomeScreen() {
   if (showingCompletion && currentCompletion) {
     return (
       <QuestComplete
-        quest={currentCompletion.quest}
+        quest={currentCompletion}
         onClaim={handleClaimReward}
         story={currentCompletion.story}
       />
@@ -121,10 +114,8 @@ export default function HomeScreen() {
           {activeQuest ? (
             <>
               <View style={styles.header}>
-                <ThemedText style={styles.title} type="title">
-                  Active Quest
-                </ThemedText>
-                <ThemedText style={styles.subtitle}>
+                <ThemedText type="title">Active Quest</ThemedText>
+                <ThemedText type="subtitle">
                   Your character is growing stronger while you're away
                 </ThemedText>
               </View>
@@ -136,13 +127,13 @@ export default function HomeScreen() {
                   style={styles.devButton}
                   onPressOut={handleDevComplete}
                 >
-                  <ThemedText style={styles.devButtonText}>
+                  <ThemedText type="bodyBold">
                     [DEV] Complete Quest Now
                   </ThemedText>
                 </Pressable>
               )}
 
-              <ThemedText style={styles.instruction}>
+              <ThemedText type="bodyItalic">
                 Close the app and return when your quest timer is complete. Your
                 progress will be saved automatically.
               </ThemedText>
@@ -150,12 +141,8 @@ export default function HomeScreen() {
           ) : (
             <View style={styles.availableQuestsContainer}>
               <View style={styles.header}>
-                <ThemedText style={styles.title} type="title">
-                  Next Quest
-                </ThemedText>
-                <ThemedText style={styles.subtitle}>
-                  Continue your journey
-                </ThemedText>
+                <ThemedText type="title">Next Quest</ThemedText>
+                <ThemedText type="subtitle">Continue your journey</ThemedText>
               </View>
 
               {availableQuests.length > 0 ? (
@@ -165,7 +152,7 @@ export default function HomeScreen() {
                 />
               ) : (
                 <ThemedView style={styles.noQuestsContainer}>
-                  <ThemedText style={styles.noQuestsText}>
+                  <ThemedText type="bodyBold">
                     No quests available at the moment. Complete your current
                     quest or check back later.
                   </ThemedText>

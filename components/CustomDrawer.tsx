@@ -16,7 +16,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { ThemedText } from "./ThemedText";
 import { ProfileInfo } from "./ProfileInfo";
-import { Colors, Spacing, FontSizes } from "@/constants/theme";
+import { Colors, Spacing, BorderRadius, Typography } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { usePOIStore } from "@/store/poi-store";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -137,18 +137,27 @@ export function CustomDrawer({ isOpen, onClose }: Props) {
               styles.drawerItem,
               pressed && styles.drawerItemPressed,
             ]}
-            onPress={() => handleNavigation(item.route)}
+            onPressOut={() => handleNavigation(item.route)}
           >
-            <Ionicons name={item.icon} size={24} color={Colors.forest} />
-            <ThemedText style={styles.drawerItemText}>{item.label}</ThemedText>
+            <Ionicons name={item.icon} size={24} color={Colors.primary} />
+            <ThemedText
+              type="subtitle"
+              style={{
+                marginLeft: Spacing.sm,
+                ...Typography.subtitle,
+                color: Colors.primary,
+              }}
+            >
+              {item.label}
+            </ThemedText>
           </Pressable>
         ))}
         {__DEV__ && (
-          <TouchableOpacity onPress={resetAppData} style={styles.resetButton}>
-            <ThemedText style={styles.resetButtonText}>
+          <Pressable onPress={resetAppData} style={styles.resetButton}>
+            <ThemedText style={styles.resetButtonText} type="bodyBold">
               Reset App Data
             </ThemedText>
-          </TouchableOpacity>
+          </Pressable>
         )}
       </Animated.View>
     </View>
@@ -186,21 +195,15 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: Spacing.md,
     marginHorizontal: Spacing.sm,
-    borderRadius: 8,
+    borderRadius: BorderRadius.md,
   },
   drawerItemPressed: {
     backgroundColor: Colors.mist,
-  },
-  drawerItemText: {
-    marginLeft: Spacing.md,
-    fontSize: FontSizes.lg,
-    color: Colors.forest,
   },
   resetButton: {
     padding: 16,
   },
   resetButtonText: {
     color: "red",
-    fontWeight: "bold",
   },
 });

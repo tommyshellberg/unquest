@@ -1,12 +1,7 @@
 import React, { useState } from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Stack } from "expo-router";
-import {
-  Pressable,
-  StyleSheet,
-  SafeAreaView,
-  TouchableOpacity,
-} from "react-native";
+import { StyleSheet, SafeAreaView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { OnboardingGuard } from "@/components/OnboardingGuard";
 import { ProfileInfo } from "@/components/ProfileInfo";

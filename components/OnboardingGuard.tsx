@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { useRouter, useSegments } from "expo-router";
 import { useCharacterStore } from "@/store/character-store";
 import { useAccountStore } from "@/store/account-store";

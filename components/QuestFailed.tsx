@@ -13,10 +13,8 @@ type Props = {
 export function QuestFailed({ quest, onAcknowledge }: Props) {
   return (
     <View style={styles.container}>
-      <ThemedText style={styles.title} type="title">
-        Quest Failed
-      </ThemedText>
-      <ThemedText style={styles.message}>
+      <ThemedText type="title">Quest Failed</ThemedText>
+      <ThemedText type="bodyBold">
         You unlocked your phone before the quest was completed.
       </ThemedText>
       <Pressable
@@ -26,7 +24,7 @@ export function QuestFailed({ quest, onAcknowledge }: Props) {
         ]}
         onPressOut={onAcknowledge}
       >
-        <ThemedText style={styles.buttonText}>OK</ThemedText>
+        <ThemedText type="bodyBold">OK</ThemedText>
       </Pressable>
     </View>
   );
@@ -39,12 +37,6 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     alignItems: "center",
     padding: Spacing.xl,
-  },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: "bold",
-    color: Colors.primary,
-    marginBottom: Spacing.lg,
   },
   message: {
     fontSize: FontSizes.md,
@@ -60,11 +52,5 @@ const styles = StyleSheet.create({
   },
   buttonPressed: {
     backgroundColor: Colors.secondary,
-  },
-  buttonText: {
-    fontSize: FontSizes.lg,
-    color: Colors.cream,
-    fontWeight: "600",
-    textAlign: "center",
   },
 });

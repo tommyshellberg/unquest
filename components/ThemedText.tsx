@@ -1,60 +1,60 @@
-import { Text, type TextProps, StyleSheet } from 'react-native';
+import { Text, TextProps, StyleSheet } from "react-native";
+import { Colors, Typography } from "@/constants/theme";
+import { forwardRef } from "react";
 
-import { useThemeColor } from '@/hooks/useThemeColor';
-
-export type ThemedTextProps = TextProps & {
-  lightColor?: string;
-  darkColor?: string;
-  type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+type ThemedTextProps = TextProps & {
+  type?:
+    | "body"
+    | "bodyItalic"
+    | "bodyMedium"
+    | "bodySemibold"
+    | "bodyBold"
+    | "bodyBoldItalic"
+    | "subtitle"
+    | "title"
+    | "titleBlack";
 };
 
-export function ThemedText({
-  style,
-  lightColor,
-  darkColor,
-  type = 'default',
-  ...rest
-}: ThemedTextProps) {
-  const color = useThemeColor({ light: lightColor, dark: darkColor }, 'text');
-
-  return (
-    <Text
-      style={[
-        { color },
-        type === 'default' ? styles.default : undefined,
-        type === 'title' ? styles.title : undefined,
-        type === 'defaultSemiBold' ? styles.defaultSemiBold : undefined,
-        type === 'subtitle' ? styles.subtitle : undefined,
-        type === 'link' ? styles.link : undefined,
-        style,
-      ]}
-      {...rest}
-    />
-  );
-}
+export const ThemedText = forwardRef<Text, ThemedTextProps>((props, ref) => {
+  const { type = "body", style } = props;
+  return <Text ref={ref} style={[styles[type], style]} {...props} />;
+});
 
 const styles = StyleSheet.create({
-  default: {
-    fontSize: 16,
-    lineHeight: 24,
+  body: {
+    ...Typography.body,
+    color: Colors.primary,
   },
-  defaultSemiBold: {
-    fontSize: 16,
-    lineHeight: 24,
-    fontWeight: '600',
+  bodyItalic: {
+    ...Typography.bodyItalic,
+    color: Colors.primary,
+  },
+  bodyMedium: {
+    ...Typography.bodyMedium,
+    color: Colors.primary,
+  },
+  bodySemibold: {
+    ...Typography.bodySemibold,
+    color: Colors.primary,
+  },
+  bodyBold: {
+    ...Typography.bodyBold,
+    color: Colors.primary,
+  },
+  bodyBoldItalic: {
+    ...Typography.bodyBoldItalic,
+    color: Colors.primary,
   },
   title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    lineHeight: 32,
+    ...Typography.title,
+    color: Colors.primary,
   },
   subtitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
+    ...Typography.subtitle,
+    color: Colors.primary,
   },
-  link: {
-    lineHeight: 30,
-    fontSize: 16,
-    color: '#0a7ea4',
+  titleBlack: {
+    ...Typography.titleBlack,
+    color: Colors.primary,
   },
 });

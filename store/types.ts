@@ -19,13 +19,11 @@ export interface QuestTemplate {
 }
 
 export interface Quest extends QuestTemplate {
-  startTime: number;
+  startedAt: number;
+  completedAt?: number;
 }
 
-export interface QuestCompletion {
-  quest: Quest;
-  story: string;
-}
+export interface QuestCompletion extends Quest {}
 
 export interface Character {
   id: string;

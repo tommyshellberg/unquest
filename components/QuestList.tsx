@@ -20,18 +20,20 @@ export function QuestList({ quests, onSelectQuest }: Props) {
         >
           <QuestCard>
             <View style={styles.questHeader}>
-              <ThemedText style={styles.questTitle}>{quest.title}</ThemedText>
-              <ThemedText style={styles.questDuration}>
+              <ThemedText type="subtitle" style={styles.questTitle}>
+                {quest.title}
+              </ThemedText>
+              <ThemedText type="body" style={styles.questDuration}>
                 {quest.durationMinutes} minutes
               </ThemedText>
             </View>
 
-            <ThemedText style={styles.questDescription}>
+            <ThemedText type="body" style={styles.questDescription}>
               {quest.description}
             </ThemedText>
 
             <View style={styles.questReward}>
-              <ThemedText style={styles.rewardText}>
+              <ThemedText type="bodyBold" style={styles.rewardText}>
                 Reward: {quest.reward.xp} XP
               </ThemedText>
             </View>
@@ -58,13 +60,10 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   questTitle: {
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
     color: Colors.cream,
     flex: 1,
   },
   questDuration: {
-    fontSize: FontSizes.sm,
     color: Colors.cream,
     opacity: 0.8,
   },
@@ -81,8 +80,6 @@ const styles = StyleSheet.create({
     borderTopColor: Colors.cream + "20",
   },
   rewardText: {
-    fontSize: FontSizes.sm,
     color: Colors.cream,
-    fontWeight: "600",
   },
 });
