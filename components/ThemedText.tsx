@@ -1,5 +1,5 @@
 import { Text, TextProps, StyleSheet } from "react-native";
-import { Colors, Typography } from "@/constants/theme";
+import { Colors, Spacing, Typography } from "@/constants/theme";
 import { forwardRef } from "react";
 
 type ThemedTextProps = TextProps & {
@@ -10,6 +10,7 @@ type ThemedTextProps = TextProps & {
     | "bodySemibold"
     | "bodyBold"
     | "bodyBoldItalic"
+    | "bodyLight"
     | "subtitle"
     | "title"
     | "titleBlack";
@@ -56,5 +57,9 @@ const styles = StyleSheet.create({
   titleBlack: {
     ...Typography.titleBlack,
     color: Colors.primary,
+  },
+  bodyLight: {
+    ...Typography.body,
+    color: Colors.text.dark,
   },
 });

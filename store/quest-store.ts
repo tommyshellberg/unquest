@@ -30,7 +30,7 @@ export const useQuestStore = create<QuestState>()(
       startQuest: (quest: Quest) => {
         const startedQuest = {
           ...quest,
-          startedAt: Date.now(),
+          startTime: Date.now(),
         };
         set({ activeQuest: startedQuest });
         set({ availableQuests: [] });
@@ -38,9 +38,9 @@ export const useQuestStore = create<QuestState>()(
 
       completeQuest: (ignoreDuration = false) => {
         const { activeQuest } = get();
-        if (activeQuest && activeQuest.startedAt) {
+        if (activeQuest && activeQuest.startTime) {
           const completionTime = Date.now();
-          const duration = (completionTime - activeQuest.startedAt) / 1000;
+          const duration = (completionTime - activeQuest.startTime) / 1000;
           if (ignoreDuration || duration >= activeQuest.durationMinutes * 60) {
             // Quest completed successfully
             const completedQuest = {

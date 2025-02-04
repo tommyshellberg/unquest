@@ -32,7 +32,7 @@ export default function OnboardingScreen() {
           <ThemedView
             style={[styles.heroSection, { backgroundColor: "transparent" }]}
           >
-            <ThemedText type="titleBold" style={styles.appName}>
+            <ThemedText type="title" style={styles.appName}>
               unQuest
             </ThemedText>
             <ThemedText type="title" style={styles.headline}>

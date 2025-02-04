@@ -44,7 +44,7 @@ export default function FirstQuestScreen() {
   }, []);
 
   const handleAcceptQuest = () => {
-    startQuest({ ...firstQuest, startedAt: Date.now() });
+    startQuest({ ...firstQuest, startTime: Date.now() });
     router.push("/home");
   };
 

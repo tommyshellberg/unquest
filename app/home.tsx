@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, ScrollView, Image, Pressable } from "react-native";
+import {
+  StyleSheet,
+  View,
+  ScrollView,
+  ImageBackground,
+  Pressable,
+} from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ActiveQuest } from "@/components/ActiveQuest";
@@ -13,6 +19,7 @@ import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
 import { useLockStateDetection } from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
+import { TAB_BAR_HEIGHT } from "./_layout";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -64,7 +71,7 @@ export default function HomeScreen() {
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {
-    startQuest({ ...quest, startedAt: Date.now() });
+    startQuest({ ...quest, startTime: Date.now() });
   };
 
   const handleAcknowledgeFailure = () => {
@@ -101,16 +108,12 @@ export default function HomeScreen() {
 
   return (
     <View style={styles.container}>
-      <Image
+      <ImageBackground
         source={require("@/assets/images/onboarding-bg-2.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
-      />
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
       >
-        <View style={styles.content}>
+        <View style={styles.contentContainer}>
           {activeQuest ? (
             <>
               <View style={styles.header}>
@@ -127,13 +130,13 @@ export default function HomeScreen() {
                   style={styles.devButton}
                   onPressOut={handleDevComplete}
                 >
-                  <ThemedText type="bodyBold">
+                  <ThemedText type="bodyBold" style={styles.devButtonText}>
                     [DEV] Complete Quest Now
                   </ThemedText>
                 </Pressable>
               )}
 
-              <ThemedText type="bodyItalic">
+              <ThemedText type="bodyBold">
                 Close the app and return when your quest timer is complete. Your
                 progress will be saved automatically.
               </ThemedText>
@@ -152,7 +155,7 @@ export default function HomeScreen() {
                 />
               ) : (
                 <ThemedView style={styles.noQuestsContainer}>
-                  <ThemedText type="bodyBold">
+                  <ThemedText type="bodyLight">
                     No quests available at the moment. Complete your current
                     quest or check back later.
                   </ThemedText>
@@ -161,7 +164,7 @@ export default function HomeScreen() {
             </View>
           )}
         </View>
-      </ScrollView>
+      </ImageBackground>
     </View>
   );
 }
@@ -169,23 +172,17 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background.dark,
+    height: "100%",
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     width: "100%",
     height: "100%",
   },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    flexGrow: 1,
-  },
-  content: {
+  contentContainer: {
     flex: 1,
     padding: Spacing.md,
-    paddingTop: Spacing.xl,
+    paddingBottom: TAB_BAR_HEIGHT + Spacing.xl,
   },
   header: {
     alignItems: "center",

@@ -1,5 +1,12 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, Pressable, Image, SafeAreaView } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Pressable,
+  Image,
+  SafeAreaView,
+  ImageBackground,
+} from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -21,6 +28,7 @@ import { useQuestStore } from "@/store/quest-store";
 import { router } from "expo-router";
 import { buttonStyles } from "@/styles/buttons";
 import { layoutStyles } from "@/styles/layouts";
+import { TAB_BAR_HEIGHT } from "@/app/_layout";
 
 type Props = {
   character: Character;
@@ -97,18 +105,13 @@ export function CharacterProgress({
   }));
 
   return (
-    <View style={layoutStyles.fullScreen}>
-      <View style={layoutStyles.backgroundImageContainer}>
-        <Image
-          source={characterDetails?.image}
-          style={layoutStyles.backgroundImage}
-          resizeMode="cover"
-        />
-        <View style={layoutStyles.lightOverlay} />
-      </View>
-
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.content}>
+    <View style={styles.container}>
+      <ImageBackground
+        source={characterDetails?.image}
+        style={styles.backgroundImage}
+        resizeMode="cover"
+      >
+        <View style={styles.contentContainer}>
           <View style={styles.characterInfo}>
             <ThemedText type="title">{character.name}</ThemedText>
             <Animated.Text style={levelTextStyle} />
@@ -181,7 +184,7 @@ export function CharacterProgress({
             </ThemedText>
           </Pressable>
         </View>
-      </SafeAreaView>
+      </ImageBackground>
     </View>
   );
 }
@@ -189,24 +192,18 @@ export function CharacterProgress({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: Colors.background.dark,
-  },
-  safeArea: {
-    flex: 1,
+    height: "100%",
   },
   backgroundImage: {
-    ...StyleSheet.absoluteFillObject,
+    flex: 1,
     width: "100%",
     height: "100%",
   },
-  whiteOverlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: "rgba(255, 255, 255, 0.7)",
-  },
-  content: {
+  contentContainer: {
     flex: 1,
     padding: Spacing.xl,
     justifyContent: "space-between",
+    paddingBottom: TAB_BAR_HEIGHT + Spacing.xl,
   },
   characterInfo: {
     alignItems: "center",

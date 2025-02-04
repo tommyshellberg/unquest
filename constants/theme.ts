@@ -60,40 +60,49 @@ export const Typography = {
   body: {
     fontFamily: "inter-regular",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   bodyItalic: {
     fontFamily: "inter-regular",
     fontStyle: "italic",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   bodyMedium: {
     fontFamily: "inter-medium",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   bodySemibold: {
     fontFamily: "inter-semibold",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   bodyBold: {
     fontFamily: "inter-bold",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   bodyBoldItalic: {
     fontFamily: "inter-bold",
     fontStyle: "italic",
     fontSize: FontSizes.md,
+    marginBottom: Spacing.sm,
   },
   subtitle: {
     fontFamily: "cinzel-regular",
     fontSize: FontSizes.lg,
+    marginBottom: Spacing.md,
   },
   title: {
     fontFamily: "cinzel-bold",
     fontSize: FontSizes.xxl,
+    marginBottom: Spacing.md,
   },
   titleBlack: {
     fontFamily: "cinzel-black",
     fontSize: FontSizes.xxl,
+    marginBottom: Spacing.md,
   },
 } as const;
 

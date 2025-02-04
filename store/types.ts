@@ -19,7 +19,7 @@ export interface QuestTemplate {
 }
 
 export interface Quest extends QuestTemplate {
-  startedAt: number;
+  startTime: number;
   completedAt?: number;
 }
 

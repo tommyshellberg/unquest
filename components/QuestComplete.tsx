@@ -14,6 +14,7 @@ import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { layoutStyles } from "@/styles/layouts";
 import { Quest } from "@/store/types";
 import { buttonStyles } from "@/styles/buttons";
+import { TAB_BAR_HEIGHT } from "@/app/_layout";
 
 type Props = {
   quest: Quest;
@@ -62,6 +63,7 @@ export function QuestComplete({ quest, story, onClaim }: Props) {
         contentContainerStyle={[
           layoutStyles.scrollContent,
           styles.scrollContentCustom,
+          { paddingBottom: TAB_BAR_HEIGHT + Spacing.xl },
         ]}
       >
         <Animated.View style={[layoutStyles.centeredContent, contentStyle]}>
