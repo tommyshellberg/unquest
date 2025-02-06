@@ -7,6 +7,7 @@ import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useAccountStore } from "@/store/account-store";
 import { useNavigation } from "@react-navigation/native";
+import { buttonStyles } from "@/styles/buttons";
 
 // Generate time options in 15-minute increments (0h to 12h)
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
@@ -30,6 +31,10 @@ export default function ScreenTimeGoalScreen() {
 
     router.push("/onboarding/first-quest");
   };
+
+  useEffect(() => {
+    console.log("screen time goal screen mounted");
+  }, []);
 
   const navigation = useNavigation();
 
@@ -108,7 +113,9 @@ export default function ScreenTimeGoalScreen() {
             ]}
             onPress={handleContinue}
           >
-            <ThemedText type="bodyBold">Set My Goal</ThemedText>
+            <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
+              Set My Goal
+            </ThemedText>
           </Pressable>
         </View>
       </ThemedView>
@@ -132,7 +139,6 @@ const styles = StyleSheet.create({
   },
   header: {
     gap: Spacing.sm,
-    alignItems: "center",
     marginTop: "10%",
   },
   pickerSection: {

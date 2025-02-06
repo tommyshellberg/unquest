@@ -11,6 +11,7 @@ import Animated, {
   withDelay,
   withSpring,
 } from "react-native-reanimated";
+import { AVAILABLE_QUESTS } from "@/app/data/quests";
 
 type Props = {
   story: string;
@@ -152,16 +153,16 @@ export function StoryNarration({ story, questId }: Props) {
 
 // Helper function to map quest IDs to audio files
 function getAudioFileForQuest(questId: string) {
-  const audioMap: Record<string, any> = {
-    "quest-1": require("../assets/audio/darkwood-awakening.mp3"),
-    "quest-2": require("../assets/audio/hut-of-whispers.mp3"),
-    "quest-3": require("../assets/audio/weary-crossing.mp3"),
-    "quest-4": require("../assets/audio/arch-of-echoes.mp3"),
-    "quest-5": require("../assets/audio/rugged-outcropping.mp3"),
-    // Add more quest audio mappings as needed
+  // build a static map that maps questId to the audio file which is at /assets/audio/{questId}.mp3
+  const audioMap = {
+    "quest-1": require("@/assets/audio/quest-1.mp3"),
+    "quest-2": require("@/assets/audio/quest-2.mp3"),
+    "quest-3": require("@/assets/audio/quest-3.mp3"),
+    "quest-4": require("@/assets/audio/quest-4.mp3"),
+    "quest-5": require("@/assets/audio/quest-5.mp3"),
   };
 
-  return audioMap[questId];
+  return audioMap[questId as keyof typeof audioMap];
 }
 
 const styles = StyleSheet.create({

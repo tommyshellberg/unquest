@@ -19,7 +19,7 @@ import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
 import { useLockStateDetection } from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
-import { TAB_BAR_HEIGHT } from "./_layout";
+import { TAB_BAR_HEIGHT } from "../_layout";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);

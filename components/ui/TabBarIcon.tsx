@@ -16,7 +16,7 @@ export default function TabBarIcon({ source, focused }: Props) {
   const scale = useSharedValue(1);
 
   React.useEffect(() => {
-    scale.value = withTiming(focused ? 1.1 : 1, { duration: 200 });
+    scale.value = withTiming(focused ? 1.2 : 1, { duration: 200 });
   }, [focused]);
 
   const animatedStyle = useAnimatedStyle(() => ({
@@ -45,8 +45,8 @@ const styles = StyleSheet.create({
     marginHorizontal: Spacing.sm,
     // Shadows (optional)
     shadowColor: Colors.background.dark,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
+    shadowOffset: { width: 2, height: 2 },
+    shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
     borderWidth: 2,

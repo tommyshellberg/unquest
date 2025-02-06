@@ -4,24 +4,19 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { buttonStyles } from "@/styles/buttons";
 
 export default function OnboardingScreen() {
   const router = useRouter();
-  const navigation = useNavigation();
 
-  // Hide header and drawer for onboarding flow
   useEffect(() => {
-    navigation.setOptions({
-      headerShown: false,
-      gestureEnabled: false, // Disable swipe gesture for drawer
-    });
+    console.log("onboarding screen mounted");
   }, []);
 
   return (
     <View style={styles.container}>
       <Image
-        source={require("../assets/images/onboarding-bg-1.jpg")}
+        source={require("@/assets/images/onboarding-bg-1.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -32,12 +27,8 @@ export default function OnboardingScreen() {
           <ThemedView
             style={[styles.heroSection, { backgroundColor: "transparent" }]}
           >
-            <ThemedText type="title" style={styles.appName}>
-              unQuest
-            </ThemedText>
-            <ThemedText type="title" style={styles.headline}>
-              Level Up By Logging Off
-            </ThemedText>
+            <ThemedText type="title">unQuest</ThemedText>
+            <ThemedText type="subtitle">Level Up By Logging Off</ThemedText>
           </ThemedView>
 
           <ThemedView
@@ -59,7 +50,9 @@ export default function OnboardingScreen() {
               ]}
               onPress={() => router.push("/onboarding/choose-character")}
             >
-              <ThemedText style={styles.ctaText}>Begin Your Journey</ThemedText>
+              <ThemedText style={buttonStyles.primaryText}>
+                Begin Your Journey
+              </ThemedText>
             </Pressable>
           </View>
         </ThemedView>

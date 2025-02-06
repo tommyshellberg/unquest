@@ -8,6 +8,7 @@ import { useCharacterStore } from "@/store/character-store";
 import { CharacterType } from "@/store/types";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { buttonStyles } from "@/styles/buttons";
 
 export default function ChooseCharacterScreen() {
   const router = useRouter();
@@ -16,6 +17,10 @@ export default function ChooseCharacterScreen() {
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
     null
   );
+
+  useEffect(() => {
+    console.log("choose character screen mounted");
+  }, []);
 
   const handleContinue = () => {
     if (!selectedCharacter) return;
@@ -53,11 +58,14 @@ export default function ChooseCharacterScreen() {
         style={styles.scrollView}
       >
         <ThemedView style={[styles.header, { backgroundColor: "transparent" }]}>
-          <ThemedText type="title">Choose your Character</ThemedText>
-          <ThemedText type="subtitle">
+          <ThemedText type="title">Your Character</ThemedText>
+          <ThemedText type="body">
             Choose the character you feel best represents the best version of
-            yourself. Each embodies different virtues that grow stronger as you
-            spend time away.
+            yourself.
+          </ThemedText>
+          <ThemedText type="body">
+            Each embodies different virtues that grow stronger as you spend time
+            away.
           </ThemedText>
         </ThemedView>
 
@@ -109,7 +117,9 @@ export default function ChooseCharacterScreen() {
             disabled={!selectedCharacter}
             onPress={handleContinue}
           >
-            <ThemedText type="bodyBold">Continue</ThemedText>
+            <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
+              Continue
+            </ThemedText>
           </Pressable>
         </ThemedView>
       </ScrollView>
@@ -216,6 +226,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.pill,
     alignItems: "center",
+    marginBottom: Spacing.lg,
   },
   continueButtonDisabled: {
     backgroundColor: Colors.button.disabled,

@@ -22,7 +22,7 @@ import Animated, {
 } from "react-native-reanimated";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { usePOIStore } from "@/store/poi-store";
-import { INITIAL_POIS } from "./data/pois";
+import { INITIAL_POIS } from "../data/pois";
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const imageWidth = 1200;
@@ -153,7 +153,7 @@ export default function MapScreen() {
                 {revealedPOIS.map((poi, index) => (
                   <RNImage
                     key={index}
-                    source={require("../assets/images/fog-mask-2.png")} // Your mask image
+                    source={require("@/assets/images/fog-mask-2.png")} // Your mask image
                     style={[
                       styles.maskImage,
                       {
@@ -171,7 +171,7 @@ export default function MapScreen() {
             <Animated.View style={[styles.mapWrapper, imageStyle]}>
               {/* The entire map image */}
               <RNImage
-                source={require("../assets/images/map-downscaled.jpg")}
+                source={require("@/assets/images/map-downscaled.jpg")}
                 style={styles.mapImage}
               />
 

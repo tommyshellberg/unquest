@@ -31,6 +31,10 @@ export default function FirstQuestScreen() {
   const questCardTranslateY = useSharedValue(50);
   const buttonOpacity = useSharedValue(0);
 
+  useEffect(() => {
+    console.log("first quest screen mounted");
+  }, []);
+
   // Start animations when component mounts
   useEffect(() => {
     headerOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));

@@ -1,12 +1,5 @@
 import React, { useEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  Pressable,
-  Image,
-  SafeAreaView,
-  ImageBackground,
-} from "react-native";
+import { StyleSheet, View, ImageBackground } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -22,13 +15,11 @@ import {
   BorderRadius,
   Typography,
 } from "@/constants/theme";
-import { Character, Quest } from "@/store/types";
+import { Character } from "@/store/types";
 import { CHARACTERS } from "@/constants/characters";
 import { useQuestStore } from "@/store/quest-store";
-import { router } from "expo-router";
-import { buttonStyles } from "@/styles/buttons";
-import { layoutStyles } from "@/styles/layouts";
 import { TAB_BAR_HEIGHT } from "@/app/_layout";
+import { BlurView } from "expo-blur";
 
 type Props = {
   character: Character;
@@ -111,6 +102,9 @@ export function CharacterProgress({
         style={styles.backgroundImage}
         resizeMode="cover"
       >
+        {/* Use BlurView as the overlay */}
+        <BlurView intensity={50} style={StyleSheet.absoluteFill} />
+
         <View style={styles.contentContainer}>
           <View style={styles.characterInfo}>
             <ThemedText type="title">{character.name}</ThemedText>
@@ -119,7 +113,11 @@ export function CharacterProgress({
 
           <ThemedText
             type="subtitle"
-            style={{ ...Typography.subtitle, textAlign: "center" }}
+            style={{
+              ...Typography.subtitle,
+              color: Colors.forest,
+              textAlign: "center",
+            }}
           >
             Stats
           </ThemedText>
@@ -169,20 +167,6 @@ export function CharacterProgress({
               </ThemedText>
             </View>
           </View>
-
-          <Pressable
-            style={({ pressed }) => [
-              buttonStyles.primary,
-              pressed && buttonStyles.primaryPressed,
-            ]}
-            onPress={() => {
-              router.push("/map");
-            }}
-          >
-            <ThemedText style={buttonStyles.primaryText}>
-              Explore Map
-            </ThemedText>
-          </Pressable>
         </View>
       </ImageBackground>
     </View>

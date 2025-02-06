@@ -1,94 +1,36 @@
-import React from "react";
-import { StatusBar, StyleSheet } from "react-native";
-import { SafeAreaProvider } from "react-native-safe-area-context";
-import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
-import { Colors } from "@/constants/theme";
-import TabBarIcon from "@/components/ui/TabBarIcon";
+import React, { useEffect } from "react";
+import { StyleSheet } from "react-native";
+import { Slot, useRouter, useSegments } from "expo-router";
+import { useCharacterStore } from "@/store/character-store";
+import { useAccountStore } from "@/store/account-store";
 
-// Import your screens
-import QuestsScreen from "./quests";
-import MapScreen from "./map";
-import HomeScreen from "./home";
-import CharacterScreen from "./profile";
-import SettingsScreen from "./settings";
-
-const Tab = createBottomTabNavigator();
 export const TAB_BAR_HEIGHT = 100;
 
 export default function RootLayout() {
-  return (
-    <SafeAreaProvider>
-      <StatusBar hidden={true} />
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarShowLabel: false,
-          tabBarStyle: styles.tabBar,
-        }}
-      >
-        <Tab.Screen
-          name="Quests"
-          component={QuestsScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                source={require("@/assets/images/quests-icon.jpg")}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Map"
-          component={MapScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                source={require("@/assets/images/map-icon.jpg")}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Home"
-          component={HomeScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                source={require("@/assets/images/home-icon.jpg")}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Character"
-          component={CharacterScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                source={require("@/assets/images/profile-icon.jpg")}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-        <Tab.Screen
-          name="Settings"
-          component={SettingsScreen}
-          options={{
-            tabBarIcon: ({ focused }) => (
-              <TabBarIcon
-                source={require("@/assets/images/settings-icon.jpg")}
-                focused={focused}
-              />
-            ),
-          }}
-        />
-      </Tab.Navigator>
-    </SafeAreaProvider>
-  );
+  const router = useRouter();
+  const segments = useSegments();
+  const character = useCharacterStore((state) => state.character);
+  const account = useAccountStore((state) => state.account);
+
+  useEffect(() => {
+    const hasCompletedOnboarding = character && account;
+    const currentSegment = segments[0] || "";
+
+    console.log("Current segments:", segments);
+    console.log("Current segment:", currentSegment);
+    console.log("Has completed onboarding:", hasCompletedOnboarding);
+
+    if (!hasCompletedOnboarding && currentSegment !== "onboarding") {
+      console.log("Redirecting to onboarding...");
+      router.replace("/onboarding");
+    } else if (hasCompletedOnboarding && currentSegment !== "onboarding") {
+      console.log("Redirecting to main app...");
+      router.replace("/(app)/home");
+    }
+    // Else, we're on the correct path, no need to redirect
+  }, [character, account, segments]);
+
+  return <Slot />;
 }
 
 const styles = StyleSheet.create({
