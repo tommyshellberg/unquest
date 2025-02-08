@@ -13,7 +13,6 @@ const Tab = createBottomTabNavigator();
 
 export default function MainAppLayout() {
   const insets = useSafeAreaInsets();
-  console.log("insets", insets);
 
   return (
     <SafeAreaView style={{ flex: 1 }}>
@@ -22,7 +21,7 @@ export default function MainAppLayout() {
         screenOptions={{
           headerShown: false,
           tabBarShowLabel: false,
-          tabBarStyle: [styles.tabBar, { bottom: insets.bottom, height: 80 }],
+          tabBarStyle: [styles.tabBar, { bottom: insets.bottom, height: 60 }],
           tabBarBackground: () => null,
         }}
       >

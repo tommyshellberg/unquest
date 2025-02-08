@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { View, StyleSheet } from "react-native";
+import { View, StyleSheet, ImageBackground, FlatList } from "react-native";
 import { ThemedText } from "./ThemedText";
-import { QuestCard } from "./QuestCard";
 import { Colors, FontSizes, Spacing, Typography } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
+import { BlurView } from "expo-blur";
+import { layoutStyles } from "@/styles/layouts";
 
 type Props = {
   onComplete: (quest: any) => void;
@@ -12,6 +13,12 @@ type Props = {
 const renderTimeRemaining = (minutes: number, seconds: number) => {
   return `${minutes}:${seconds.toString().padStart(2, "0")}`;
 };
+
+const exampleActivities = [
+  { description: "Take a relaxing walk outside." },
+  { description: "Catch up with someone you care about." },
+  { description: "Read a book or write in a journal." },
+];
 
 export function ActiveQuest({ onComplete }: Props) {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -30,7 +37,7 @@ export function ActiveQuest({ onComplete }: Props) {
           clearInterval(timer);
           onComplete(activeQuest);
         } else {
-          setRemainingMinutes(Math.ceil(timeLeft / 60));
+          setRemainingMinutes(Math.floor(timeLeft / 60));
           setRemainingSeconds(Math.floor(timeLeft % 60));
         }
       }, 1000);
@@ -44,42 +51,89 @@ export function ActiveQuest({ onComplete }: Props) {
   if (!activeQuest) return null;
 
   return (
-    <QuestCard>
-      <View style={styles.header}>
-        <ThemedText type="subtitle" style={styles.title}>
-          {activeQuest.title}
-        </ThemedText>
-        <ThemedText type="subtitle" style={styles.title}>
-          {renderTimeRemaining(remainingMinutes, remainingSeconds)}
-        </ThemedText>
-      </View>
+    <View style={styles.container}>
+      <ImageBackground
+        source={require("@/assets/images/background/active-quest.jpg")}
+        style={layoutStyles.backgroundImage}
+      >
+        <BlurView
+          intensity={30}
+          tint="regular"
+          style={[StyleSheet.absoluteFill, { borderRadius: 24 }]}
+        />
 
-      <ThemedText type="body" style={styles.description}>
-        {activeQuest.description}
-      </ThemedText>
+        <View
+          style={[
+            layoutStyles.contentContainer,
+            {
+              padding: 0,
+              marginTop: 0,
+            },
+          ]}
+        >
+          <View
+            style={
+              (styles.header, { margin: 0, backgroundColor: Colors.stone })
+            }
+          >
+            <ThemedText
+              type="subtitle"
+              style={{
+                ...Typography.subtitle,
+                padding: Spacing.sm,
+                textAlign: "center",
+                verticalAlign: "middle",
+                marginBottom: 0,
+              }}
+            >
+              {activeQuest.title}
+            </ThemedText>
+          </View>
 
-      <ThemedText type="bodyItalic" style={styles.description}>
-        Your character grows stronger with every minute away.
-      </ThemedText>
-    </QuestCard>
+          <View style={{ padding: Spacing.md }}>
+            <ThemedText
+              type="bodyBold"
+              style={{
+                ...Typography.bodyBold,
+                textAlign: "center",
+                marginBottom: Spacing.lg,
+              }}
+            >
+              Time Remaining:{" "}
+              {renderTimeRemaining(remainingMinutes, remainingSeconds)}
+            </ThemedText>
+            <ThemedText type="body" style={styles.instructions}>
+              Close the app and enjoy some time away from the screen. Here are
+              some ideas:
+            </ThemedText>
+            <FlatList
+              data={exampleActivities}
+              renderItem={({ item }) => (
+                <ThemedText type="body" style={styles.activityItem}>
+                  - {item.description}
+                </ThemedText>
+              )}
+              keyExtractor={(item) => item.description}
+            />
+          </View>
+        </View>
+      </ImageBackground>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
-    color: Colors.cream,
+    flex: 1,
   },
   header: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
+    marginBottom: Spacing.md,
   },
-  title: {
-    ...Typography.subtitle,
-    color: Colors.cream,
+  instructions: {
+    marginBottom: Spacing.md,
+    textAlign: "left",
   },
-  description: {
-    ...Typography.body,
-    color: Colors.cream,
+  activityItem: {
+    marginBottom: Spacing.sm,
   },
 });

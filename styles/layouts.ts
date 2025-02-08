@@ -1,5 +1,6 @@
 import { StyleSheet } from "react-native";
-import { Colors } from "@/constants/theme";
+import { Colors, Spacing } from "@/constants/theme";
+import { TAB_BAR_HEIGHT } from "@/app/_layout";
 
 export const layoutStyles = StyleSheet.create({
   // Common full-screen container
@@ -15,6 +16,12 @@ export const layoutStyles = StyleSheet.create({
     ...StyleSheet.absoluteFillObject,
     width: "100%",
     height: "100%",
+  },
+  contentContainer: {
+    flex: 1,
+    marginTop: Spacing.xl,
+    padding: Spacing.lg,
+    paddingBottom: TAB_BAR_HEIGHT + Spacing.xl,
   },
   // Common overlays
   lightOverlay: {

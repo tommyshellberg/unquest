@@ -1,7 +1,7 @@
 import { StyleSheet, View, Image, Pressable } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { QuestCard } from "@/components/QuestCard";
-import { Colors, FontSizes, Spacing } from "@/constants/theme";
+import { Colors, FontSizes, Spacing, Typography } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useQuestStore } from "@/store/quest-store";
 import Animated, {
@@ -17,8 +17,6 @@ import React, { useEffect } from "react";
 import { layoutStyles } from "@/styles/layouts";
 import { buttonStyles } from "@/styles/buttons";
 
-const AnimatedQuestCard = Animated.createAnimatedComponent(QuestCard);
-
 export default function FirstQuestScreen() {
   const router = useRouter();
   const startQuest = useQuestStore((state) => state.startQuest);
@@ -31,11 +29,6 @@ export default function FirstQuestScreen() {
   const questCardTranslateY = useSharedValue(50);
   const buttonOpacity = useSharedValue(0);
 
-  useEffect(() => {
-    console.log("first quest screen mounted");
-  }, []);
-
-  // Start animations when component mounts
   useEffect(() => {
     headerOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
     welcomeScale.value = withSequence(
@@ -70,88 +63,118 @@ export default function FirstQuestScreen() {
     <View style={layoutStyles.fullScreen}>
       <View style={layoutStyles.backgroundImageContainer}>
         <Image
-          source={require("@/assets/images/onboarding-bg-1.jpg")}
+          source={require("@/assets/images/background/onboarding.jpg")}
           style={layoutStyles.backgroundImage}
           resizeMode="cover"
         />
-        <View style={layoutStyles.darkOverlay} />
+        <View style={[layoutStyles.darkOverlay, styles.lightOverlay]} />
       </View>
 
       <View style={styles.content}>
         <Animated.View style={[styles.header, headerStyle]}>
           <ThemedText type="title">Welcome to unQuest</ThemedText>
-          <ThemedText type="subtitle">
+          <ThemedText type="bodyBold">
             Your journey to mindful living begins here
           </ThemedText>
         </Animated.View>
 
-        <View style={layoutStyles.centeredContent}>
+        <View style={styles.description}>
           <ThemedText type="body">
             In unQuest, you'll embark on a unique adventure where the real
             challenge is stepping away from your device. Each quest is an
             opportunity to reconnect with the world around you.
           </ThemedText>
-
-          <AnimatedQuestCard style={[styles.questCard, questCardStyle]}>
-            <ThemedText type="title">{firstQuest.title}</ThemedText>
-            <ThemedText type="body">{firstQuest.description}</ThemedText>
-            <View style={styles.questDetails}>
-              <ThemedText type="body">
-                Duration: {firstQuest.durationMinutes} minutes
-              </ThemedText>
-              <ThemedText type="body">
-                Reward: {firstQuest.reward.xp} XP
-              </ThemedText>
-            </View>
-          </AnimatedQuestCard>
-
-          <Animated.View style={[styles.footer, buttonStyle]}>
-            <Pressable
-              style={({ pressed }) => [
-                buttonStyles.primary,
-                pressed && buttonStyles.primaryPressed,
-              ]}
-              onPress={handleAcceptQuest}
-            >
-              <ThemedText type="bodyBold">Begin Your First Quest</ThemedText>
-            </Pressable>
-          </Animated.View>
         </View>
+
+        <Animated.View style={questCardStyle}>
+          <QuestCard>
+            <View style={styles.questContent}>
+              <ThemedText type="subtitle" style={styles.questTitle}>
+                {firstQuest.title}
+              </ThemedText>
+              <ThemedText type="body" style={styles.questDuration}>
+                {firstQuest.durationMinutes} minutes
+              </ThemedText>
+              <ThemedText type="body" style={styles.questDescription}>
+                {firstQuest.description}
+              </ThemedText>
+              <View style={styles.questReward}>
+                <ThemedText type="bodyBold">
+                  Reward: {firstQuest.reward.xp} XP
+                </ThemedText>
+              </View>
+            </View>
+          </QuestCard>
+        </Animated.View>
+
+        <Animated.View style={[styles.buttonContainer, buttonStyle]}>
+          <Pressable
+            style={({ pressed }) => [
+              buttonStyles.primary,
+              styles.button,
+              pressed && buttonStyles.primaryPressed,
+            ]}
+            onPress={handleAcceptQuest}
+          >
+            <ThemedText type="bodyBold" style={styles.buttonText}>
+              Start Quest
+            </ThemedText>
+          </Pressable>
+        </Animated.View>
       </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
+  lightOverlay: {
+    backgroundColor: "rgba(0, 0, 0, 0.3)", // Lighter overlay
+  },
   content: {
     flex: 1,
-    padding: Spacing.xl,
+    padding: Spacing.lg,
   },
   header: {
-    alignItems: "center",
-    marginTop: Spacing.xxl,
-    gap: Spacing.sm,
+    marginTop: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
-  questCard: {
-    marginVertical: Spacing.xl,
+  description: {
+    marginBottom: Spacing.xl,
   },
-  questDetails: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginTop: Spacing.md,
+  questContent: {
+    padding: Spacing.lg,
+  },
+  questTitle: {
+    ...Typography.subtitle,
+    fontSize: FontSizes.md,
+    color: Colors.cream,
+    marginBottom: Spacing.md,
   },
   questDuration: {
-    fontSize: FontSizes.sm,
     color: Colors.cream,
-    opacity: 0.9,
+    opacity: 0.8,
+    marginBottom: Spacing.md,
+  },
+  questDescription: {
+    color: Colors.cream,
+    marginBottom: Spacing.xl,
   },
   questReward: {
-    fontSize: FontSizes.sm,
-    color: Colors.cream,
-    opacity: 0.9,
+    paddingTop: Spacing.md,
+    borderTopWidth: 1,
+    borderTopColor: Colors.cream + "20",
   },
-  footer: {
-    width: "100%",
-    marginTop: "auto",
+  buttonContainer: {
+    marginTop: Spacing.xl,
+  },
+  button: {
+    paddingVertical: Spacing.md,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  buttonText: {
+    ...Typography.bodyBold,
+    color: Colors.cream,
+    textAlign: "center",
   },
 });

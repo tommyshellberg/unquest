@@ -32,10 +32,6 @@ export default function ScreenTimeGoalScreen() {
     router.push("/onboarding/first-quest");
   };
 
-  useEffect(() => {
-    console.log("screen time goal screen mounted");
-  }, []);
-
   const navigation = useNavigation();
 
   // Hide header and drawer for onboarding flow
@@ -49,20 +45,20 @@ export default function ScreenTimeGoalScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("@/assets/images/onboarding-bg-3.jpg")}
+        source={require("@/assets/images/background/onboarding.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
       <ThemedView style={[styles.content, { backgroundColor: "transparent" }]}>
         <View style={styles.header}>
           <ThemedText type="title">Set Your Goals</ThemedText>
-          <ThemedText type="subtitle">
+          <ThemedText type="body">
             The journey to better habits starts with acknowledging where we are.
           </ThemedText>
         </View>
 
         <View style={styles.pickerSection}>
-          <ThemedText type="body">
+          <ThemedText type="bodyBold">
             What's your current daily screen time?
           </ThemedText>
           <View style={styles.pickerContainer}>
@@ -83,7 +79,7 @@ export default function ScreenTimeGoalScreen() {
             </Picker>
           </View>
 
-          <ThemedText type="body">
+          <ThemedText type="bodyBold">
             What's your daily screen time goal?
           </ThemedText>
           <View style={styles.pickerContainer}>

@@ -1,58 +1,51 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, View } from "react-native";
-import { Audio } from "expo-av";
+import React, { useEffect, useState, useCallback } from "react";
+import {
+  StyleSheet,
+  View,
+  Dimensions,
+  Button,
+  AppState,
+  AppStateStatus,
+  ScrollView,
+} from "react-native";
 import { ThemedText } from "./ThemedText";
-import { FontSizes, Spacing, Colors } from "@/constants/theme";
-import Animated, {
-  useAnimatedStyle,
-  withTiming,
-  useSharedValue,
-  withSequence,
-  withDelay,
-  withSpring,
-} from "react-native-reanimated";
-import { AVAILABLE_QUESTS } from "@/app/data/quests";
+import { Spacing, Colors, Typography } from "@/constants/theme";
+import { BlurView } from "expo-blur";
+import { LinearGradient } from "expo-linear-gradient";
+import { Audio } from "expo-av";
+import { useFocusEffect } from "@react-navigation/native";
 
 type Props = {
   story: string;
   questId: string;
 };
 
-// Average reading speed (words per second)
-const WORDS_PER_SECOND = 2.5;
-// Duration of each word's fade-in animation
-const FADE_DURATION = 500;
-// Amount to slide up (in pixels)
-const SLIDE_UP_DISTANCE = 10;
-
 export function StoryNarration({ story, questId }: Props) {
-  const [sound, setSound] = useState<Audio.Sound>();
+  const [sound, setSound] = useState<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
-  // Split story into words and clean up extra whitespace
-  const words = story.replace(/\s+/g, " ").trim().split(" ");
-
-  // Create arrays of shared values for opacity and translateY
-  const wordOpacities = words.map(() => useSharedValue(0));
-  const wordTranslateY = words.map(() => useSharedValue(SLIDE_UP_DISTANCE));
-
-  // Opacity for the text container
-  const containerOpacity = useSharedValue(0);
-
+  // Function to play the audio narration
   async function playSound() {
+    if (sound) {
+      // Sound is already loaded
+      return;
+    }
     try {
+      // Stop any existing sound to prevent overlap
+      await stopAndUnloadSound();
+
       // Load the audio file based on the quest ID
       const audioFile = getAudioFileForQuest(questId);
       if (!audioFile) return;
 
-      const { sound } = await Audio.Sound.createAsync(audioFile, {
+      const { sound: loadedSound } = await Audio.Sound.createAsync(audioFile, {
         shouldPlay: true,
       });
-      setSound(sound);
+      setSound(loadedSound);
       setIsPlaying(true);
 
       // Handle audio completion
-      sound.setOnPlaybackStatusUpdate((status) => {
+      loadedSound.setOnPlaybackStatusUpdate((status) => {
         if (status.isLoaded && status.didJustFinish) {
           setIsPlaying(false);
         }
@@ -66,122 +59,127 @@ export function StoryNarration({ story, questId }: Props) {
   const stopAndUnloadSound = async () => {
     if (sound) {
       try {
-        await sound.stopAsync();
-        await sound.unloadAsync();
+        const status = await sound.getStatusAsync();
+        if (status.isLoaded) {
+          await sound.stopAsync();
+          await sound.unloadAsync();
+        }
       } catch (error) {
         console.error("Error cleaning up sound:", error);
+      } finally {
+        setSound(null);
+        setIsPlaying(false);
       }
     }
   };
 
+  // Handle app state change (e.g., app goes to background or foreground)
   useEffect(() => {
-    let isMounted = true;
-
-    const setupAndPlay = async () => {
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true,
-        staysActiveInBackground: false, // Changed to false
-      });
-
-      if (isMounted) {
-        playSound();
-        startTextReveal();
-      }
-    };
-
-    setupAndPlay();
-
-    // Cleanup function
-    return () => {
-      isMounted = false;
-      stopAndUnloadSound();
-    };
-  }, []);
-
-  const startTextReveal = () => {
-    // Fade in the container
-    containerOpacity.value = withSequence(
-      withDelay(300, withTiming(1, { duration: 500 }))
+    const subscription = AppState.addEventListener(
+      "change",
+      handleAppStateChange
     );
+    return () => {
+      subscription.remove();
+    };
+  }, [sound]);
 
-    // Create an array of animations
-    const animations = words.map((_, index) => {
-      return () => {
-        wordOpacities[index].value = withTiming(1, { duration: FADE_DURATION });
-        wordTranslateY[index].value = withSpring(0, {
-          damping: 20,
-          stiffness: 200,
-        });
-      };
-    });
-
-    // Start staggered animations
-    const staggerDelay = 1000 / WORDS_PER_SECOND;
-    setTimeout(() => {
-      animations.forEach((anim, index) => {
-        setTimeout(anim, index * staggerDelay);
-      });
-    }, 500); // Initial delay before starting animations
+  const handleAppStateChange = async (nextAppState: AppStateStatus) => {
+    if (nextAppState !== "active") {
+      // App has gone to background
+      if (sound) {
+        try {
+          await sound.pauseAsync();
+          setIsPlaying(false);
+        } catch (error) {
+          console.error("Error pausing sound:", error);
+        }
+      }
+    } else {
+      // App has come to foreground
+      if (sound) {
+        try {
+          await sound.playAsync();
+          setIsPlaying(true);
+        } catch (error) {
+          console.error("Error resuming sound:", error);
+        }
+      }
+    }
   };
 
-  const containerStyle = useAnimatedStyle(() => ({
-    opacity: containerOpacity.value,
-  }));
+  // Handle screen focus/unfocus
+  useFocusEffect(
+    useCallback(() => {
+      // Screen is focused
+      playSound();
+
+      return () => {
+        // Screen is unfocused
+        stopAndUnloadSound();
+      };
+    }, [questId])
+  );
+
+  // Helper function to map quest IDs to audio files
+  function getAudioFileForQuest(questId: string) {
+    const audioMap = {
+      "quest-1": require("@/assets/audio/quest-1.mp3"),
+      "quest-2": require("@/assets/audio/quest-2.mp3"),
+      "quest-3": require("@/assets/audio/quest-3.mp3"),
+      "quest-4": require("@/assets/audio/quest-4.mp3"),
+      "quest-5": require("@/assets/audio/quest-5.mp3"),
+    };
+
+    return audioMap[questId as keyof typeof audioMap];
+  }
 
   return (
-    <Animated.View style={[styles.container, containerStyle]}>
-      <View style={styles.storyContainer}>
-        {words.map((word, index) => {
-          const wordStyle = useAnimatedStyle(() => ({
-            opacity: wordOpacities[index].value,
-            transform: [{ translateY: wordTranslateY[index].value }],
-          }));
-
-          return (
-            <Animated.View
-              key={index}
-              style={[styles.wordContainer, wordStyle]}
-            >
-              <ThemedText style={styles.storyText}>{word}</ThemedText>
-            </Animated.View>
-          );
-        })}
-      </View>
-    </Animated.View>
+    <View style={[styles.container]}>
+      <BlurView
+        intensity={50}
+        tint="light"
+        style={styles.blurCard}
+        experimentalBlurMethod="dimezisBlurView"
+      >
+        {/* ScrollView */}
+        <ScrollView
+          contentContainerStyle={styles.contentContainer}
+          showsVerticalScrollIndicator={false}
+        >
+          <ThemedText type="body" style={styles.text}>
+            {story}
+          </ThemedText>
+        </ScrollView>
+      </BlurView>
+    </View>
   );
-}
-
-// Helper function to map quest IDs to audio files
-function getAudioFileForQuest(questId: string) {
-  // build a static map that maps questId to the audio file which is at /assets/audio/{questId}.mp3
-  const audioMap = {
-    "quest-1": require("@/assets/audio/quest-1.mp3"),
-    "quest-2": require("@/assets/audio/quest-2.mp3"),
-    "quest-3": require("@/assets/audio/quest-3.mp3"),
-    "quest-4": require("@/assets/audio/quest-4.mp3"),
-    "quest-5": require("@/assets/audio/quest-5.mp3"),
-  };
-
-  return audioMap[questId as keyof typeof audioMap];
 }
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1,
+    width: "100%",
     marginVertical: Spacing.md,
-    paddingHorizontal: Spacing.sm,
+    paddingHorizontal: Spacing.md,
   },
-  storyContainer: {
-    flexDirection: "row",
-    flexWrap: "wrap",
+  blurCard: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: "hidden",
   },
-  wordContainer: {
-    marginRight: 4,
-    marginBottom: 4,
+  topGradient: {
+    position: "absolute",
+    top: 0,
+    height: 80, // Adjust the height to control the gradient effect
+    width: "100%",
   },
-  storyText: {
-    fontSize: FontSizes.md,
+  contentContainer: {
+    padding: Spacing.md,
+  },
+  text: {
+    ...Typography.body,
+    color: Colors.text.light,
     lineHeight: 24,
-    fontStyle: "italic",
-    color: Colors.forest,
   },
 });

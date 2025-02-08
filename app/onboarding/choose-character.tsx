@@ -18,10 +18,6 @@ export default function ChooseCharacterScreen() {
     null
   );
 
-  useEffect(() => {
-    console.log("choose character screen mounted");
-  }, []);
-
   const handleContinue = () => {
     if (!selectedCharacter) return;
 
@@ -49,7 +45,7 @@ export default function ChooseCharacterScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("@/assets/images/onboarding-bg-2.jpg")}
+        source={require("@/assets/images/background/onboarding.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />

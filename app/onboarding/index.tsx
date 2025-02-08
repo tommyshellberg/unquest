@@ -1,7 +1,13 @@
 import { Image, StyleSheet, Platform, Pressable, View } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import {
+  Colors,
+  FontSizes,
+  Spacing,
+  BorderRadius,
+  Typography,
+} from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
 import { buttonStyles } from "@/styles/buttons";
@@ -16,7 +22,7 @@ export default function OnboardingScreen() {
   return (
     <View style={styles.container}>
       <Image
-        source={require("@/assets/images/onboarding-bg-1.jpg")}
+        source={require("@/assets/images/background/onboarding.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
@@ -27,8 +33,12 @@ export default function OnboardingScreen() {
           <ThemedView
             style={[styles.heroSection, { backgroundColor: "transparent" }]}
           >
+            <Image
+              source={require("@/assets/images/unquestlogo-downscaled.png")}
+              style={styles.logo}
+            />
             <ThemedText type="title">unQuest</ThemedText>
-            <ThemedText type="subtitle">Level Up By Logging Off</ThemedText>
+            <ThemedText type="bodyBold">Level Up By Logging Off</ThemedText>
           </ThemedView>
 
           <ThemedView
@@ -37,8 +47,12 @@ export default function OnboardingScreen() {
               { backgroundColor: "transparent" },
             ]}
           >
-            <ThemedText style={styles.description}>
-              The only game that rewards you for not playing it.
+            <ThemedText
+              type="body"
+              style={[Typography.body, { textAlign: "center" }]}
+            >
+              {`The only game that rewards you 
+for not playing it.`}
             </ThemedText>
           </ThemedView>
 
@@ -71,6 +85,10 @@ const styles = StyleSheet.create({
     width: "100%",
     height: "100%",
   },
+  logo: {
+    width: 120,
+    height: 120,
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: Colors.overlay.dark,
@@ -80,9 +98,8 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   heroSection: {
-    gap: Spacing.md,
     alignItems: "center",
-    marginTop: "15%",
+    marginTop: Spacing.sm,
   },
   appName: {
     textAlign: "center",

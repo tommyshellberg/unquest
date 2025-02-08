@@ -96,12 +96,12 @@ export const Typography = {
   },
   title: {
     fontFamily: "cinzel-bold",
-    fontSize: FontSizes.xxl,
+    fontSize: FontSizes.xl,
     marginBottom: Spacing.md,
   },
   titleBlack: {
     fontFamily: "cinzel-black",
-    fontSize: FontSizes.xxl,
+    fontSize: FontSizes.xl,
     marginBottom: Spacing.md,
   },
 } as const;

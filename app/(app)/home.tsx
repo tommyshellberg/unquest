@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  StyleSheet,
-  View,
-  ScrollView,
-  ImageBackground,
-  Pressable,
-} from "react-native";
+import { StyleSheet, View, Image, Pressable } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ActiveQuest } from "@/components/ActiveQuest";
@@ -20,6 +14,8 @@ import Constants from "expo-constants";
 import { useLockStateDetection } from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
 import { TAB_BAR_HEIGHT } from "../_layout";
+import { layoutStyles } from "@/styles/layouts";
+import { BlurView } from "expo-blur";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -107,21 +103,32 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={require("@/assets/images/onboarding-bg-2.jpg")}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        <View style={styles.contentContainer}>
+    <View style={layoutStyles.fullScreen}>
+      <View style={layoutStyles.backgroundImageContainer}>
+        <Image
+          source={require("@/assets/images/background/active-quest.jpg")}
+          style={layoutStyles.backgroundImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={layoutStyles.contentContainer}>
+        <View style={styles.header}>
+          <ThemedText type="title">
+            {activeQuest ? "Active Quest" : "Next Quest"}
+          </ThemedText>
+          <ThemedText type="bodyBold">
+            {activeQuest
+              ? "You grow stronger while you're away."
+              : "Continue your journey"}
+          </ThemedText>
+        </View>
+        <BlurView
+          intensity={5}
+          style={styles.blurCard}
+          experimentalBlurMethod="dimezisBlurView"
+        >
           {activeQuest ? (
             <>
-              <View style={styles.header}>
-                <ThemedText type="title">Active Quest</ThemedText>
-                <ThemedText type="subtitle">
-                  Your character is growing stronger while you're away
-                </ThemedText>
-              </View>
               <ActiveQuest onComplete={handleQuestComplete} />
 
               {/* Development Mode Button */}
@@ -135,19 +142,9 @@ export default function HomeScreen() {
                   </ThemedText>
                 </Pressable>
               )}
-
-              <ThemedText type="bodyBold">
-                Close the app and return when your quest timer is complete. Your
-                progress will be saved automatically.
-              </ThemedText>
             </>
           ) : (
             <View style={styles.availableQuestsContainer}>
-              <View style={styles.header}>
-                <ThemedText type="title">Next Quest</ThemedText>
-                <ThemedText type="subtitle">Continue your journey</ThemedText>
-              </View>
-
               {availableQuests.length > 0 ? (
                 <QuestList
                   quests={availableQuests}
@@ -163,8 +160,8 @@ export default function HomeScreen() {
               )}
             </View>
           )}
-        </View>
-      </ImageBackground>
+        </BlurView>
+      </View>
     </View>
   );
 }
@@ -178,6 +175,12 @@ const styles = StyleSheet.create({
     flex: 1,
     width: "100%",
     height: "100%",
+  },
+  blurCard: {
+    flex: 1,
+    borderRadius: 16,
+    overflow: "hidden",
+    padding: Spacing.md,
   },
   contentContainer: {
     flex: 1,
@@ -199,7 +202,6 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.forest,
     textAlign: "center",
-    opacity: 0.9,
   },
   questContainer: {
     backgroundColor: "rgba(0, 0, 0, 0.7)",
@@ -233,15 +235,12 @@ const styles = StyleSheet.create({
     fontSize: FontSizes.md,
     color: Colors.cream,
     textAlign: "center",
-    opacity: 0.9,
     lineHeight: 24,
   },
   devButton: {
     backgroundColor: "#FF0000",
     padding: Spacing.md,
     borderRadius: BorderRadius.md,
-    marginTop: Spacing.xl,
-    opacity: 0.8,
   },
   devButtonText: {
     color: Colors.cream,
