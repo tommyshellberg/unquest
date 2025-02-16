@@ -53,17 +53,28 @@ export default function HomeScreen() {
     }
   };
 
-  const handleClaimReward = () => {
+  const handleClaimReward = async () => {
+    console.log("claiming reward");
     if (!currentCompletion || !character) return;
 
-    // Add XP before completing quest
-    addXP(currentCompletion.reward.xp);
+    try {
+      // Add XP before completing quest
+      addXP(currentCompletion.reward.xp);
+      console.log("reward added");
 
-    // Reset completion state
-    setShowingCompletion(false);
-    setCurrentCompletion(null);
-    // Navigate to level progress screen after claiming reward
-    router.push("/profile");
+      // Reset completion state
+      setShowingCompletion(false);
+      setCurrentCompletion(null);
+
+      // Use replace instead of push to avoid stack issues
+      console.log("navigating to profile");
+      await router.replace("/profile");
+
+      // Add debug to see if we get here
+      console.log("navigation completed");
+    } catch (error) {
+      console.error("Navigation error:", error);
+    }
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {

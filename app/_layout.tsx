@@ -33,11 +33,21 @@ export default function RootLayout() {
 
     const hasCompletedOnboarding = character && account;
     const currentSegment = segments[0] || "";
+    console.log("Navigation guard - current segment:", currentSegment);
 
-    if (!hasCompletedOnboarding && currentSegment !== "onboarding") {
+    // Only redirect if we're at the root route or onboarding
+    if (!currentSegment) {
+      if (!hasCompletedOnboarding) {
+        console.log("Redirecting to onboarding");
+        router.replace("/onboarding");
+      } else {
+        console.log("Redirecting to home");
+        router.replace("/(app)/home");
+      }
+    } else if (!hasCompletedOnboarding && currentSegment !== "onboarding") {
+      // Force onboarding if not completed
+      console.log("Forcing onboarding redirect");
       router.replace("/onboarding");
-    } else if (hasCompletedOnboarding) {
-      router.replace("/(app)/home");
     }
   }, [character, account, segments, fontsLoaded, mounted]);
 

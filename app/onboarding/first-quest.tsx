@@ -128,7 +128,7 @@ export default function FirstQuestScreen() {
 
 const styles = StyleSheet.create({
   lightOverlay: {
-    backgroundColor: "rgba(0, 0, 0, 0.3)", // Lighter overlay
+    backgroundColor: "rgba(255, 255, 255, 0.1)", // Lighter overlay
   },
   content: {
     flex: 1,

@@ -1,9 +1,7 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React, { useEffect, useState, useCallback, useRef } from "react";
 import {
   StyleSheet,
   View,
-  Dimensions,
-  Button,
   AppState,
   AppStateStatus,
   ScrollView,
@@ -11,7 +9,6 @@ import {
 import { ThemedText } from "./ThemedText";
 import { Spacing, Colors, Typography } from "@/constants/theme";
 import { BlurView } from "expo-blur";
-import { LinearGradient } from "expo-linear-gradient";
 import { Audio } from "expo-av";
 import { useFocusEffect } from "@react-navigation/native";
 
@@ -21,12 +18,12 @@ type Props = {
 };
 
 export function StoryNarration({ story, questId }: Props) {
-  const [sound, setSound] = useState<Audio.Sound | null>(null);
+  const soundRef = useRef<Audio.Sound | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
 
   // Function to play the audio narration
   async function playSound() {
-    if (sound) {
+    if (soundRef.current) {
       // Sound is already loaded
       return;
     }
@@ -41,7 +38,7 @@ export function StoryNarration({ story, questId }: Props) {
       const { sound: loadedSound } = await Audio.Sound.createAsync(audioFile, {
         shouldPlay: true,
       });
-      setSound(loadedSound);
+      soundRef.current = loadedSound;
       setIsPlaying(true);
 
       // Handle audio completion
@@ -55,21 +52,44 @@ export function StoryNarration({ story, questId }: Props) {
     }
   }
 
-  // Cleanup function to stop and unload audio
   const stopAndUnloadSound = async () => {
-    if (sound) {
+    console.log(
+      "Stopping and unloading sound, current sound:",
+      soundRef.current
+    );
+    if (soundRef.current) {
       try {
-        const status = await sound.getStatusAsync();
-        if (status.isLoaded) {
-          await sound.stopAsync();
-          await sound.unloadAsync();
+        const status = await soundRef.current.getStatusAsync();
+        console.log("Sound status:", status);
+
+        // Try to stop regardless of status
+        try {
+          await soundRef.current.stopAsync();
+          console.log("Sound stopped");
+        } catch (stopError) {
+          console.log("Stop error:", stopError);
+        }
+
+        // Try to unload regardless of status
+        try {
+          await soundRef.current.unloadAsync();
+          console.log("Sound unloaded");
+        } catch (unloadError) {
+          console.log("Unload error:", unloadError);
         }
       } catch (error) {
-        console.error("Error cleaning up sound:", error);
+        console.error("Error getting sound status:", error);
       } finally {
-        setSound(null);
-        setIsPlaying(false);
+        // Force cleanup of the sound object
+        if (soundRef.current) {
+          soundRef.current.setOnPlaybackStatusUpdate(null);
+          soundRef.current = null;
+          setIsPlaying(false);
+          console.log("Sound state cleared");
+        }
       }
+    } else {
+      console.log("No sound to cleanup");
     }
   };
 
@@ -82,14 +102,14 @@ export function StoryNarration({ story, questId }: Props) {
     return () => {
       subscription.remove();
     };
-  }, [sound]);
+  }, [soundRef.current]);
 
   const handleAppStateChange = async (nextAppState: AppStateStatus) => {
     if (nextAppState !== "active") {
       // App has gone to background
-      if (sound) {
+      if (soundRef.current) {
         try {
-          await sound.pauseAsync();
+          await soundRef.current.pauseAsync();
           setIsPlaying(false);
         } catch (error) {
           console.error("Error pausing sound:", error);
@@ -97,9 +117,9 @@ export function StoryNarration({ story, questId }: Props) {
       }
     } else {
       // App has come to foreground
-      if (sound) {
+      if (soundRef.current) {
         try {
-          await sound.playAsync();
+          await soundRef.current.playAsync();
           setIsPlaying(true);
         } catch (error) {
           console.error("Error resuming sound:", error);
@@ -108,15 +128,28 @@ export function StoryNarration({ story, questId }: Props) {
     }
   };
 
+  // Ensure cleanup happens when component unmounts
+  useEffect(() => {
+    return () => {
+      console.log("MapScreen unmounting - cleaning up audio");
+      stopAndUnloadSound().catch((error) =>
+        console.error("Error cleaning up sound on unmount:", error)
+      );
+    };
+  }, []);
+
   // Handle screen focus/unfocus
   useFocusEffect(
     useCallback(() => {
-      // Screen is focused
+      console.log("Screen focused - starting sound");
       playSound();
 
       return () => {
-        // Screen is unfocused
-        stopAndUnloadSound();
+        console.log("Screen unfocused - stopping sound");
+        // Make sure we wait for the cleanup to complete
+        stopAndUnloadSound().catch((error) =>
+          console.error("Error cleaning up sound on unfocus:", error)
+        );
       };
     }, [questId])
   );
