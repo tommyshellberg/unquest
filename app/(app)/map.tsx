@@ -30,17 +30,17 @@ import Animated, {
 } from "react-native-reanimated";
 import MaskedView from "@react-native-masked-view/masked-view";
 import { usePOIStore } from "@/store/poi-store";
-import { INITIAL_POIS } from "../data/pois";
-import { ThemedText } from "@/components/ThemedText";
-
+import { useQuestStore } from "@/store/quest-store";
+import { getMapForQuest } from "@/utils/mapUtils";
+import { MAP_IMAGES, MapId } from "@/app/data/maps";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
-const imageWidth = 1200;
-const imageHeight = 834;
+const IMAGE_WIDTH = 1200;
+const IMAGE_HEIGHT = 834;
 const maskWidth = 500;
 const maskHeight = 500;
 
 // Debug the image source immediately
-const MAP_IMAGE = require("@/assets/images/map-1.jpg");
 const MASK_IMAGE = require("@/assets/images/fog-mask-2.png");
 
 export default function MapScreen() {
@@ -52,10 +52,12 @@ export default function MapScreen() {
   // Shared value for new mask animations
   const newMaskScale = useSharedValue(0.1);
 
+  const insets = useSafeAreaInsets();
+
   const maxTranslateX = 0;
-  const minTranslateX = screenWidth - imageWidth;
+  const minTranslateX = screenWidth - IMAGE_WIDTH;
   const maxTranslateY = 0;
-  const minTranslateY = screenHeight - imageHeight - 200;
+  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom; // add the insets value
 
   const pois = usePOIStore((state) => state.pois);
   const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);
@@ -66,14 +68,36 @@ export default function MapScreen() {
 
   const poiScale = useSharedValue(1);
 
-  // Memoize filtered POIs
-  const revealedPOIS = useMemo(
-    () => pois.filter((poi) => poi.isRevealed),
-    [pois]
-  );
-
   // Add a ref to track if we're currently animating
   const isAnimating = useRef(false);
+
+  // Get the last completed quest
+  const completedQuests = useQuestStore((state) => state.completedQuests);
+  const lastCompletedQuest = completedQuests[completedQuests.length - 1];
+
+  // Determine the map to display
+  const mapId = useMemo<MapId>(
+    () => getMapForQuest(lastCompletedQuest?.id || ""),
+    [lastCompletedQuest]
+  );
+
+  // Memoize filtered POIs
+  const revealedPOIS = useMemo(
+    () =>
+      pois.filter((poi) => poi.isRevealed).filter((poi) => poi.mapId === mapId),
+    [pois, mapId]
+  );
+
+  console.log("revealedPOIS", revealedPOIS);
+
+  // Get the map image
+  const mapImage = MAP_IMAGES[mapId];
+  console.log("mapId", mapId);
+  console.log("Resolved image source:", Image.resolveAssetSource(mapImage));
+
+  // Get image dimensions (assuming all maps are same size)
+  const imageWidth = 1200; // Update with actual width
+  const imageHeight = 800; // Update with actual height
 
   const handleLoadStart = useCallback(() => {
     console.log("Map image load started");
@@ -274,13 +298,14 @@ export default function MapScreen() {
           >
             <Animated.View style={[styles.mapWrapper, imageStyle]}>
               <RNImage
-                source={MAP_IMAGE}
-                style={styles.mapImage}
-                onLoadStart={handleLoadStart}
+                source={mapImage}
+                style={{ width: imageWidth, height: imageHeight }}
+                onLoadStart={() => {
+                  console.log("Map image load started");
+                }}
                 onLoad={handleLoad}
                 onError={handleError}
                 resizeMode="contain"
-                fadeDuration={0}
               />
 
               {revealedPOIS.map((poi) => {
@@ -333,12 +358,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
   },
   mapWrapper: {
-    width: imageWidth,
-    height: imageHeight,
+    width: IMAGE_WIDTH,
+    height: IMAGE_HEIGHT,
   },
   mapImage: {
-    width: imageWidth,
-    height: imageHeight,
+    width: IMAGE_WIDTH,
+    height: IMAGE_HEIGHT,
   },
   maskImage: {
     width: maskWidth,

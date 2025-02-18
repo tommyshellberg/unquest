@@ -7,6 +7,7 @@ export const INITIAL_POIS: POI[] = [
     x: 320,
     y: 160,
     isRevealed: true,
+    mapId: "map-1",
   },
   {
     slug: "darkwood-awakening",
@@ -14,6 +15,7 @@ export const INITIAL_POIS: POI[] = [
     x: 500,
     y: 180,
     isRevealed: false,
+    mapId: "map-1",
   },
   {
     slug: "hut-of-whispers",
@@ -21,6 +23,7 @@ export const INITIAL_POIS: POI[] = [
     x: 240,
     y: 260,
     isRevealed: false,
+    mapId: "map-1",
   },
   {
     slug: "weary-crossing",
@@ -28,6 +31,7 @@ export const INITIAL_POIS: POI[] = [
     x: 420,
     y: 420,
     isRevealed: false,
+    mapId: "map-1",
   },
   {
     slug: "arch-of-echoes",
@@ -35,6 +39,7 @@ export const INITIAL_POIS: POI[] = [
     x: 680,
     y: 540,
     isRevealed: false,
+    mapId: "map-1",
   },
   {
     slug: "rugged-outcropping",
@@ -42,5 +47,6 @@ export const INITIAL_POIS: POI[] = [
     x: 930,
     y: 640,
     isRevealed: false,
+    mapId: "map-1",
   },
 ];

@@ -9,6 +9,7 @@ export type POI = {
   x: number;
   y: number;
   isRevealed: boolean;
+  mapId: string;
 };
 
 interface POIState {
