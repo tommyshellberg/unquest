@@ -14,6 +14,12 @@ import { useRouter } from "expo-router";
 import { useAccountStore } from "@/store/account-store";
 import { useNavigation } from "@react-navigation/native";
 import { buttonStyles } from "@/styles/buttons";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withDelay,
+} from "react-native-reanimated";
 
 // Generate time options in 15-minute increments (0h to 12h)
 const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
@@ -30,6 +36,40 @@ export default function ScreenTimeGoalScreen() {
   const createAccount = useAccountStore((state) => state.createAccount);
   const [currentTime, setCurrentTime] = useState(240); // 4h default
   const [targetTime, setTargetTime] = useState(120); // 2h default
+
+  // Create shared values for animations
+  const headerAnim = useSharedValue(0);
+  const dropdownAnim = useSharedValue(0);
+  const buttonAnim = useSharedValue(0);
+
+  // Animate components in sequence on mount
+  useEffect(() => {
+    headerAnim.value = withTiming(1, { duration: 500 });
+    dropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
+    buttonAnim.value = withDelay(1200, withTiming(1, { duration: 500 }));
+  }, []);
+
+  // Animated styles
+  const headerAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: headerAnim.value,
+      transform: [{ translateY: 20 * (1 - headerAnim.value) }],
+    };
+  });
+
+  const dropdownAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: dropdownAnim.value,
+      transform: [{ translateY: 20 * (1 - dropdownAnim.value) }],
+    };
+  });
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: buttonAnim.value,
+      transform: [{ translateY: 20 * (1 - buttonAnim.value) }],
+    };
+  });
 
   const handleContinue = () => {
     // Save screen time goals to account store
@@ -56,14 +96,14 @@ export default function ScreenTimeGoalScreen() {
         resizeMode="cover"
       />
       <ThemedView style={[styles.content, { backgroundColor: "transparent" }]}>
-        <View style={styles.header}>
+        <Animated.View style={[styles.header, headerAnimatedStyle]}>
           <ThemedText type="title">Set Your Goals</ThemedText>
           <ThemedText type="body">
             The journey to better habits starts with acknowledging where we are.
           </ThemedText>
-        </View>
+        </Animated.View>
 
-        <View style={styles.pickerSection}>
+        <Animated.View style={[styles.pickerSection, dropdownAnimatedStyle]}>
           <ThemedText
             type="bodyBold"
             style={{ ...Typography.bodyBold, color: Colors.text.light }}
@@ -115,9 +155,9 @@ export default function ScreenTimeGoalScreen() {
               ))}
             </Picker>
           </View>
-        </View>
+        </Animated.View>
 
-        <View style={styles.footer}>
+        <Animated.View style={[styles.footer, buttonAnimatedStyle]}>
           <Pressable
             style={({ pressed }) => [
               styles.continueButton,
@@ -129,7 +169,7 @@ export default function ScreenTimeGoalScreen() {
               Set My Goal
             </ThemedText>
           </Pressable>
-        </View>
+        </Animated.View>
       </ThemedView>
     </View>
   );
