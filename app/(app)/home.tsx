@@ -6,16 +6,29 @@ import { ActiveQuest } from "@/components/ActiveQuest";
 import { QuestComplete } from "@/components/QuestComplete";
 import { QuestList } from "@/components/QuestList";
 import { QuestFailed } from "@/components/QuestFailed";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import {
+  Colors,
+  FontSizes,
+  Spacing,
+  BorderRadius,
+  Typography,
+} from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
 import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
 import { useLockStateDetection } from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
-import { TAB_BAR_HEIGHT } from "../_layout";
 import { layoutStyles } from "@/styles/layouts";
 import { BlurView } from "expo-blur";
+import Animated, {
+  useAnimatedStyle,
+  useSharedValue,
+  withSequence,
+  withSpring,
+  withDelay,
+  withTiming,
+} from "react-native-reanimated";
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -35,6 +48,14 @@ export default function HomeScreen() {
   const [currentCompletion, setCurrentCompletion] =
     useState<QuestCompletion | null>(null);
 
+  // Animation values
+  const headerOpacity = useSharedValue(0);
+  const headerScale = useSharedValue(0.9);
+  const subtitleOpacity = useSharedValue(0);
+  const cardOpacity = useSharedValue(0);
+  const cardTranslateY = useSharedValue(50);
+  const devButtonOpacity = useSharedValue(0);
+
   useLockStateDetection();
 
   // Refresh available quests when there's no active quest
@@ -43,6 +64,53 @@ export default function HomeScreen() {
       refreshAvailableQuests();
     }
   }, [activeQuest]);
+
+  useEffect(() => {
+    if (activeQuest) {
+      // Header text fade in and scale
+      headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
+      headerScale.value = withSequence(
+        withDelay(450, withSpring(1.1)),
+        withSpring(1)
+      );
+
+      // Subtitle fade in
+      subtitleOpacity.value = withDelay(
+        1500,
+        withTiming(1, { duration: 1000 })
+      );
+
+      // Quest card slides up and fades in
+      cardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
+      cardTranslateY.value = withDelay(2700, withSpring(0));
+
+      // Dev button fades in last
+      if (Constants.expoConfig?.extra?.development) {
+        devButtonOpacity.value = withDelay(
+          3600,
+          withTiming(1, { duration: 625 })
+        );
+      }
+    }
+  }, [activeQuest]);
+
+  const headerStyle = useAnimatedStyle(() => ({
+    opacity: headerOpacity.value,
+    transform: [{ scale: headerScale.value }],
+  }));
+
+  const subtitleStyle = useAnimatedStyle(() => ({
+    opacity: subtitleOpacity.value,
+  }));
+
+  const cardStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ translateY: cardTranslateY.value }],
+  }));
+
+  const devButtonStyle = useAnimatedStyle(() => ({
+    opacity: devButtonOpacity.value,
+  }));
 
   const handleQuestComplete = (ignoreDuration = false) => {
     if (!character) return;
@@ -123,55 +191,66 @@ export default function HomeScreen() {
         />
       </View>
       <View style={layoutStyles.contentContainer}>
-        <View style={styles.header}>
+        <Animated.View style={[styles.header, headerStyle]}>
           <ThemedText type="title">
             {activeQuest ? "Active Quest" : "Next Quest"}
           </ThemedText>
-          <ThemedText type="bodyBold">
+        </Animated.View>
+
+        <Animated.View style={[styles.subtitle, subtitleStyle]}>
+          <ThemedText
+            type="bodyBold"
+            style={{ ...Typography.bodyBold, color: Colors.text.light }}
+          >
             {activeQuest
               ? "You grow stronger while you're away."
               : "Continue your journey"}
           </ThemedText>
-        </View>
-        <BlurView
-          intensity={5}
-          style={styles.blurCard}
-          experimentalBlurMethod="dimezisBlurView"
-        >
-          {activeQuest ? (
-            <>
-              <ActiveQuest onComplete={handleQuestComplete} />
+        </Animated.View>
 
-              {/* Development Mode Button */}
-              {Constants.expoConfig?.extra?.development && (
-                <Pressable
-                  style={styles.devButton}
-                  onPressOut={handleDevComplete}
-                >
-                  <ThemedText type="bodyBold" style={styles.devButtonText}>
-                    [DEV] Complete Quest Now
-                  </ThemedText>
-                </Pressable>
-              )}
-            </>
-          ) : (
-            <View style={styles.availableQuestsContainer}>
-              {availableQuests.length > 0 ? (
-                <QuestList
-                  quests={availableQuests}
-                  onSelectQuest={handleSelectQuest}
-                />
-              ) : (
-                <ThemedView style={styles.noQuestsContainer}>
-                  <ThemedText type="bodyLight">
-                    No quests available at the moment. Complete your current
-                    quest or check back later.
-                  </ThemedText>
-                </ThemedView>
-              )}
-            </View>
-          )}
-        </BlurView>
+        <Animated.View style={[styles.blurCard, cardStyle]}>
+          <BlurView
+            intensity={5}
+            style={styles.blurContent}
+            experimentalBlurMethod="dimezisBlurView"
+          >
+            {activeQuest ? (
+              <>
+                <ActiveQuest onComplete={handleQuestComplete} />
+
+                {/* Development Mode Button */}
+                {Constants.expoConfig?.extra?.development && (
+                  <Animated.View style={devButtonStyle}>
+                    <Pressable
+                      style={styles.devButton}
+                      onPressOut={handleDevComplete}
+                    >
+                      <ThemedText type="bodyBold" style={styles.devButtonText}>
+                        [DEV] Complete Quest Now
+                      </ThemedText>
+                    </Pressable>
+                  </Animated.View>
+                )}
+              </>
+            ) : (
+              <View style={styles.availableQuestsContainer}>
+                {availableQuests.length > 0 ? (
+                  <QuestList
+                    quests={availableQuests}
+                    onSelectQuest={handleSelectQuest}
+                  />
+                ) : (
+                  <ThemedView style={styles.noQuestsContainer}>
+                    <ThemedText type="bodyLight">
+                      No quests available at the moment. Complete your current
+                      quest or check back later.
+                    </ThemedText>
+                  </ThemedView>
+                )}
+              </View>
+            )}
+          </BlurView>
+        </Animated.View>
       </View>
     </View>
   );
@@ -191,28 +270,19 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 16,
     overflow: "hidden",
-    padding: Spacing.md,
   },
-  contentContainer: {
+  blurContent: {
     flex: 1,
     padding: Spacing.md,
-    paddingBottom: TAB_BAR_HEIGHT + Spacing.xl,
   },
   header: {
     alignItems: "center",
     marginVertical: Spacing.xl,
     gap: Spacing.xs,
   },
-  title: {
-    fontSize: FontSizes.xxl,
-    fontWeight: "600",
-    color: Colors.forest,
-    textAlign: "center",
-  },
   subtitle: {
-    fontSize: FontSizes.md,
-    color: Colors.forest,
-    textAlign: "center",
+    alignItems: "center",
+    marginBottom: Spacing.xl,
   },
   questContainer: {
     backgroundColor: "rgba(0, 0, 0, 0.7)",

@@ -25,19 +25,31 @@ export default function FirstQuestScreen() {
   // Animation values
   const headerOpacity = useSharedValue(0);
   const welcomeScale = useSharedValue(0.9);
+  const descriptionOpacity = useSharedValue(0);
   const questCardOpacity = useSharedValue(0);
   const questCardTranslateY = useSharedValue(50);
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    headerOpacity.value = withDelay(300, withTiming(1, { duration: 800 }));
+    // Welcome text fade in and scale (duration: 1000ms -> 1250ms, delay: 300ms -> 450ms)
+    headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
     welcomeScale.value = withSequence(
-      withDelay(300, withSpring(1.1)),
+      withDelay(450, withSpring(1.1)),
       withSpring(1)
     );
-    questCardOpacity.value = withDelay(800, withTiming(1, { duration: 800 }));
-    questCardTranslateY.value = withDelay(800, withSpring(0));
-    buttonOpacity.value = withDelay(1200, withTiming(1, { duration: 500 }));
+
+    // Description paragraphs fade in (duration: 800ms -> 1000ms, delay: 1000ms -> 1500ms)
+    descriptionOpacity.value = withDelay(
+      1500,
+      withTiming(1, { duration: 1000 })
+    );
+
+    // Quest card slides up and fades in (duration: 800ms -> 1000ms, delay: 1800ms -> 2700ms)
+    questCardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
+    questCardTranslateY.value = withDelay(2700, withSpring(0));
+
+    // Button fades in last (duration: 500ms -> 625ms, delay: 2400ms -> 3600ms)
+    buttonOpacity.value = withDelay(3600, withTiming(1, { duration: 625 }));
   }, []);
 
   const handleAcceptQuest = () => {
@@ -48,6 +60,10 @@ export default function FirstQuestScreen() {
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
     transform: [{ scale: welcomeScale.value }],
+  }));
+
+  const descriptionStyle = useAnimatedStyle(() => ({
+    opacity: descriptionOpacity.value,
   }));
 
   const questCardStyle = useAnimatedStyle(() => ({
@@ -81,7 +97,7 @@ export default function FirstQuestScreen() {
           </ThemedText>
         </Animated.View>
 
-        <View style={styles.description}>
+        <Animated.View style={[styles.description, descriptionStyle]}>
           <ThemedText type="body">
             In unQuest, you'll embark on a unique adventure where the real
             challenge is stepping away from your device.
@@ -93,7 +109,7 @@ export default function FirstQuestScreen() {
             When you complete a quest, you'll earn XP and uncover the story of
             Vaedros, a kingdom thrown into disarray.
           </ThemedText>
-        </View>
+        </Animated.View>
 
         <Animated.View style={questCardStyle}>
           <QuestCard>
@@ -126,7 +142,7 @@ export default function FirstQuestScreen() {
             ]}
             onPress={handleAcceptQuest}
           >
-            <ThemedText type="bodyBold" style={styles.buttonText}>
+            <ThemedText style={buttonStyles.primaryText}>
               Start First Quest
             </ThemedText>
           </Pressable>
