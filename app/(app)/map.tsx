@@ -55,9 +55,9 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
 
   const maxTranslateX = 0;
-  const minTranslateX = screenWidth - IMAGE_WIDTH;
+  const minTranslateX = screenWidth - IMAGE_WIDTH + insets.left;
   const maxTranslateY = 0;
-  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom + 20; // add the insets value
+  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom + 20;
 
   const pois = usePOIStore((state) => state.pois);
   const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);

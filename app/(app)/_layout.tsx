@@ -31,7 +31,7 @@ export default function MainAppLayout() {
           options={{
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
-                source={require("@/assets/images/home-icon.jpg")}
+                source={require("@/assets/images/ui/home-icon.jpg")}
                 focused={focused}
               />
             ),
@@ -43,7 +43,7 @@ export default function MainAppLayout() {
           options={{
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
-                source={require("@/assets/images/map-icon.jpg")}
+                source={require("@/assets/images/ui/map-icon.jpg")}
                 focused={focused}
               />
             ),
@@ -55,7 +55,7 @@ export default function MainAppLayout() {
           options={{
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
-                source={require("@/assets/images/profile-icon.jpg")}
+                source={require("@/assets/images/ui/profile-icon.jpg")}
                 focused={focused}
               />
             ),
@@ -67,7 +67,7 @@ export default function MainAppLayout() {
           options={{
             tabBarIcon: ({ focused }) => (
               <TabBarIcon
-                source={require("@/assets/images/settings-icon.jpg")}
+                source={require("@/assets/images/ui/settings-icon.jpg")}
                 focused={focused}
               />
             ),

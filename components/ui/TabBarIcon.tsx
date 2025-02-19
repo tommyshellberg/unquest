@@ -49,8 +49,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 4,
     elevation: 5,
-    borderWidth: 2,
-    borderColor: Colors.stone,
   },
   focusedContainer: {
     borderColor: Colors.primary,

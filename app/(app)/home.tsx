@@ -66,31 +66,24 @@ export default function HomeScreen() {
   }, [activeQuest]);
 
   useEffect(() => {
-    if (activeQuest) {
-      // Header text fade in and scale
-      headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
-      headerScale.value = withSequence(
-        withDelay(450, withSpring(1.1)),
-        withSpring(1)
+    // Animate header, subtitle, and card regardless of whether activeQuest is truthy or not.
+    headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
+    headerScale.value = withSequence(
+      withDelay(450, withSpring(1.1)),
+      withSpring(1)
+    );
+
+    subtitleOpacity.value = withDelay(1500, withTiming(1, { duration: 1000 }));
+
+    cardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
+    cardTranslateY.value = withDelay(2700, withSpring(0));
+
+    // Animate the dev button only in the active quest scenario as before.
+    if (activeQuest && Constants.expoConfig?.extra?.development) {
+      devButtonOpacity.value = withDelay(
+        3600,
+        withTiming(1, { duration: 625 })
       );
-
-      // Subtitle fade in
-      subtitleOpacity.value = withDelay(
-        1500,
-        withTiming(1, { duration: 1000 })
-      );
-
-      // Quest card slides up and fades in
-      cardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
-      cardTranslateY.value = withDelay(2700, withSpring(0));
-
-      // Dev button fades in last
-      if (Constants.expoConfig?.extra?.development) {
-        devButtonOpacity.value = withDelay(
-          3600,
-          withTiming(1, { duration: 625 })
-        );
-      }
     }
   }, [activeQuest]);
 
