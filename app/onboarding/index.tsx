@@ -38,7 +38,12 @@ export default function OnboardingScreen() {
               style={styles.logo}
             />
             <ThemedText type="title">unQuest</ThemedText>
-            <ThemedText type="bodyBold">Level Up By Logging Off</ThemedText>
+            <ThemedText
+              type="bodyBold"
+              style={{ ...Typography.bodyBold, color: Colors.text.light }}
+            >
+              Level Up By Logging Off
+            </ThemedText>
           </ThemedView>
 
           <ThemedView

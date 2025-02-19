@@ -57,7 +57,7 @@ export default function MapScreen() {
   const maxTranslateX = 0;
   const minTranslateX = screenWidth - IMAGE_WIDTH;
   const maxTranslateY = 0;
-  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom; // add the insets value
+  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom + 20; // add the insets value
 
   const pois = usePOIStore((state) => state.pois);
   const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);

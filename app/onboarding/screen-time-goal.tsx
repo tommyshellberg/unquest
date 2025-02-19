@@ -3,7 +3,13 @@ import { StyleSheet, View, Image, Platform, Pressable } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import {
+  Colors,
+  FontSizes,
+  Spacing,
+  BorderRadius,
+  Typography,
+} from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { useAccountStore } from "@/store/account-store";
 import { useNavigation } from "@react-navigation/native";
@@ -58,7 +64,10 @@ export default function ScreenTimeGoalScreen() {
         </View>
 
         <View style={styles.pickerSection}>
-          <ThemedText type="bodyBold">
+          <ThemedText
+            type="bodyBold"
+            style={{ ...Typography.bodyBold, color: Colors.text.light }}
+          >
             What's your current daily screen time?
           </ThemedText>
           <View style={styles.pickerContainer}>
@@ -79,7 +88,14 @@ export default function ScreenTimeGoalScreen() {
             </Picker>
           </View>
 
-          <ThemedText type="bodyBold">
+          <ThemedText
+            type="bodyBold"
+            style={{
+              ...Typography.bodyBold,
+              color: Colors.text.light,
+              fontSize: FontSizes.md,
+            }}
+          >
             What's your daily screen time goal?
           </ThemedText>
           <View style={styles.pickerContainer}>
@@ -159,7 +175,7 @@ const styles = StyleSheet.create({
     width: "100%",
     ...Platform.select({
       android: {
-        color: Colors.forest,
+        color: Colors.text.light,
       },
     }),
   },

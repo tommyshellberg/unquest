@@ -73,16 +73,25 @@ export default function FirstQuestScreen() {
       <View style={styles.content}>
         <Animated.View style={[styles.header, headerStyle]}>
           <ThemedText type="title">Welcome to unQuest</ThemedText>
-          <ThemedText type="bodyBold">
-            Your journey to mindful living begins here
+          <ThemedText
+            type="bodyBold"
+            style={{ ...Typography.bodyBold, color: Colors.text.light }}
+          >
+            Your journey to mindful living
           </ThemedText>
         </Animated.View>
 
         <View style={styles.description}>
           <ThemedText type="body">
             In unQuest, you'll embark on a unique adventure where the real
-            challenge is stepping away from your device. Each quest is an
-            opportunity to reconnect with the world around you.
+            challenge is stepping away from your device.
+          </ThemedText>
+          <ThemedText type="body">
+            Each quest is an opportunity to reconnect with the world around you.
+          </ThemedText>
+          <ThemedText type="body">
+            When you complete a quest, you'll earn XP and uncover the story of
+            Vaedros, a kingdom thrown into disarray.
           </ThemedText>
         </View>
 
@@ -92,14 +101,15 @@ export default function FirstQuestScreen() {
               <ThemedText type="subtitle" style={styles.questTitle}>
                 {firstQuest.title}
               </ThemedText>
-              <ThemedText type="body" style={styles.questDuration}>
-                {firstQuest.durationMinutes} minutes
-              </ThemedText>
               <ThemedText type="body" style={styles.questDescription}>
                 {firstQuest.description}
               </ThemedText>
               <View style={styles.questReward}>
-                <ThemedText type="bodyBold">
+                <ThemedText type="body" style={styles.questDuration}>
+                  Lock your phone and don't use it for{" "}
+                  {firstQuest.durationMinutes} minutes to complete this quest.
+                </ThemedText>
+                <ThemedText type="body">
                   Reward: {firstQuest.reward.xp} XP
                 </ThemedText>
               </View>
@@ -117,7 +127,7 @@ export default function FirstQuestScreen() {
             onPress={handleAcceptQuest}
           >
             <ThemedText type="bodyBold" style={styles.buttonText}>
-              Start Quest
+              Start First Quest
             </ThemedText>
           </Pressable>
         </Animated.View>
@@ -135,14 +145,14 @@ const styles = StyleSheet.create({
     padding: Spacing.lg,
   },
   header: {
-    marginTop: Spacing.xl,
+    marginTop: Spacing.lg,
     marginBottom: Spacing.lg,
   },
   description: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.lg,
   },
   questContent: {
-    padding: Spacing.lg,
+    padding: Spacing.sm,
   },
   questTitle: {
     ...Typography.subtitle,
