@@ -1,4 +1,13 @@
-import { Image, StyleSheet, Pressable, View, ScrollView } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Pressable,
+  View,
+  ScrollView,
+  FlatList,
+  Animated,
+  Dimensions,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
@@ -9,6 +18,12 @@ import { CharacterType } from "@/store/types";
 import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { buttonStyles } from "@/styles/buttons";
+import { useSharedValue, useAnimatedStyle } from "react-native-reanimated";
+
+// Get screen dimensions and define card dimensions
+const screenWidth = Dimensions.get("window").width;
+const cardWidth = screenWidth * 0.75; // each card takes 75% of screen width
+const snapInterval = cardWidth;
 
 export default function ChooseCharacterScreen() {
   const router = useRouter();
@@ -20,17 +35,11 @@ export default function ChooseCharacterScreen() {
 
   const handleContinue = () => {
     if (!selectedCharacter) return;
-
     // Get character details from CHARACTERS constant
     const character = CHARACTERS.find((c) => c.id === selectedCharacter);
     if (!character) return;
-
     // Create character in store
-    createCharacter(
-      character.id as CharacterType, // Make sure CHARACTERS ids match CharacterType
-      character.name
-    );
-
+    createCharacter(character.id as CharacterType, character.name);
     router.push("/onboarding/screen-time-goal");
   };
 
@@ -42,6 +51,50 @@ export default function ChooseCharacterScreen() {
     });
   }, []);
 
+  // Shared value for scroll animation
+  const scrollX = useSharedValue(0);
+
+  // New Card component for each character
+  function Card({
+    item,
+    index,
+  }: {
+    item: (typeof CHARACTERS)[0];
+    index: number;
+  }) {
+    const isSelected = selectedCharacter === item.id;
+    return (
+      <View style={styles.characterCardContainer}>
+        <ThemedView
+          style={[
+            styles.card,
+            isSelected ? styles.selectedCard : styles.inactiveCard,
+          ]}
+        >
+          {/* Card Header: Character name */}
+          <ThemedText type="title" style={styles.cardHeading}>
+            {item.name}
+          </ThemedText>
+          <ThemedText type="body" style={styles.cardSubheading}>
+            {item.title}
+          </ThemedText>
+          {/* Card Body: Character image */}
+          <View style={styles.cardBody}>
+            <Image
+              source={item.image}
+              style={styles.cardImage}
+              resizeMode="cover"
+            />
+          </View>
+          {/* Card Footer: Character description */}
+          <ThemedText type="body" style={styles.cardDescription}>
+            {item.description}
+          </ThemedText>
+        </ThemedView>
+      </View>
+    );
+  }
+
   return (
     <View style={styles.container}>
       <Image
@@ -49,10 +102,7 @@ export default function ChooseCharacterScreen() {
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        style={styles.scrollView}
-      >
+      <View style={styles.scrollView}>
         <ThemedView style={[styles.header, { backgroundColor: "transparent" }]}>
           <ThemedText type="title">Your Character</ThemedText>
           <ThemedText type="body">
@@ -65,43 +115,25 @@ export default function ChooseCharacterScreen() {
           </ThemedText>
         </ThemedView>
 
-        <View style={[styles.grid, { backgroundColor: "transparent" }]}>
-          {CHARACTERS.map((character) => (
-            <Pressable
-              key={character.id}
-              style={[
-                styles.characterCard,
-                selectedCharacter === character.id && styles.selectedCard,
-              ]}
-              onPress={() => setSelectedCharacter(character.id)}
-            >
-              <Image
-                source={character.image}
-                style={styles.characterImage}
-                resizeMode="cover"
-              />
-              {selectedCharacter === character.id && (
-                <View style={styles.characterOverlay}>
-                  <ThemedText style={styles.characterOverlayTitle}>
-                    {character.title}
-                  </ThemedText>
-                  <ThemedText style={styles.characterDescription}>
-                    {character.description}
-                  </ThemedText>
-                </View>
-              )}
-              <ThemedView
-                style={[
-                  styles.characterInfo,
-                  { backgroundColor: "transparent" },
-                ]}
-              >
-                <ThemedText style={styles.characterName}>
-                  {character.name}
-                </ThemedText>
-              </ThemedView>
-            </Pressable>
-          ))}
+        <View style={styles.characterScrollContainer}>
+          <FlatList
+            data={CHARACTERS}
+            horizontal
+            snapToInterval={snapInterval}
+            decelerationRate="fast"
+            showsHorizontalScrollIndicator={false}
+            keyExtractor={(item) => item.id}
+            contentContainerStyle={{
+              paddingHorizontal: (screenWidth - cardWidth) / 2,
+            }}
+            scrollEventThrottle={16}
+            onMomentumScrollEnd={(event) => {
+              const offsetX = event.nativeEvent.contentOffset.x;
+              const newIndex = Math.round(offsetX / snapInterval);
+              setSelectedCharacter(CHARACTERS[newIndex].id);
+            }}
+            renderItem={({ item, index }) => <Card item={item} index={index} />}
+          />
         </View>
 
         <ThemedView style={[styles.footer, { backgroundColor: "transparent" }]}>
@@ -118,7 +150,7 @@ export default function ChooseCharacterScreen() {
             </ThemedText>
           </Pressable>
         </ThemedView>
-      </ScrollView>
+      </View>
     </View>
   );
 }
@@ -137,84 +169,67 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
-    padding: Spacing.xl,
     paddingBottom: Spacing.xxl,
   },
   header: {
     gap: Spacing.md,
     marginBottom: Spacing.xl,
+    padding: Spacing.xl,
   },
-  grid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: Spacing.md,
-    justifyContent: "center",
+  characterScrollContainer: {
     marginBottom: Spacing.xl,
   },
-  characterCard: {
-    width: "45%",
-    aspectRatio: 2 / 3.5,
-    backgroundColor: Colors.forest,
-    borderRadius: BorderRadius.lg,
-    overflow: "hidden",
-    borderWidth: 2,
-    borderColor: "transparent",
-    elevation: 5,
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  selectedCard: {
-    borderColor: Colors.cream,
-    transform: [{ scale: 1.02 }],
-  },
-  characterImage: {
-    width: "100%",
-    height: "85%",
-  },
-  characterOverlay: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: "15%",
-    backgroundColor: "rgba(0, 0, 0, 0.75)",
-    padding: Spacing.md,
+  characterCardContainer: {
+    width: cardWidth,
     justifyContent: "center",
     alignItems: "center",
-    gap: Spacing.sm,
   },
-  characterOverlayTitle: {
+  card: {
+    width: cardWidth,
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+    backgroundColor: Colors.background.dark,
+    padding: Spacing.md,
+    alignItems: "center",
+  },
+  selectedCard: {
+    transform: [{ scale: 1 }],
+    borderWidth: 2,
+    borderColor: Colors.cream, // adjust to your preferred light border color
+    opacity: 1,
+  },
+  inactiveCard: {
+    transform: [{ scale: 0.9 }],
+    opacity: 0.6,
+  },
+  cardHeading: {
+    fontSize: FontSizes.lg,
     color: Colors.cream,
-    fontSize: FontSizes.sm,
-    fontWeight: "600",
-    textAlign: "center",
-    marginBottom: Spacing.xs,
+    marginBottom: Spacing.sm,
   },
-  characterDescription: {
-    color: Colors.cream,
-    textAlign: "center",
-    fontSize: FontSizes.sm,
-    lineHeight: 20,
-    opacity: 0.9,
-  },
-  characterInfo: {
-    padding: Spacing.sm,
-    height: "15%",
-    justifyContent: "center",
-  },
-  characterName: {
-    textAlign: "center",
+  cardSubheading: {
     fontSize: FontSizes.md,
     color: Colors.cream,
-    fontWeight: "600",
+    marginBottom: Spacing.sm,
+  },
+  cardBody: {
+    width: "100%",
+    alignItems: "center",
+    marginBottom: Spacing.sm,
+  },
+  cardImage: {
+    width: cardWidth, // use cardWidth to match the container
+    height: 200,
+    borderRadius: BorderRadius.md,
+  },
+  cardDescription: {
+    fontSize: FontSizes.md,
+    color: Colors.cream,
+    textAlign: "center",
+    marginBottom: Spacing.sm,
   },
   footer: {
-    paddingTop: Spacing.xl,
+    padding: Spacing.xl,
   },
   continueButton: {
     backgroundColor: Colors.primary,
@@ -226,9 +241,6 @@ const styles = StyleSheet.create({
   },
   continueButtonDisabled: {
     backgroundColor: Colors.button.disabled,
-    opacity: 0.5,
-  },
-  continueButtonTextDisabled: {
     opacity: 0.5,
   },
 });
