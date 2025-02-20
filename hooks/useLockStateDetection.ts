@@ -41,6 +41,7 @@ export function useLockStateDetection() {
         console.log("Available Quests:", availableQuests);
 
         if (!activeQuest && availableQuests.length > 0) {
+          console.log("No active quest, starting a new quest retroactively");
           // No active quest, start a new quest retroactively
           const questToStart = availableQuests[0];
           startQuestAt(questToStart, timeWentToBackground);
@@ -55,6 +56,7 @@ export function useLockStateDetection() {
             // Quest is still active
           }
         } else if (activeQuest) {
+          console.log("Active Quest:", activeQuest);
           // There was an active quest
           const questDurationInSeconds = activeQuest.durationMinutes * 60;
           const timeSinceQuestStarted =
@@ -62,9 +64,11 @@ export function useLockStateDetection() {
 
           if (timeSinceQuestStarted >= questDurationInSeconds) {
             // Quest duration has passed, complete the quest
+            console.log("Quest completed because time has passed");
             completeQuest();
           } else {
             // Quest failed because user returned before time
+            console.log("Quest failed because user returned before time");
             failQuest();
           }
         }

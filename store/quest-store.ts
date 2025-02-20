@@ -4,6 +4,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Quest, QuestTemplate } from "./types";
 import { AVAILABLE_QUESTS } from "@/app/data/quests";
 import { usePOIStore } from "@/store/poi-store";
+import {
+  scheduleQuestNotification,
+  scheduleQuestCompletionNotification,
+} from "@/utils/notifications";
 
 interface QuestState {
   activeQuest: Quest | null;
@@ -32,8 +36,9 @@ export const useQuestStore = create<QuestState>()(
           ...quest,
           startTime: Date.now(),
         };
-        set({ activeQuest: startedQuest });
-        set({ availableQuests: [] });
+        set({ activeQuest: startedQuest, availableQuests: [] });
+        scheduleQuestCompletionNotification(quest);
+        scheduleQuestNotification(60 * 1000);
       },
 
       completeQuest: (ignoreDuration = false) => {
