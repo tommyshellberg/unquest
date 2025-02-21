@@ -1,9 +1,9 @@
 import { useEffect, useRef } from "react";
 import { NativeEventEmitter, NativeModules, Platform } from "react-native";
 import { useQuestStore } from "@/store/quest-store";
-import type { Quest, QuestTemplate } from "@/store/types";
+import { QuestTimer } from "@/services/quest-timer";
 
-export function useLockStateDetection() {
+export default function useLockStateDetection() {
   const { LockState } = NativeModules;
 
   const backgroundTimestamp = useRef<number | null>(null);
@@ -21,46 +21,25 @@ export function useLockStateDetection() {
       backgroundTimestamp.current = Date.now();
     };
 
-    const onUnlocked = () => {
+    const onUnlocked = async () => {
       console.log("Device Unlocked");
       const timeNow = Date.now();
 
       console.log("backgroundTimestamp", backgroundTimestamp.current);
 
       if (backgroundTimestamp.current) {
-        const timeWentToBackground = backgroundTimestamp.current;
-        const timeSpentInBackground = (timeNow - timeWentToBackground) / 1000; // in seconds
-
         const questStoreState = useQuestStore.getState();
         const activeQuest = questStoreState.activeQuest;
-        const availableQuests = questStoreState.availableQuests;
-        const completeQuest = questStoreState.completeQuest;
-        const failQuest = questStoreState.failQuest;
 
-        console.log("Active Quest:", activeQuest);
-        console.log("Available Quests:", availableQuests);
+        const { completeQuest, failQuest } = questStoreState;
 
-        if (!activeQuest && availableQuests.length > 0) {
-          console.log("No active quest, starting a new quest retroactively");
-          // No active quest, start a new quest retroactively
-          const questToStart = availableQuests[0];
-          startQuestAt(questToStart, timeWentToBackground);
-
-          const questDurationInSeconds = questToStart.durationMinutes * 60;
-          const timeSinceQuestStarted = (timeNow - timeWentToBackground) / 1000;
-
-          if (timeSinceQuestStarted >= questDurationInSeconds) {
-            // Quest duration has passed, complete the quest
-            completeQuest();
-          } else {
-            // Quest is still active
-          }
-        } else if (activeQuest) {
-          console.log("Active Quest:", activeQuest);
+        if (activeQuest) {
           // There was an active quest
           const questDurationInSeconds = activeQuest.durationMinutes * 60;
           const timeSinceQuestStarted =
             (timeNow - activeQuest.startTime) / 1000;
+
+          await QuestTimer.stopQuest();
 
           if (timeSinceQuestStarted >= questDurationInSeconds) {
             // Quest duration has passed, complete the quest
@@ -88,13 +67,4 @@ export function useLockStateDetection() {
       unlockedListener.remove();
     };
   }, []);
-
-  // Helper function to start a quest at a specific time
-  const startQuestAt = (questTemplate: QuestTemplate, startTime: number) => {
-    const quest: Quest = {
-      ...questTemplate,
-      startTime,
-    };
-    useQuestStore.setState({ activeQuest: quest });
-  };
 }

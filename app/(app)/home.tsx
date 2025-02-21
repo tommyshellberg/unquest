@@ -17,7 +17,7 @@ import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
 import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
 import Constants from "expo-constants";
-import { useLockStateDetection } from "@/hooks/useLockStateDetection";
+import useLockStateDetection from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
 import { layoutStyles } from "@/styles/layouts";
 import { BlurView } from "expo-blur";

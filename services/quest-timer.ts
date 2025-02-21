@@ -1,24 +1,25 @@
 import BackgroundService from "react-native-background-actions";
-import { Quest } from "../store/types";
+import { Quest, QuestTemplate } from "../store/types";
 
 export class QuestTimer {
   private static activeQuest: Quest | null = null;
   private static startTime: number | null = null;
 
-  static async startQuest(quest: Quest) {
+  static async startQuest(questTemplate: QuestTemplate) {
+    console.log("starting quest", questTemplate);
+    const quest = { ...questTemplate, startTime: Date.now() };
     this.activeQuest = quest;
     this.startTime = Date.now();
 
     const options = {
       taskName: "QuestTimer",
-      taskTitle: quest.title,
-      taskDesc: quest.description,
+      taskTitle: `Quest started: ${quest.title}`,
+      taskDesc: `Keep your phone locked for ${quest.durationMinutes} minutes to complete the quest`,
       taskIcon: {
         name: "ic_launcher",
         type: "mipmap",
       },
       color: "#228B22", // forest green
-      linkingURI: "unquest://quest", // Deep link back to app
       progressBar: {
         max: quest.durationMinutes * 60,
         value: 0,
@@ -26,16 +27,6 @@ export class QuestTimer {
       },
       parameters: {
         questDuration: quest.durationMinutes * 60 * 1000,
-      },
-      // Android specific options
-      notification: {
-        channelId: "quest-timer",
-        channelName: "Quest Timer",
-        channelDescription: "Shows progress of active quests",
-        color: "#228B22",
-        priority: "high",
-        visibility: "public",
-        ongoing: true,
       },
     };
 
@@ -45,6 +36,8 @@ export class QuestTimer {
   private static backgroundTask = async (taskData?: {
     questDuration: number;
   }) => {
+    console.log("Background task started");
+    console.log("taskData", taskData);
     if (!taskData) return;
 
     const { questDuration } = taskData;
@@ -54,6 +47,7 @@ export class QuestTimer {
       const progress = Math.min((elapsedTime / questDuration) * 100, 100);
 
       // Update notification progress bar
+      console.log("Updating notification progress bar", progress);
       await BackgroundService.updateNotification({
         progressBar: {
           max: 100,
@@ -64,16 +58,18 @@ export class QuestTimer {
 
       // Check if quest is complete
       if (elapsedTime >= questDuration) {
+        console.log("Quest completed");
         await this.stopQuest();
         break;
       }
 
       // Update every second
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 3000));
     }
   };
 
   static async stopQuest() {
+    console.log("Stopping quest");
     if (BackgroundService.isRunning()) {
       await BackgroundService.stop();
     }

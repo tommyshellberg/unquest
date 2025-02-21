@@ -1,23 +1,27 @@
 {
   "expo": {
-    "name": "unquest-app",
-    "slug": "unquest-app",
+    "name": "unQuest",
+    "slug": "unquest",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "myapp",
+    "scheme": "unquest",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.anonymous.unquestapp"
+      "bundleIdentifier": "com.anonymous.unquest"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "package": "com.anonymous.unquestapp"
+      "permissions": [
+        "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
+        "android.permission.FOREGROUND_SERVICE"
+      ],
+      "package": "com.anonymous.unquest"
     },
     "extra": {
       "development": true,

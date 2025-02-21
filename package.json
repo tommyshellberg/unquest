@@ -1,5 +1,5 @@
 {
-  "name": "unquest-app",
+  "name": "unquest",
   "main": "expo-router/entry",
   "version": "1.0.0",
   "scripts": {
