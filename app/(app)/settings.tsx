@@ -6,6 +6,7 @@ import { useQuestStore } from "@/store/quest-store";
 import { usePOIStore } from "@/store/poi-store";
 import { Colors } from "@/constants/Colors";
 import { buttonStyles } from "@/styles/buttons";
+import { layoutStyles } from "@/styles/layouts";
 const resetAppData = () => {
   Alert.alert(
     "Reset App Data",
@@ -37,25 +38,38 @@ const handleReset = async () => {
 
 export default function SettingsScreen() {
   return (
-    <View style={styles.container}>
-      <ThemedText type="title">Settings Screen</ThemedText>
-      {__DEV__ && (
-        <Pressable onPress={resetAppData} style={styles.resetButton}>
-          <ThemedText style={styles.resetButtonText} type="bodyBold">
-            Reset App Data
+    <View style={layoutStyles.fullScreen}>
+      <View
+        style={{
+          ...layoutStyles.contentContainer,
+          alignItems: "center",
+          justifyContent: "space-between",
+        }}
+      >
+        <View style={{ alignItems: "center" }}>
+          <ThemedText type="title">Settings Screen</ThemedText>
+          <ThemedText type="body">
+            Here you can manage your settings and reset your app data.
           </ThemedText>
-        </Pressable>
-      )}
+        </View>
+        <View style={{ alignItems: "center" }}>
+          <ThemedText type="subtitle">Reset App Data</ThemedText>
+          <ThemedText type="bodyBold">
+            Your progress will be reset, your character will be deleted, and you
+            will have to start over.
+          </ThemedText>
+          <Pressable onPress={resetAppData} style={styles.resetButton}>
+            <ThemedText style={styles.resetButtonText} type="bodyBold">
+              Reset App Data
+            </ThemedText>
+          </Pressable>
+        </View>
+      </View>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   resetButton: {
     ...buttonStyles.primary,
     padding: 16,

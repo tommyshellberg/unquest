@@ -1,4 +1,5 @@
 import { QuestTemplate } from "@/store/types";
+import Constants from "expo-constants";
 
 export const AVAILABLE_QUESTS: QuestTemplate[] = [
   {
@@ -6,7 +7,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "A Confused Awakening",
     description:
       "Awaken in a dark forest with no memory, as a distant hut beckons through the gloom.",
-    durationMinutes: 3,
+    durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 3,
     reward: { xp: 100 },
     poiSlug: "darkwood-awakening",
     story: `
@@ -23,7 +24,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "Shelter of Whispers",
     description:
       "Seek refuge in a modest hut and discover a mysterious map that reveals only your immediate surroundings.",
-    durationMinutes: 10,
+    durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 10,
     reward: { xp: 120 },
     poiSlug: "hut-of-whispers",
     story: `
@@ -41,7 +42,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "The Weary Crossing",
     description:
       "Build a makeshift raft and brave a torrential river, emerging on the far shore, breathless and spent.",
-    durationMinutes: 15,
+    durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 15,
     reward: { xp: 150 },
     poiSlug: "weary-crossing",
     story: `
@@ -59,7 +60,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "Echoes of the Ancients",
     description:
       "Follow the shoreline to a colossal ancient arch inscribed with cryptic messages that whisper secrets of the past.",
-    durationMinutes: 20,
+    durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 20,
     reward: { xp: 200 },
     poiSlug: "arch-of-echoes",
     story: `
@@ -78,7 +79,7 @@ export const AVAILABLE_QUESTS: QuestTemplate[] = [
     title: "The Rugged Outcropping",
     description:
       "Venture inland until you confront a formidable rock crag at the edge of a tranquil lake, forcing you to turn back.",
-    durationMinutes: 25,
+    durationMinutes: Constants.expoConfig?.extra?.development ? 2 : 25,
     reward: { xp: 250 },
     poiSlug: "rugged-outcropping",
     story: `

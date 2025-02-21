@@ -1,5 +1,7 @@
 import BackgroundService from "react-native-background-actions";
 import { Quest, QuestTemplate } from "../store/types";
+import { useQuestStore } from "@/store/quest-store";
+import { scheduleQuestCompletionNotification } from "@/services/notifications";
 
 export class QuestTimer {
   private static activeQuest: Quest | null = null;
@@ -36,14 +38,13 @@ export class QuestTimer {
   private static backgroundTask = async (taskData?: {
     questDuration: number;
   }) => {
-    console.log("Background task started");
-    console.log("taskData", taskData);
+    console.log("Background task started", taskData);
     if (!taskData) return;
 
     const { questDuration } = taskData;
 
     while (BackgroundService.isRunning()) {
-      const elapsedTime = Date.now() - (this.startTime || 0);
+      const elapsedTime = Date.now() - (this.startTime ?? 0);
       const progress = Math.min((elapsedTime / questDuration) * 100, 100);
 
       // Update notification progress bar
@@ -58,13 +59,24 @@ export class QuestTimer {
 
       // Check if quest is complete
       if (elapsedTime >= questDuration) {
-        console.log("Quest completed");
+        console.log("Quest completed in background");
+
+        // Mark quest as complete in the store if still active.
+        const questStoreState = useQuestStore.getState();
+        if (questStoreState.activeQuest) {
+          questStoreState.completeQuest(true);
+        }
+
+        // Trigger the new congratulatory notification
+        scheduleQuestCompletionNotification();
+
+        // Stop the background quest notification (clears progress bar)
         await this.stopQuest();
         break;
       }
 
-      // Update every second
-      await new Promise((resolve) => setTimeout(resolve, 3000));
+      const updateInterval = questDuration > 30 * 60 * 1000 ? 5000 : 1000;
+      await new Promise((resolve) => setTimeout(resolve, updateInterval));
     }
   };
 

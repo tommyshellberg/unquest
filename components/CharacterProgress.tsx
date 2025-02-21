@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { StyleSheet, View, ImageBackground } from "react-native";
+import { StyleSheet, View, Image } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -19,7 +19,7 @@ import { Character } from "@/store/types";
 import { CHARACTERS } from "@/constants/characters";
 import { useQuestStore } from "@/store/quest-store";
 import { TAB_BAR_HEIGHT } from "@/app/_layout";
-import { BlurView } from "expo-blur";
+import { layoutStyles } from "@/styles/layouts";
 
 type Props = {
   character: Character;
@@ -96,79 +96,84 @@ export function CharacterProgress({
   }));
 
   return (
-    <View style={styles.container}>
-      <ImageBackground
-        source={characterDetails?.image}
-        style={styles.backgroundImage}
-        resizeMode="cover"
-      >
-        {/* Use BlurView as the overlay */}
-        <BlurView intensity={50} style={StyleSheet.absoluteFill} />
-
-        <View style={styles.contentContainer}>
-          <View style={styles.characterInfo}>
-            <ThemedText type="title">{character.name}</ThemedText>
-            <Animated.Text style={levelTextStyle} />
+    <View style={layoutStyles.fullScreen}>
+      <View style={[layoutStyles.backgroundImageContainer, { opacity: 0.2 }]}>
+        <Image
+          source={characterDetails?.image}
+          style={layoutStyles.backgroundImage}
+          resizeMode="cover"
+        />
+      </View>
+      <View style={styles.contentContainer}>
+        <View style={styles.characterInfo}>
+          <ThemedText type="title">{character.name}</ThemedText>
+          <Animated.Text style={levelTextStyle}>
+            Level {character.level} {character.name}
+          </Animated.Text>
+        </View>
+        <View>
+          <View>
+            <ThemedText
+              type="bodyBold"
+              style={{
+                ...Typography.bodyBold,
+                textAlign: "center",
+                color: Colors.forest,
+              }}
+            >
+              Character Stats
+            </ThemedText>
           </View>
-
-          <ThemedText
-            type="subtitle"
-            style={{
-              ...Typography.subtitle,
-              color: Colors.forest,
-              textAlign: "center",
-            }}
-          >
-            Stats
-          </ThemedText>
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
-              <ThemedText type="subtitle">{completedQuests.length}</ThemedText>
-              <ThemedText type="bodyBold">Quests Completed</ThemedText>
+              <ThemedText type="titleBlack">
+                {completedQuests.length}
+              </ThemedText>
+              <ThemedText type="body">Quests Completed</ThemedText>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <ThemedText type="subtitle">{totalMinutesOffPhone}</ThemedText>
-              <ThemedText type="bodyBold">Minutes Saved</ThemedText>
-            </View>
-          </View>
-
-          <View style={styles.xpSection}>
-            {xpGained > 0 && (
-              <Animated.Text style={styles.xpGained}>
-                +{Math.floor(xpCounter.value)} XP
-              </Animated.Text>
-            )}
-
-            <View style={styles.characterProgressContainer}>
-              <View style={styles.levelLabels}>
-                <ThemedText type="body">Level {character.level}</ThemedText>
-                <ThemedText type="body">Level {character.level + 1}</ThemedText>
-              </View>
-
-              <View style={styles.progressBarContainer}>
-                <Animated.View style={[styles.progressBar, progressStyle]} />
-                <View style={styles.progressMarkers}>
-                  {[...Array(5)].map((_, i) => (
-                    <View
-                      key={i}
-                      style={[
-                        styles.marker,
-                        i === 0 && styles.markerStart,
-                        i === 4 && styles.markerEnd,
-                      ]}
-                    />
-                  ))}
-                </View>
-              </View>
-
-              <ThemedText style={styles.xpText}>
-                {character.currentXP} / {character.xpToNextLevel} XP
-              </ThemedText>
+              <ThemedText type="titleBlack">{totalMinutesOffPhone}</ThemedText>
+              <ThemedText type="body">Minutes Saved</ThemedText>
             </View>
           </View>
         </View>
-      </ImageBackground>
+
+        <View style={styles.xpSection}>
+          {xpGained > 0 && (
+            <Animated.Text style={styles.xpGained}>
+              +{Math.floor(xpCounter.value)} XP
+            </Animated.Text>
+          )}
+
+          <View style={styles.characterProgressContainer}>
+            <View style={styles.levelLabels}>
+              <ThemedText type="body">Level {character.level}</ThemedText>
+              <ThemedText type="body">Level {character.level + 1}</ThemedText>
+            </View>
+
+            <View style={styles.progressBarContainer}>
+              <Animated.View style={[styles.progressBar, progressStyle]} />
+              <View style={styles.progressMarkers}>
+                {[...Array(5)].map((_, i) => (
+                  <View
+                    key={i}
+                    style={[
+                      styles.marker,
+                      i === 0 && styles.markerStart,
+                      i === 4 && styles.markerEnd,
+                    ]}
+                  />
+                ))}
+              </View>
+            </View>
+
+            <ThemedText style={styles.xpText}>
+              {character.currentXP} / {character.xpToNextLevel} XP
+            </ThemedText>
+          </View>
+        </View>
+      </View>
     </View>
   );
 }
@@ -176,11 +181,6 @@ export function CharacterProgress({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    height: "100%",
-  },
-  backgroundImage: {
-    flex: 1,
-    width: "100%",
     height: "100%",
   },
   contentContainer: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
   xpGained: {
     fontSize: FontSizes.xxl,
     fontWeight: "bold",
-    color: Colors.primary,
+    color: Colors.text.light,
   },
   characterProgressContainer: {
     width: "100%",
@@ -217,7 +217,6 @@ const styles = StyleSheet.create({
   },
   levelLabel: {
     fontSize: FontSizes.md,
-    color: Colors.forest,
     fontWeight: "600",
   },
   progressBarContainer: {
@@ -260,14 +259,12 @@ const styles = StyleSheet.create({
   },
   xpText: {
     fontSize: FontSizes.md,
-    color: Colors.forest,
     textAlign: "center",
   },
   statsContainer: {
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "center",
-    marginVertical: Spacing.xl,
     paddingHorizontal: Spacing.xl,
   },
   stat: {
@@ -277,7 +274,6 @@ const styles = StyleSheet.create({
   statDivider: {
     width: 1,
     height: "80%",
-    backgroundColor: Colors.forest,
     opacity: 0.2,
     marginHorizontal: Spacing.lg,
   },

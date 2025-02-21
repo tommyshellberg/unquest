@@ -13,7 +13,6 @@ import {
   Pressable,
   View,
   Image as RNImage,
-  ActivityIndicator,
 } from "react-native";
 import {
   PanGestureHandler,
@@ -55,7 +54,7 @@ export default function MapScreen() {
   const insets = useSafeAreaInsets();
 
   const maxTranslateX = 0;
-  const minTranslateX = screenWidth - IMAGE_WIDTH + insets.left;
+  const minTranslateX = screenWidth - IMAGE_WIDTH;
   const maxTranslateY = 0;
   const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom + 20;
 
@@ -88,28 +87,14 @@ export default function MapScreen() {
     [pois, mapId]
   );
 
-  console.log("revealedPOIS", revealedPOIS);
-
   // Get the map image
   const mapImage = MAP_IMAGES[mapId];
-  console.log("mapId", mapId);
-  console.log("Resolved image source:", Image.resolveAssetSource(mapImage));
-
-  // Get image dimensions (assuming all maps are same size)
-  const imageWidth = 1200; // Update with actual width
-  const imageHeight = 800; // Update with actual height
-
-  const handleLoadStart = useCallback(() => {
-    console.log("Map image load started");
-  }, []);
 
   const handleLoad = useCallback(() => {
-    console.log("Map image loaded successfully");
     setIsMapLoaded(true);
   }, []);
 
   const handleError = useCallback((error: any) => {
-    console.error("Map image load error:", error.nativeEvent.error);
     setLoadError(error.nativeEvent.error);
   }, []);
 
@@ -129,9 +114,7 @@ export default function MapScreen() {
     let isActive = true;
 
     if (lastRevealedPOISlug && !isAnimating.current) {
-      console.log("we have a last revealed poi");
       const poi = pois.find((p) => p.slug === lastRevealedPOISlug);
-      console.log("poi", poi);
 
       if (poi && isActive) {
         isAnimating.current = true;
@@ -166,10 +149,8 @@ export default function MapScreen() {
           withTiming(1, { duration: 2500 }, (finished) => {
             if (finished && isActive) {
               runOnJS(() => {
-                console.log("Animation sequence complete");
                 isAnimating.current = false;
                 if (isActive) {
-                  console.log("resetting last revealed poi");
                   resetLastRevealedPOI();
                 }
               })();
@@ -299,10 +280,7 @@ export default function MapScreen() {
             <Animated.View style={[styles.mapWrapper, imageStyle]}>
               <RNImage
                 source={mapImage}
-                style={{ width: imageWidth, height: imageHeight }}
-                onLoadStart={() => {
-                  console.log("Map image load started");
-                }}
+                style={{ width: IMAGE_WIDTH, height: IMAGE_HEIGHT }}
                 onLoad={handleLoad}
                 onError={handleError}
                 resizeMode="contain"

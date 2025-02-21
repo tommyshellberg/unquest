@@ -53,19 +53,13 @@ export function StoryNarration({ story, questId }: Props) {
   }
 
   const stopAndUnloadSound = async () => {
-    console.log(
-      "Stopping and unloading sound, current sound:",
-      soundRef.current
-    );
     if (soundRef.current) {
       try {
         const status = await soundRef.current.getStatusAsync();
-        console.log("Sound status:", status);
 
         // Try to stop regardless of status
         try {
           await soundRef.current.stopAsync();
-          console.log("Sound stopped");
         } catch (stopError) {
           console.log("Stop error:", stopError);
         }
@@ -73,7 +67,6 @@ export function StoryNarration({ story, questId }: Props) {
         // Try to unload regardless of status
         try {
           await soundRef.current.unloadAsync();
-          console.log("Sound unloaded");
         } catch (unloadError) {
           console.log("Unload error:", unloadError);
         }
@@ -85,11 +78,8 @@ export function StoryNarration({ story, questId }: Props) {
           soundRef.current.setOnPlaybackStatusUpdate(null);
           soundRef.current = null;
           setIsPlaying(false);
-          console.log("Sound state cleared");
         }
       }
-    } else {
-      console.log("No sound to cleanup");
     }
   };
 
@@ -118,12 +108,15 @@ export function StoryNarration({ story, questId }: Props) {
     } else {
       // App has come to foreground
       if (soundRef.current) {
-        try {
-          await soundRef.current.playAsync();
-          setIsPlaying(true);
-        } catch (error) {
-          console.error("Error resuming sound:", error);
-        }
+        // Delay resuming playback to allow audio focus to be acquired.
+        setTimeout(async () => {
+          try {
+            await soundRef.current?.playAsync();
+            setIsPlaying(true);
+          } catch (error) {
+            console.error("Error resuming sound:", error);
+          }
+        }, 300); // 300ms delay; adjust if necessary.
       }
     }
   };
@@ -131,7 +124,6 @@ export function StoryNarration({ story, questId }: Props) {
   // Ensure cleanup happens when component unmounts
   useEffect(() => {
     return () => {
-      console.log("MapScreen unmounting - cleaning up audio");
       stopAndUnloadSound().catch((error) =>
         console.error("Error cleaning up sound on unmount:", error)
       );
@@ -141,11 +133,9 @@ export function StoryNarration({ story, questId }: Props) {
   // Handle screen focus/unfocus
   useFocusEffect(
     useCallback(() => {
-      console.log("Screen focused - starting sound");
       playSound();
 
       return () => {
-        console.log("Screen unfocused - stopping sound");
         // Make sure we wait for the cleanup to complete
         stopAndUnloadSound().catch((error) =>
           console.error("Error cleaning up sound on unfocus:", error)

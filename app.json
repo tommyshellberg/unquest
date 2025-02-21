@@ -15,7 +15,7 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#051c25"
       },
       "permissions": [
         "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
@@ -45,13 +45,13 @@
           "image": "./assets/images/splash-icon.png",
           "imageWidth": 200,
           "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#051c25"
         }
       ],
       [
         "expo-notifications",
         {
-          "color": "#ffffff"
+          "color": "#051c25"
         }
       ],
       "expo-font"

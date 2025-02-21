@@ -15,10 +15,6 @@ import { buttonStyles } from "@/styles/buttons";
 export default function OnboardingScreen() {
   const router = useRouter();
 
-  useEffect(() => {
-    console.log("onboarding screen mounted");
-  }, []);
-
   return (
     <View style={styles.container}>
       <Image
