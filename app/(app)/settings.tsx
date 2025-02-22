@@ -42,17 +42,16 @@ export default function SettingsScreen() {
       <View
         style={{
           ...layoutStyles.contentContainer,
-          alignItems: "center",
           justifyContent: "space-between",
         }}
       >
-        <View style={{ alignItems: "center" }}>
+        <View>
           <ThemedText type="title">Settings Screen</ThemedText>
           <ThemedText type="body">
             Here you can manage your settings and reset your app data.
           </ThemedText>
         </View>
-        <View style={{ alignItems: "center" }}>
+        <View>
           <ThemedText type="subtitle">Reset App Data</ThemedText>
           <ThemedText type="bodyBold">
             Your progress will be reset, your character will be deleted, and you
@@ -75,6 +74,7 @@ const styles = StyleSheet.create({
     padding: 16,
     backgroundColor: "red",
     width: "66%",
+    alignSelf: "center",
   },
   resetButtonText: {
     color: Colors.light.text,

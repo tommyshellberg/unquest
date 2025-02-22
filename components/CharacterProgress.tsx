@@ -80,19 +80,8 @@ export function CharacterProgress({
     animateXP();
   }, []);
 
-  const containerStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
   const progressStyle = useAnimatedStyle(() => ({
     width: `${progressWidth.value * 100}%`,
-  }));
-
-  const levelTextStyle = useAnimatedStyle(() => ({
-    fontSize: FontSizes.lg,
-    color: Colors.forest,
-    opacity: 0.9,
-    text: `Level ${Math.floor(currentLevel.value)}`,
   }));
 
   return (
@@ -107,9 +96,9 @@ export function CharacterProgress({
       <View style={styles.contentContainer}>
         <View style={styles.characterInfo}>
           <ThemedText type="title">{character.name}</ThemedText>
-          <Animated.Text style={levelTextStyle}>
-            Level {character.level} {character.name}
-          </Animated.Text>
+          <ThemedText type="subtitle">
+            Level {character.level} {character.type}
+          </ThemedText>
         </View>
         <View>
           <View>
@@ -117,8 +106,9 @@ export function CharacterProgress({
               type="bodyBold"
               style={{
                 ...Typography.bodyBold,
+                color: Colors.text.light,
+                fontSize: FontSizes.lg,
                 textAlign: "center",
-                color: Colors.forest,
               }}
             >
               Character Stats
@@ -126,14 +116,12 @@ export function CharacterProgress({
           </View>
           <View style={styles.statsContainer}>
             <View style={styles.stat}>
-              <ThemedText type="titleBlack">
-                {completedQuests.length}
-              </ThemedText>
+              <ThemedText type="title">{completedQuests.length}</ThemedText>
               <ThemedText type="body">Quests Completed</ThemedText>
             </View>
             <View style={styles.statDivider} />
             <View style={styles.stat}>
-              <ThemedText type="titleBlack">{totalMinutesOffPhone}</ThemedText>
+              <ThemedText type="title">{totalMinutesOffPhone}</ThemedText>
               <ThemedText type="body">Minutes Saved</ThemedText>
             </View>
           </View>
@@ -190,14 +178,12 @@ const styles = StyleSheet.create({
     paddingBottom: TAB_BAR_HEIGHT + Spacing.xl,
   },
   characterInfo: {
-    alignItems: "center",
     gap: Spacing.sm,
     marginTop: Spacing.md,
     paddingTop: Spacing.md,
   },
   xpSection: {
     width: "100%",
-    alignItems: "center",
     gap: Spacing.md,
     marginBottom: Spacing.xxl,
   },
@@ -242,7 +228,6 @@ const styles = StyleSheet.create({
     bottom: 0,
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "center",
     paddingHorizontal: 2,
   },
   marker: {
@@ -263,8 +248,6 @@ const styles = StyleSheet.create({
   },
   statsContainer: {
     flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
     paddingHorizontal: Spacing.xl,
   },
   stat: {

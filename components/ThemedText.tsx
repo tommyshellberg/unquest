@@ -12,8 +12,7 @@ type ThemedTextProps = TextProps & {
     | "bodyBoldItalic"
     | "bodyLight"
     | "subtitle"
-    | "title"
-    | "titleBlack";
+    | "title";
 };
 
 export const ThemedText = forwardRef<Text, ThemedTextProps>((props, ref) => {
@@ -52,11 +51,7 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     ...Typography.subtitle,
-    color: Colors.primary,
-  },
-  titleBlack: {
-    ...Typography.titleBlack,
-    color: Colors.primary,
+    color: Colors.text.light,
   },
   bodyLight: {
     ...Typography.body,

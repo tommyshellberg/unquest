@@ -12,10 +12,10 @@ export const Colors = {
   secondary: "#92B3BF", // sage - secondary actions
   background: {
     light: "#FAF0D9", // cream - light mode background
-    dark: "#2C3E50", // darker variant for dark mode
+    dark: "#4F4F4F", // darker variant for dark mode
   },
   text: {
-    light: "#2C3E50", // dark text for light mode
+    light: "#4F4F4F", // dark grey text for light mode
     dark: "#FAF0D9", // cream text for dark mode
   },
   button: {
@@ -90,18 +90,13 @@ export const Typography = {
     marginBottom: Spacing.sm,
   },
   subtitle: {
-    fontFamily: "cinzel-regular",
-    fontSize: FontSizes.lg,
+    fontFamily: "imfell-pica-italic",
+    fontSize: 20,
     marginBottom: Spacing.md,
   },
   title: {
-    fontFamily: "cinzel-bold",
-    fontSize: FontSizes.xl,
-    marginBottom: Spacing.md,
-  },
-  titleBlack: {
-    fontFamily: "cinzel-black",
-    fontSize: FontSizes.xl,
+    fontFamily: "imfell-pica",
+    fontSize: FontSizes.xxl,
     marginBottom: Spacing.md,
   },
 } as const;

@@ -2,7 +2,7 @@ import { ImageSourcePropType } from "react-native";
 
 export type Character = {
   id: string;
-  name: string;
+  type: string;
   title: string;
   description: string;
   image: ImageSourcePropType;
@@ -12,7 +12,7 @@ export type Character = {
 export const CHARACTERS: Character[] = [
   {
     id: "alchemist",
-    name: "Alchemist",
+    type: "Alchemist",
     title: "Master of Transformation",
     description:
       "Transforms idle time into powerful elixirs and mystical concoctions.",
@@ -21,7 +21,7 @@ export const CHARACTERS: Character[] = [
   },
   {
     id: "druid",
-    name: "Druid",
+    type: "Druid",
     title: "Guardian of Nature",
     description:
       "Grows stronger through harmony with the natural world and peaceful moments.",
@@ -30,7 +30,7 @@ export const CHARACTERS: Character[] = [
   },
   {
     id: "scholar",
-    name: "Scholar",
+    type: "Scholar",
     title: "Seeker of Knowledge",
     description:
       "Gains wisdom and unlocks ancient secrets through contemplation.",
@@ -39,7 +39,7 @@ export const CHARACTERS: Character[] = [
   },
   {
     id: "wizard",
-    name: "Wizard",
+    type: "Wizard",
     title: "Wielder of Magic",
     description:
       "Channels the power of focus into devastating magical abilities.",
@@ -48,7 +48,7 @@ export const CHARACTERS: Character[] = [
   },
   {
     id: "knight",
-    name: "Knight",
+    type: "Knight",
     title: "Paragon of Discipline",
     description: "Builds strength and honor through dedication and restraint.",
     image: require("@/assets/images/characters/knight.png"),
@@ -56,7 +56,7 @@ export const CHARACTERS: Character[] = [
   },
   {
     id: "bard",
-    name: "Bard",
+    type: "Bard",
     title: "Voice of Inspiration",
     description: "Creates harmony from silence and inspiration from solitude.",
     image: require("@/assets/images/characters/bard.png"),

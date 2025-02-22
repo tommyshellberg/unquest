@@ -180,17 +180,16 @@ export default function HomeScreen() {
         />
       </View>
       <View style={layoutStyles.contentContainer}>
-        <Animated.View style={[styles.header, headerStyle]}>
+        <Animated.View
+          style={[styles.header, headerStyle, { marginBottom: 0 }]}
+        >
           <ThemedText type="title">
             {activeQuest ? "Active Quest" : "Next Quest"}
           </ThemedText>
         </Animated.View>
 
         <Animated.View style={[styles.subtitle, subtitleStyle]}>
-          <ThemedText
-            type="bodyBold"
-            style={{ ...Typography.bodyBold, color: Colors.text.light }}
-          >
+          <ThemedText type="subtitle">
             {activeQuest
               ? "You grow stronger while you're away."
               : "Continue your journey"}

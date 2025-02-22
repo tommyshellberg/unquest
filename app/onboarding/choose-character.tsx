@@ -1,24 +1,34 @@
+import React, { useEffect, useState } from "react";
 import {
   Image,
   StyleSheet,
   Pressable,
   View,
-  ScrollView,
   FlatList,
-  Animated,
   Dimensions,
+  TextInput,
 } from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
-import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
+import {
+  Colors,
+  FontSizes,
+  Spacing,
+  BorderRadius,
+  Typography,
+} from "@/constants/theme";
 import { CHARACTERS } from "../../constants/characters";
 import { useRouter } from "expo-router";
 import { useCharacterStore } from "@/store/character-store";
 import { CharacterType } from "@/store/types";
-import { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 import { buttonStyles } from "@/styles/buttons";
-import { useSharedValue, useAnimatedStyle } from "react-native-reanimated";
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  withSpring,
+} from "react-native-reanimated";
 
 // Get screen dimensions and define card dimensions
 const screenWidth = Dimensions.get("window").width;
@@ -29,17 +39,53 @@ export default function ChooseCharacterScreen() {
   const router = useRouter();
   const navigation = useNavigation();
   const createCharacter = useCharacterStore((state) => state.createCharacter);
+
   const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
     null
   );
+  const [inputName, setInputName] = useState<string>("");
+  const [debouncedName, setDebouncedName] = useState<string>("");
+
+  // Debounce the input name: update debouncedName 500ms after user stops typing.
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedName(inputName);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [inputName]);
+
+  // Shared values for animation: for scroll container and button
+  const scrollContainerOpacity = useSharedValue(0);
+  const buttonOpacity = useSharedValue(0);
+
+  // Animate the scroll container and Continue button based on a valid debouncedName.
+  useEffect(() => {
+    if (debouncedName.trim().length > 0) {
+      scrollContainerOpacity.value = withTiming(1, { duration: 500 });
+      buttonOpacity.value = withTiming(1, { duration: 500 });
+    } else {
+      scrollContainerOpacity.value = withTiming(0, { duration: 500 });
+      buttonOpacity.value = withTiming(0, { duration: 500 });
+    }
+  }, [debouncedName, scrollContainerOpacity, buttonOpacity]);
+
+  // Animated styles for container and continue button.
+  const animatedScrollStyle = useAnimatedStyle(() => ({
+    opacity: scrollContainerOpacity.value,
+    transform: [{ translateY: (1 - scrollContainerOpacity.value) * 20 }], // animate from 20px below
+  }));
+
+  const animatedButtonStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ translateY: (1 - buttonOpacity.value) * 20 }],
+  }));
 
   const handleContinue = () => {
-    if (!selectedCharacter) return;
-    // Get character details from CHARACTERS constant
-    const character = CHARACTERS.find((c) => c.id === selectedCharacter);
-    if (!character) return;
-    // Create character in store
-    createCharacter(character.id as CharacterType, character.name);
+    if (!selectedCharacter || !debouncedName.trim()) return;
+    const selected = CHARACTERS.find((c) => c.id === selectedCharacter);
+    if (!selected) return;
+    // Pass the character's archetype from constants and the user-defined name.
+    createCharacter(selected.id as CharacterType, debouncedName.trim());
     router.push("/onboarding/screen-time-goal");
   };
 
@@ -50,9 +96,6 @@ export default function ChooseCharacterScreen() {
       gestureEnabled: false, // Disable swipe gesture for drawer
     });
   }, []);
-
-  // Shared value for scroll animation
-  const scrollX = useSharedValue(0);
 
   // New Card component for each character
   function Card({
@@ -71,9 +114,9 @@ export default function ChooseCharacterScreen() {
             isSelected ? styles.selectedCard : styles.inactiveCard,
           ]}
         >
-          {/* Card Header: Character name */}
+          {/* Card Header: Display the character type */}
           <ThemedText type="title" style={styles.cardHeading}>
-            {item.name}
+            {item.type}
           </ThemedText>
           <ThemedText type="body" style={styles.cardSubheading}>
             {item.title}
@@ -102,47 +145,73 @@ export default function ChooseCharacterScreen() {
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      <View style={styles.scrollView}>
-        <ThemedView style={[styles.header, { backgroundColor: "transparent" }]}>
-          <ThemedText type="title">Your Character</ThemedText>
-          <ThemedText type="body">
-            Choose the character you feel best represents the best version of
-            yourself.
-          </ThemedText>
-          <ThemedText type="body">
-            Each embodies different virtues that grow stronger as you spend time
-            away.
-          </ThemedText>
-        </ThemedView>
+      <ThemedView
+        style={[
+          styles.header,
+          {
+            backgroundColor: "transparent",
+            marginBottom: Spacing.md,
+            paddingBottom: 0,
+          },
+        ]}
+      >
+        <ThemedText type="title">Choose Your Character</ThemedText>
+      </ThemedView>
 
-        <View style={styles.characterScrollContainer}>
-          <FlatList
-            data={CHARACTERS}
-            horizontal
-            snapToInterval={snapInterval}
-            decelerationRate="fast"
-            showsHorizontalScrollIndicator={false}
-            keyExtractor={(item) => item.id}
-            contentContainerStyle={{
-              paddingHorizontal: (screenWidth - cardWidth) / 2,
-            }}
-            scrollEventThrottle={16}
-            onMomentumScrollEnd={(event) => {
-              const offsetX = event.nativeEvent.contentOffset.x;
-              const newIndex = Math.round(offsetX / snapInterval);
-              setSelectedCharacter(CHARACTERS[newIndex].id);
-            }}
-            renderItem={({ item, index }) => <Card item={item} index={index} />}
-          />
+      {/* Always visible TextInput for naming */}
+      <View style={styles.nameInputContainer}>
+        <ThemedText type="body">Name Your Character</ThemedText>
+        <TextInput
+          style={styles.textInput}
+          value={inputName}
+          // Only allow alphanumeric and space characters (filter out special characters).
+          onChangeText={(text) => {
+            const filtered = text.replace(/[^a-zA-Z0-9\s]/g, "");
+            setInputName(filtered);
+          }}
+          placeholder="Enter character name"
+          placeholderTextColor={Colors.cream}
+        />
+      </View>
+
+      {/* Animated container for character archetypes (FlatList) */}
+      <Animated.View
+        style={[styles.characterScrollContainer, animatedScrollStyle]}
+      >
+        <View
+          style={{ marginHorizontal: Spacing.xxl, marginBottom: Spacing.md }}
+        >
+          <ThemedText type="body">Next, choose a character type.</ThemedText>
         </View>
+        <FlatList
+          data={CHARACTERS}
+          horizontal
+          snapToInterval={snapInterval}
+          decelerationRate="fast"
+          showsHorizontalScrollIndicator={false}
+          keyExtractor={(item) => item.id}
+          contentContainerStyle={{
+            paddingHorizontal: (screenWidth - cardWidth) / 2,
+          }}
+          onMomentumScrollEnd={(event) => {
+            const offsetX = event.nativeEvent.contentOffset.x;
+            const newIndex = Math.round(offsetX / snapInterval);
+            setSelectedCharacter(CHARACTERS[newIndex].id);
+          }}
+          renderItem={({ item, index }) => <Card item={item} index={index} />}
+        />
+      </Animated.View>
 
+      {/* Animated Continue Button */}
+      <Animated.View style={animatedButtonStyle}>
         <ThemedView style={[styles.footer, { backgroundColor: "transparent" }]}>
           <Pressable
             style={[
               styles.continueButton,
-              !selectedCharacter && styles.continueButtonDisabled,
+              (!selectedCharacter || !debouncedName.trim()) &&
+                styles.continueButtonDisabled,
             ]}
-            disabled={!selectedCharacter}
+            disabled={!selectedCharacter || !debouncedName.trim()}
             onPress={handleContinue}
           >
             <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
@@ -150,7 +219,7 @@ export default function ChooseCharacterScreen() {
             </ThemedText>
           </Pressable>
         </ThemedView>
-      </View>
+      </Animated.View>
     </View>
   );
 }
@@ -177,7 +246,7 @@ const styles = StyleSheet.create({
     padding: Spacing.xl,
   },
   characterScrollContainer: {
-    marginBottom: Spacing.xl,
+    marginBottom: Spacing.md,
   },
   characterCardContainer: {
     width: cardWidth,
@@ -195,7 +264,7 @@ const styles = StyleSheet.create({
   selectedCard: {
     transform: [{ scale: 1 }],
     borderWidth: 2,
-    borderColor: Colors.cream, // adjust to your preferred light border color
+    borderColor: Colors.cream,
     opacity: 1,
   },
   inactiveCard: {
@@ -218,7 +287,7 @@ const styles = StyleSheet.create({
     marginBottom: Spacing.sm,
   },
   cardImage: {
-    width: cardWidth, // use cardWidth to match the container
+    width: cardWidth,
     height: 200,
     borderRadius: BorderRadius.md,
   },
@@ -242,5 +311,18 @@ const styles = StyleSheet.create({
   continueButtonDisabled: {
     backgroundColor: Colors.button.disabled,
     opacity: 0.5,
+  },
+  nameInputContainer: {
+    paddingHorizontal: Spacing.xxl,
+    marginBottom: Spacing.xxl,
+  },
+  textInput: {
+    height: 40,
+    borderColor: Colors.stone,
+    borderWidth: 1,
+    borderRadius: BorderRadius.sm,
+    paddingHorizontal: Spacing.sm,
+    color: Colors.text.light,
+    marginTop: Spacing.sm,
   },
 });

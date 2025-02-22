@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StyleSheet, View, Image, Platform, Pressable } from "react-native";
 import { Picker } from "@react-native-picker/picker";
 import { ThemedText } from "@/components/ThemedText";
@@ -21,72 +21,94 @@ import Animated, {
   withDelay,
 } from "react-native-reanimated";
 
-// Generate time options in 15-minute increments (0h to 12h)
-const TIME_OPTIONS = Array.from({ length: 49 }, (_, i) => {
-  const hours = Math.floor((i * 15) / 60);
-  const minutes = (i * 15) % 60;
+// Generate time options in 30-minute increments (30m to 12h)
+const TIME_OPTIONS = Array.from({ length: 24 }, (_, i) => {
+  const value = (i + 1) * 30; // starts at 30 minutes
+  const hours = Math.floor(value / 60);
+  const minutes = value % 60;
   return {
-    label: `${hours}h ${minutes ? minutes + "m" : ""}`,
-    value: i * 15,
+    label: `${hours}h${minutes ? ` ${minutes}m` : ""}`,
+    value,
   };
 });
 
 export default function ScreenTimeGoalScreen() {
   const router = useRouter();
   const createAccount = useAccountStore((state) => state.createAccount);
-  const [currentTime, setCurrentTime] = useState(240); // 4h default
-  const [targetTime, setTargetTime] = useState(120); // 2h default
+  const navigation = useNavigation();
 
-  // Create shared values for animations
+  // Use -1 as the "invalid" placeholder value.
+  const [currentTime, setCurrentTime] = useState<number>(-1);
+  const [targetTime, setTargetTime] = useState<number>(-1);
+
+  // Animation shared values:
   const headerAnim = useSharedValue(0);
-  const dropdownAnim = useSharedValue(0);
+  const firstDropdownAnim = useSharedValue(0);
+  const secondDropdownAnim = useSharedValue(0);
   const buttonAnim = useSharedValue(0);
 
-  // Animate components in sequence on mount
+  // Animate header and first drop-down on mount:
   useEffect(() => {
     headerAnim.value = withTiming(1, { duration: 500 });
-    dropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
-    buttonAnim.value = withDelay(1200, withTiming(1, { duration: 500 }));
+    firstDropdownAnim.value = withDelay(600, withTiming(1, { duration: 500 }));
   }, []);
 
-  // Animated styles
-  const headerAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: headerAnim.value,
-      transform: [{ translateY: 20 * (1 - headerAnim.value) }],
-    };
-  });
+  // Animate second drop-down when first drop-down has a valid value:
+  useEffect(() => {
+    if (currentTime >= 30) {
+      secondDropdownAnim.value = withTiming(1, { duration: 500 });
+    } else {
+      secondDropdownAnim.value = 0;
+      // Also clear second value if first selection is removed.
+      setTargetTime(-1);
+    }
+  }, [currentTime, secondDropdownAnim]);
 
-  const dropdownAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: dropdownAnim.value,
-      transform: [{ translateY: 20 * (1 - dropdownAnim.value) }],
-    };
-  });
+  // Animate Continue button only when both values are valid:
+  useEffect(() => {
+    if (currentTime >= 30 && targetTime >= 30) {
+      buttonAnim.value = withTiming(1, { duration: 500 });
+    } else {
+      buttonAnim.value = 0;
+    }
+  }, [currentTime, targetTime, buttonAnim]);
 
-  const buttonAnimatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: buttonAnim.value,
-      transform: [{ translateY: 20 * (1 - buttonAnim.value) }],
-    };
-  });
+  // Animated styles:
+  const headerAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: headerAnim.value,
+    transform: [{ translateY: 20 * (1 - headerAnim.value) }],
+  }));
+
+  const firstDropdownAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: firstDropdownAnim.value,
+    transform: [{ translateY: 20 * (1 - firstDropdownAnim.value) }],
+  }));
+
+  const secondDropdownAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: secondDropdownAnim.value,
+    transform: [{ translateY: 20 * (1 - secondDropdownAnim.value) }],
+  }));
+
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: buttonAnim.value,
+    transform: [{ translateY: 20 * (1 - buttonAnim.value) }],
+  }));
 
   const handleContinue = () => {
-    // Save screen time goals to account store
+    // Prevent navigation if either drop-down value is invalid
+    if (currentTime < 30 || targetTime < 30) return;
+    // Save screen time goals to the account store
     createAccount(currentTime, targetTime);
-
     router.push("/onboarding/first-quest");
   };
-
-  const navigation = useNavigation();
 
   // Hide header and drawer for onboarding flow
   useEffect(() => {
     navigation.setOptions({
       headerShown: false,
-      gestureEnabled: false, // Disable swipe gesture for drawer
+      gestureEnabled: false,
     });
-  }, []);
+  }, [navigation]);
 
   return (
     <View style={styles.container}>
@@ -96,6 +118,7 @@ export default function ScreenTimeGoalScreen() {
         resizeMode="cover"
       />
       <ThemedView style={[styles.content, { backgroundColor: "transparent" }]}>
+        {/* Animate header & description */}
         <Animated.View style={[styles.header, headerAnimatedStyle]}>
           <ThemedText type="title">Set Your Goals</ThemedText>
           <ThemedText type="body">
@@ -103,7 +126,10 @@ export default function ScreenTimeGoalScreen() {
           </ThemedText>
         </Animated.View>
 
-        <Animated.View style={[styles.pickerSection, dropdownAnimatedStyle]}>
+        {/* Animate first drop-down (current daily screen time) */}
+        <Animated.View
+          style={[styles.pickerSection, firstDropdownAnimatedStyle]}
+        >
           <ThemedText
             type="bodyBold"
             style={{ ...Typography.bodyBold, color: Colors.text.light }}
@@ -113,38 +139,15 @@ export default function ScreenTimeGoalScreen() {
           <View style={styles.pickerContainer}>
             <Picker
               selectedValue={currentTime}
-              onValueChange={setCurrentTime}
+              onValueChange={(itemValue) => setCurrentTime(itemValue)}
               style={styles.picker}
               itemStyle={styles.pickerItem}
             >
-              {TIME_OPTIONS.map((option) => (
-                <Picker.Item
-                  key={option.value}
-                  label={option.label}
-                  value={option.value}
-                  color={Colors.forest}
-                />
-              ))}
-            </Picker>
-          </View>
-
-          <ThemedText
-            type="bodyBold"
-            style={{
-              ...Typography.bodyBold,
-              color: Colors.text.light,
-              fontSize: FontSizes.md,
-            }}
-          >
-            What's your daily screen time goal?
-          </ThemedText>
-          <View style={styles.pickerContainer}>
-            <Picker
-              selectedValue={targetTime}
-              onValueChange={setTargetTime}
-              style={styles.picker}
-              itemStyle={styles.pickerItem}
-            >
+              <Picker.Item
+                label="Select current screen time"
+                value={-1}
+                color="#ccc"
+              />
               {TIME_OPTIONS.map((option) => (
                 <Picker.Item
                   key={option.value}
@@ -157,12 +160,56 @@ export default function ScreenTimeGoalScreen() {
           </View>
         </Animated.View>
 
+        {/* Conditionally animate and render the second drop-down (target screen time) only when the first is valid */}
+        {currentTime >= 30 && (
+          <Animated.View
+            style={[styles.pickerSection, secondDropdownAnimatedStyle]}
+          >
+            <ThemedText
+              type="bodyBold"
+              style={{
+                ...Typography.bodyBold,
+                color: Colors.text.light,
+                fontSize: FontSizes.md,
+              }}
+            >
+              What's your daily screen time goal?
+            </ThemedText>
+            <View style={styles.pickerContainer}>
+              <Picker
+                selectedValue={targetTime}
+                onValueChange={(itemValue) => setTargetTime(itemValue)}
+                style={styles.picker}
+                itemStyle={styles.pickerItem}
+              >
+                <Picker.Item
+                  label="Select target screen time"
+                  value={-1}
+                  color="#ccc"
+                />
+                {TIME_OPTIONS.map((option) => (
+                  <Picker.Item
+                    key={option.value}
+                    label={option.label}
+                    value={option.value}
+                    color={Colors.forest}
+                  />
+                ))}
+              </Picker>
+            </View>
+          </Animated.View>
+        )}
+
+        {/* Animate Continue button (disabled if either value is invalid) */}
         <Animated.View style={[styles.footer, buttonAnimatedStyle]}>
           <Pressable
             style={({ pressed }) => [
               styles.continueButton,
+              (currentTime < 30 || targetTime < 30) &&
+                styles.continueButtonDisabled,
               pressed && styles.continueButtonPressed,
             ]}
+            disabled={currentTime < 30 || targetTime < 30}
             onPress={handleContinue}
           >
             <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
@@ -194,7 +241,6 @@ const styles = StyleSheet.create({
     marginTop: "10%",
   },
   pickerSection: {
-    flex: 1,
     gap: Spacing.lg,
     marginTop: "5%",
   },
@@ -234,7 +280,11 @@ const styles = StyleSheet.create({
     borderRadius: BorderRadius.pill,
     alignItems: "center",
   },
+  continueButtonDisabled: {
+    backgroundColor: Colors.button.disabled,
+    opacity: 0.5,
+  },
   continueButtonPressed: {
-    backgroundColor: Colors.secondary,
+    opacity: 0.8,
   },
 });
