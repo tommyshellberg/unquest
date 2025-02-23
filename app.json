@@ -9,7 +9,7 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
+      "supportsTablet": false,
       "bundleIdentifier": "com.anonymous.unquest"
     },
     "android": {
@@ -18,8 +18,8 @@
         "backgroundColor": "#051c25"
       },
       "permissions": [
-        "android.permission.FOREGROUND_SERVICE_DATA_SYNC",
-        "android.permission.FOREGROUND_SERVICE"
+        "android.permission.FOREGROUND_SERVICE",
+        "android.permission.FOREGROUND_SERVICE_DATA_SYNC"
       ],
       "package": "com.anonymous.unquest"
     },
@@ -29,7 +29,7 @@
         "origin": false
       },
       "eas": {
-        "projectId": "977f470c-f6db-4fab-8d27-dfefa5b3d5ec"
+        "projectId": "09b28712-0aee-436b-8201-8121a3f3920e"
       }
     },
     "web": {

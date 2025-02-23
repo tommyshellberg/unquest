@@ -1,62 +1,61 @@
+import React, { useEffect } from "react";
 import { StyleSheet, View, Image, Pressable } from "react-native";
-import { ThemedText } from "@/components/ThemedText";
-import { QuestCard } from "@/components/QuestCard";
-import { Colors, FontSizes, Spacing, Typography } from "@/constants/theme";
-import { useRouter } from "expo-router";
-import { useQuestStore } from "@/store/quest-store";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
+  withDelay,
   withSequence,
   withSpring,
-  withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { AVAILABLE_QUESTS } from "../data/quests";
-import React, { useEffect } from "react";
+import { ThemedText } from "@/components/ThemedText";
 import { layoutStyles } from "@/styles/layouts";
+import { Colors, FontSizes, Spacing, Typography } from "@/constants/theme";
+import { useRouter } from "expo-router";
 import { buttonStyles } from "@/styles/buttons";
 
 export default function FirstQuestScreen() {
   const router = useRouter();
-  const startQuest = useQuestStore((state) => state.startQuest);
-  const firstQuest = AVAILABLE_QUESTS[0];
 
-  // Animation values
+  // Animation values for a smooth fade/scale-in effect.
   const headerOpacity = useSharedValue(0);
   const welcomeScale = useSharedValue(0.9);
   const descriptionOpacity = useSharedValue(0);
-  const questCardOpacity = useSharedValue(0);
-  const questCardTranslateY = useSharedValue(50);
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    // Welcome text fade in and scale (duration: 1000ms -> 1250ms, delay: 300ms -> 450ms)
+    console.log("first quest screen mounted");
+    return () => {
+      console.log("first quest screen unmounted");
+    };
+  }, []);
+
+  useEffect(() => {
+    // Animate header: fade in and scale.
     headerOpacity.value = withDelay(450, withTiming(1, { duration: 1000 }));
-    welcomeScale.value = withSequence(
-      withDelay(450, withSpring(1.1)),
-      withSpring(1)
+    welcomeScale.value = withDelay(
+      450,
+      withSequence(withSpring(1.1), withSpring(1))
     );
 
-    // Description paragraphs fade in (duration: 800ms -> 1000ms, delay: 1000ms -> 1500ms)
+    // Animate description text.
     descriptionOpacity.value = withDelay(
       1500,
       withTiming(1, { duration: 1000 })
     );
 
-    // Quest card slides up and fades in (duration: 800ms -> 1000ms, delay: 1800ms -> 2700ms)
-    questCardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
-    questCardTranslateY.value = withDelay(2700, withSpring(0));
-
-    // Button fades in last (duration: 500ms -> 625ms, delay: 2400ms -> 3600ms)
-    buttonOpacity.value = withDelay(3600, withTiming(1, { duration: 625 }));
+    // Animate the button last.
+    buttonOpacity.value = withDelay(2400, withTiming(1, { duration: 625 }));
   }, []);
 
-  const handleAcceptQuest = () => {
-    startQuest({ ...firstQuest, startTime: Date.now() });
-    router.push("/home");
+  // When the user taps the "I'm ready" button, navigate to the home page.
+  const handleReady = () => {
+    setTimeout(() => {
+      router.replace("/home");
+    }, 500);
   };
 
+  // Create animated styles based on shared values.
   const headerStyle = useAnimatedStyle(() => ({
     opacity: headerOpacity.value,
     transform: [{ scale: welcomeScale.value }],
@@ -64,11 +63,6 @@ export default function FirstQuestScreen() {
 
   const descriptionStyle = useAnimatedStyle(() => ({
     opacity: descriptionOpacity.value,
-  }));
-
-  const questCardStyle = useAnimatedStyle(() => ({
-    opacity: questCardOpacity.value,
-    transform: [{ translateY: questCardTranslateY.value }],
   }));
 
   const buttonStyle = useAnimatedStyle(() => ({
@@ -93,58 +87,34 @@ export default function FirstQuestScreen() {
             type="bodyBold"
             style={{ ...Typography.bodyBold, color: Colors.text.light }}
           >
-            Your journey to mindful living
+            Discover quests and embrace your journey.
           </ThemedText>
         </Animated.View>
 
         <Animated.View style={[styles.description, descriptionStyle]}>
           <ThemedText type="body">
-            In unQuest, you'll embark on a unique adventure where the real
-            challenge is stepping away from your device.
+            In unQuest, you'll embark on a mindful adventure by stepping away
+            from the digital world and reconnecting with the beauty of the real
+            world.
           </ThemedText>
           <ThemedText type="body">
-            Each quest is an opportunity to reconnect with the world around you.
+            Each quest is a unique challenge that rewards you for taking a break
+            from screen time.
           </ThemedText>
           <ThemedText type="body">
-            When you complete a quest, you'll earn XP and uncover the story of
-            Vaedros, a kingdom thrown into disarray.
+            When you're ready, press "I'm ready" to explore your journey.
           </ThemedText>
-        </Animated.View>
-
-        <Animated.View style={questCardStyle}>
-          <QuestCard>
-            <View style={styles.questContent}>
-              <ThemedText type="subtitle" style={styles.questTitle}>
-                {firstQuest.title}
-              </ThemedText>
-              <ThemedText type="body" style={styles.questDescription}>
-                {firstQuest.description}
-              </ThemedText>
-              <View style={styles.questReward}>
-                <ThemedText type="body" style={styles.questDuration}>
-                  Lock your phone and don't use it for{" "}
-                  {firstQuest.durationMinutes} minutes to complete this quest.
-                </ThemedText>
-                <ThemedText type="body">
-                  Reward: {firstQuest.reward.xp} XP
-                </ThemedText>
-              </View>
-            </View>
-          </QuestCard>
         </Animated.View>
 
         <Animated.View style={[styles.buttonContainer, buttonStyle]}>
           <Pressable
             style={({ pressed }) => [
               buttonStyles.primary,
-              styles.button,
               pressed && buttonStyles.primaryPressed,
             ]}
-            onPress={handleAcceptQuest}
+            onPress={handleReady}
           >
-            <ThemedText style={buttonStyles.primaryText}>
-              Start First Quest
-            </ThemedText>
+            <ThemedText style={buttonStyles.primaryText}>I'm ready</ThemedText>
           </Pressable>
         </Animated.View>
       </View>
@@ -154,7 +124,7 @@ export default function FirstQuestScreen() {
 
 const styles = StyleSheet.create({
   lightOverlay: {
-    backgroundColor: "rgba(255, 255, 255, 0.1)", // Lighter overlay
+    backgroundColor: "rgba(255, 255, 255, 0.1)",
   },
   content: {
     flex: 1,
@@ -167,40 +137,7 @@ const styles = StyleSheet.create({
   description: {
     marginBottom: Spacing.lg,
   },
-  questContent: {
-    padding: Spacing.sm,
-  },
-  questTitle: {
-    ...Typography.subtitle,
-    fontSize: FontSizes.md,
-    color: Colors.cream,
-    marginBottom: Spacing.md,
-  },
-  questDuration: {
-    color: Colors.cream,
-    opacity: 0.8,
-    marginBottom: Spacing.md,
-  },
-  questDescription: {
-    color: Colors.cream,
-    marginBottom: Spacing.xl,
-  },
-  questReward: {
-    paddingTop: Spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: Colors.cream + "20",
-  },
   buttonContainer: {
     marginTop: Spacing.xl,
-  },
-  button: {
-    paddingVertical: Spacing.md,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  buttonText: {
-    ...Typography.bodyBold,
-    color: Colors.cream,
-    textAlign: "center",
   },
 });

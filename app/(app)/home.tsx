@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from "react";
-import { StyleSheet, View, Image, Pressable } from "react-native";
+import { StyleSheet, View, Image, Pressable, Button, Text } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { ActiveQuest } from "@/components/ActiveQuest";
 import { QuestComplete } from "@/components/QuestComplete";
 import { QuestList } from "@/components/QuestList";
 import { QuestFailed } from "@/components/QuestFailed";
-import {
-  Colors,
-  FontSizes,
-  Spacing,
-  BorderRadius,
-  Typography,
-} from "@/constants/theme";
+import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
 import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
@@ -21,6 +15,7 @@ import useLockStateDetection from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
 import { layoutStyles } from "@/styles/layouts";
 import { BlurView } from "expo-blur";
+import { ErrorBoundary } from "react-error-boundary";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -29,6 +24,22 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+
+function ScreenErrorFallback({
+  error,
+  resetErrorBoundary,
+}: {
+  error: Error;
+  resetErrorBoundary: () => void;
+}) {
+  return (
+    <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
+      <Text>Error in this screen:</Text>
+      <Text>{error.message}</Text>
+      <Button onPress={resetErrorBoundary} title="Reload Screen" />
+    </View>
+  );
+}
 
 export default function HomeScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
@@ -58,10 +69,21 @@ export default function HomeScreen() {
 
   useLockStateDetection();
 
+  useEffect(() => {
+    console.log("home screen mounted");
+    return () => {
+      console.log("home screen unmounted");
+    };
+  }, []);
+
   // Refresh available quests when there's no active quest
   useEffect(() => {
+    console.log("activeQuest", activeQuest);
     if (!activeQuest) {
+      console.log("no active quest,refreshing available quests");
       refreshAvailableQuests();
+    } else {
+      console.log("we have active quest, not refreshing available quests");
     }
   }, [activeQuest]);
 
@@ -126,7 +148,7 @@ export default function HomeScreen() {
       setCurrentCompletion(null);
 
       // Use replace instead of push to avoid stack issues
-      await router.replace("/profile");
+      router.replace("/profile");
 
       // Add debug to see if we get here
     } catch (error) {
@@ -135,7 +157,11 @@ export default function HomeScreen() {
   };
 
   const handleSelectQuest = (quest: QuestTemplate) => {
-    startQuest({ ...quest, startTime: Date.now() });
+    try {
+      startQuest({ ...quest, startTime: Date.now() });
+    } catch (error) {
+      console.error("Error starting quest:", error);
+    }
   };
 
   const handleAcknowledgeFailure = () => {
@@ -171,76 +197,81 @@ export default function HomeScreen() {
   }
 
   return (
-    <View style={layoutStyles.fullScreen}>
-      <View style={layoutStyles.backgroundImageContainer}>
-        <Image
-          source={require("@/assets/images/background/active-quest.jpg")}
-          style={layoutStyles.backgroundImage}
-          resizeMode="cover"
-        />
-      </View>
-      <View style={layoutStyles.contentContainer}>
-        <Animated.View
-          style={[styles.header, headerStyle, { marginBottom: 0 }]}
-        >
-          <ThemedText type="title">
-            {activeQuest ? "Active Quest" : "Next Quest"}
-          </ThemedText>
-        </Animated.View>
-
-        <Animated.View style={[styles.subtitle, subtitleStyle]}>
-          <ThemedText type="subtitle">
-            {activeQuest
-              ? "You grow stronger while you're away."
-              : "Continue your journey"}
-          </ThemedText>
-        </Animated.View>
-
-        <Animated.View style={[styles.blurCard, cardStyle]}>
-          <BlurView
-            intensity={5}
-            style={styles.blurContent}
-            experimentalBlurMethod="dimezisBlurView"
+    <ErrorBoundary FallbackComponent={ScreenErrorFallback}>
+      <View style={layoutStyles.fullScreen}>
+        <View style={layoutStyles.backgroundImageContainer}>
+          <Image
+            source={require("@/assets/images/background/active-quest.jpg")}
+            style={layoutStyles.backgroundImage}
+            resizeMode="cover"
+          />
+        </View>
+        <View style={layoutStyles.contentContainer}>
+          <Animated.View
+            style={[styles.header, headerStyle, { marginBottom: 0 }]}
           >
-            {activeQuest ? (
-              <>
-                <ActiveQuest onComplete={handleQuestComplete} />
+            <ThemedText type="title">
+              {activeQuest ? "Active Quest" : "Next Quest"}
+            </ThemedText>
+          </Animated.View>
 
-                {/* Development Mode Button */}
-                {Constants.expoConfig?.extra?.development && (
-                  <Animated.View style={devButtonStyle}>
-                    <Pressable
-                      style={styles.devButton}
-                      onPressOut={handleDevComplete}
-                    >
-                      <ThemedText type="bodyBold" style={styles.devButtonText}>
-                        [DEV] Complete Quest Now
+          <Animated.View style={[styles.subtitle, subtitleStyle]}>
+            <ThemedText type="subtitle">
+              {activeQuest
+                ? "You grow stronger while you're away."
+                : "Continue your journey"}
+            </ThemedText>
+          </Animated.View>
+
+          <Animated.View style={[styles.blurCard, cardStyle]}>
+            <BlurView
+              intensity={5}
+              style={styles.blurContent}
+              experimentalBlurMethod="dimezisBlurView"
+            >
+              {activeQuest ? (
+                <>
+                  <ActiveQuest onComplete={handleQuestComplete} />
+
+                  {/* Development Mode Button */}
+                  {Constants.expoConfig?.extra?.development && (
+                    <Animated.View style={[devButtonStyle]}>
+                      <Pressable
+                        style={styles.devButton}
+                        onPressOut={handleDevComplete}
+                      >
+                        <ThemedText
+                          type="bodyBold"
+                          style={styles.devButtonText}
+                        >
+                          [DEV] Complete Quest Now
+                        </ThemedText>
+                      </Pressable>
+                    </Animated.View>
+                  )}
+                </>
+              ) : (
+                <View style={styles.availableQuestsContainer}>
+                  {availableQuests.length > 0 ? (
+                    <QuestList
+                      quests={availableQuests}
+                      onSelectQuest={handleSelectQuest}
+                    />
+                  ) : (
+                    <ThemedView style={styles.noQuestsContainer}>
+                      <ThemedText type="bodyLight">
+                        No quests available at the moment. Complete your current
+                        quest or check back later.
                       </ThemedText>
-                    </Pressable>
-                  </Animated.View>
-                )}
-              </>
-            ) : (
-              <View style={styles.availableQuestsContainer}>
-                {availableQuests.length > 0 ? (
-                  <QuestList
-                    quests={availableQuests}
-                    onSelectQuest={handleSelectQuest}
-                  />
-                ) : (
-                  <ThemedView style={styles.noQuestsContainer}>
-                    <ThemedText type="bodyLight">
-                      No quests available at the moment. Complete your current
-                      quest or check back later.
-                    </ThemedText>
-                  </ThemedView>
-                )}
-              </View>
-            )}
-          </BlurView>
-        </Animated.View>
+                    </ThemedView>
+                  )}
+                </View>
+              )}
+            </BlurView>
+          </Animated.View>
+        </View>
       </View>
-    </View>
+    </ErrorBoundary>
   );
 }
 

@@ -1,4 +1,4 @@
-import BackgroundService from "react-native-background-actions";
+import BackgroundService from "react-native-bg-actions";
 import { Quest, QuestTemplate } from "../store/types";
 import { useQuestStore } from "@/store/quest-store";
 import { scheduleQuestCompletionNotification } from "@/services/notifications";

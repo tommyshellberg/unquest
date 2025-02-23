@@ -3,7 +3,8 @@
     "preview": {
       "android": {
         "buildType": "apk"
-      }
+      },
+      "developmentClient": false
     },
     "development": {
       "developmentClient": true,
