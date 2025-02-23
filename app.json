@@ -24,7 +24,7 @@
       "package": "com.anonymous.unquest"
     },
     "extra": {
-      "development": true,
+      "development": false,
       "router": {
         "origin": false
       },

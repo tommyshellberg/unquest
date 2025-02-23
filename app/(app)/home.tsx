@@ -24,6 +24,8 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+import * as Notifications from "expo-notifications";
 
 function ScreenErrorFallback({
   error,
@@ -36,12 +38,22 @@ function ScreenErrorFallback({
     <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
       <Text>Error in this screen:</Text>
       <Text>{error.message}</Text>
-      <Button onPress={resetErrorBoundary} title="Reload Screen" />
+      <Pressable
+        onPress={resetErrorBoundary}
+        style={{
+          padding: Spacing.md,
+          backgroundColor: Colors.primary,
+          borderRadius: BorderRadius.md,
+        }}
+      >
+        <Text style={{ color: Colors.cream }}>Reload Screen</Text>
+      </Pressable>
     </View>
   );
 }
 
 export default function HomeScreen() {
+  const insets = useSafeAreaInsets();
   const activeQuest = useQuestStore((state) => state.activeQuest);
   const completeQuest = useQuestStore((state) => state.completeQuest);
   const startQuest = useQuestStore((state) => state.startQuest);
@@ -70,17 +82,14 @@ export default function HomeScreen() {
   useLockStateDetection();
 
   useEffect(() => {
-    console.log("home screen mounted");
-    return () => {
-      console.log("home screen unmounted");
-    };
+    Notifications.requestPermissionsAsync();
   }, []);
 
   // Refresh available quests when there's no active quest
   useEffect(() => {
     console.log("activeQuest", activeQuest);
     if (!activeQuest) {
-      console.log("no active quest,refreshing available quests");
+      console.log("no active quest, refreshing available quests");
       refreshAvailableQuests();
     } else {
       console.log("we have active quest, not refreshing available quests");
@@ -100,7 +109,7 @@ export default function HomeScreen() {
     cardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
     cardTranslateY.value = withDelay(2700, withSpring(0));
 
-    // Animate the dev button only in the active quest scenario as before.
+    // Animate the dev button only in the active quest scenario.
     if (activeQuest && Constants.expoConfig?.extra?.development) {
       devButtonOpacity.value = withDelay(
         3600,
@@ -147,10 +156,8 @@ export default function HomeScreen() {
       setShowingCompletion(false);
       setCurrentCompletion(null);
 
-      // Use replace instead of push to avoid stack issues
+      // Use router.replace to avoid stacking screens
       router.replace("/profile");
-
-      // Add debug to see if we get here
     } catch (error) {
       console.error("Navigation error:", error);
     }
@@ -161,6 +168,17 @@ export default function HomeScreen() {
       startQuest({ ...quest, startTime: Date.now() });
     } catch (error) {
       console.error("Error starting quest:", error);
+    }
+  };
+
+  // New function to start the quest via the dedicated button.
+  // It picks the first available quest.
+  const handleStartQuest = () => {
+    if (availableQuests.length > 0) {
+      const questToStart = availableQuests[0];
+      handleSelectQuest(questToStart);
+    } else {
+      console.warn("No available quest to start.");
     }
   };
 
@@ -270,6 +288,27 @@ export default function HomeScreen() {
             </BlurView>
           </Animated.View>
         </View>
+        {/* Render the new Start Quest button above the tab bar */}
+        {!activeQuest && availableQuests.length > 0 && (
+          <Animated.View
+            style={[
+              styles.startQuestButtonContainer,
+              {
+                // Move the button up by adding the safe area bottom and tab bar height (60)
+                bottom: insets.bottom + 80 + Spacing.md,
+              },
+            ]}
+          >
+            <Pressable
+              onPress={handleStartQuest}
+              style={styles.startQuestButton}
+            >
+              <ThemedText type="bodyBold" style={styles.startQuestButtonText}>
+                Start Quest
+              </ThemedText>
+            </Pressable>
+          </Animated.View>
+        )}
       </View>
     </ErrorBoundary>
   );
@@ -346,5 +385,23 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     textAlign: "center",
     fontWeight: "600",
+  },
+  // New styles for the Start Quest button
+  startQuestButtonContainer: {
+    position: "absolute",
+    left: Spacing.md,
+    right: Spacing.md,
+  },
+  startQuestButton: {
+    backgroundColor: Colors.primary,
+    marginHorizontal: Spacing.xl,
+    paddingVertical: Spacing.md,
+    borderRadius: BorderRadius.md,
+    alignItems: "center",
+  },
+  startQuestButtonText: {
+    color: Colors.cream,
+    fontSize: FontSizes.md,
+    fontWeight: "bold",
   },
 });

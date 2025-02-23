@@ -13,6 +13,7 @@ import {
   Pressable,
   View,
   Image as RNImage,
+  ActivityIndicator,
 } from "react-native";
 import {
   PanGestureHandler,
@@ -33,6 +34,7 @@ import { useQuestStore } from "@/store/quest-store";
 import { getMapForQuest } from "@/utils/mapUtils";
 import { MAP_IMAGES, MapId } from "@/app/data/maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Asset } from "expo-asset";
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const IMAGE_WIDTH = 1200;
 const IMAGE_HEIGHT = 834;
@@ -90,6 +92,15 @@ export default function MapScreen() {
   // Get the map image
   const mapImage = MAP_IMAGES[mapId];
 
+  // Preload the map image when the mapImage changes.
+  useEffect(() => {
+    if (mapImage) {
+      Asset.fromModule(mapImage)
+        .downloadAsync()
+        .catch((error) => console.error("Error preloading map image", error));
+    }
+  }, [mapImage]);
+
   const handleLoad = useCallback(() => {
     setIsMapLoaded(true);
   }, []);
@@ -109,19 +120,19 @@ export default function MapScreen() {
     };
   }, []);
 
-  // Separate the POI animation logic into its own effect
+  // This effect positions the map based on the state of `lastRevealedPOISlug`
   useEffect(() => {
     let isActive = true;
 
     if (lastRevealedPOISlug && !isAnimating.current) {
       const poi = pois.find((p) => p.slug === lastRevealedPOISlug);
-
       if (poi && isActive) {
         isAnimating.current = true;
-
+        // Calculate center if a POI has been revealed:
         const centerX = -(poi.x - screenWidth / 2);
         const centerY = -(poi.y - screenHeight / 2);
 
+        // Bound the translation so that it doesn't move off the map
         translateX.value = Math.max(
           Math.min(centerX, maxTranslateX),
           minTranslateX
@@ -131,21 +142,15 @@ export default function MapScreen() {
           minTranslateY
         );
 
-        // Reset initial values
+        // Initialize animations
         poiScale.value = 0.1;
         newMaskScale.value = 0.1;
-
         try {
-          // Animate POI scale
           poiScale.value = withTiming(1, { duration: 1500 });
-
-          // Animate mask with spring for a more dynamic reveal
           newMaskScale.value = withSpring(1, {
             damping: 12,
             stiffness: 90,
           });
-
-          // Use a separate timing animation to handle completion
           withTiming(1, { duration: 2500 }, (finished) => {
             if (finished && isActive) {
               runOnJS(() => {
@@ -161,6 +166,10 @@ export default function MapScreen() {
           isAnimating.current = false;
         }
       }
+    } else {
+      // No quest revealed or no lastRevealedPOISlug, so position the map at (0,0)
+      translateX.value = withTiming(0);
+      translateY.value = withTiming(0);
     }
 
     return () => {
@@ -243,6 +252,12 @@ export default function MapScreen() {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
+      {/* Show a loading overlay until the map image loads */}
+      {!isMapLoaded && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color="#ffffff" />
+        </View>
+      )}
       <PanGestureHandler onGestureEvent={panGesture}>
         <Animated.View style={[styles.container]}>
           <MaskedView
@@ -329,6 +344,13 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(61, 73, 78, 0.92)",
     justifyContent: "center",
     alignItems: "center",
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: "rgba(0, 0, 0, 0.5)",
+    justifyContent: "center",
+    alignItems: "center",
+    zIndex: 10,
   },
   loadingText: {
     color: "#ffffff",
