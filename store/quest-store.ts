@@ -4,7 +4,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { Quest, QuestTemplate } from "./types";
 import { AVAILABLE_QUESTS } from "@/app/data/quests";
 import { usePOIStore } from "@/store/poi-store";
-import { QuestTimer } from "@/services/quest-timer";
+import QuestTimer from "@/services/quest-timer";
 
 interface QuestState {
   activeQuest: Quest | null;
@@ -72,6 +72,7 @@ export const useQuestStore = create<QuestState>()(
         if (activeQuest) {
           set({ failedQuest: activeQuest, activeQuest: null });
         }
+        QuestTimer.stopQuest();
       },
 
       refreshAvailableQuests: () => {

@@ -3,9 +3,11 @@ import { Quest, QuestTemplate } from "../store/types";
 import { useQuestStore } from "@/store/quest-store";
 import { scheduleQuestCompletionNotification } from "@/services/notifications";
 
-export class QuestTimer {
+export default class QuestTimer {
   private static activeQuest: Quest | null = null;
   private static startTime: number | null = null;
+
+  // @todo: harden this against multiple concurrent quests.
 
   static async startQuest(questTemplate: QuestTemplate) {
     console.log("starting quest", questTemplate);

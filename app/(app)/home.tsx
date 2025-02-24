@@ -2,16 +2,12 @@ import React, { useState, useEffect } from "react";
 import { StyleSheet, View, Image, Pressable, Button, Text } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
-import { ActiveQuest } from "@/components/ActiveQuest";
 import { QuestComplete } from "@/components/QuestComplete";
 import { QuestList } from "@/components/QuestList";
-import { QuestFailed } from "@/components/QuestFailed";
 import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { useCharacterStore } from "@/store/character-store";
 import { Quest, QuestCompletion, QuestTemplate } from "@/store/types";
-import Constants from "expo-constants";
-import useLockStateDetection from "@/hooks/useLockStateDetection";
 import { router } from "expo-router";
 import { layoutStyles } from "@/styles/layouts";
 import { BlurView } from "expo-blur";
@@ -77,9 +73,7 @@ export default function HomeScreen() {
   const subtitleOpacity = useSharedValue(0);
   const cardOpacity = useSharedValue(0);
   const cardTranslateY = useSharedValue(50);
-  const devButtonOpacity = useSharedValue(0);
-
-  useLockStateDetection();
+  const startQuestButtonOpacity = useSharedValue(0);
 
   useEffect(() => {
     Notifications.requestPermissionsAsync();
@@ -109,13 +103,11 @@ export default function HomeScreen() {
     cardOpacity.value = withDelay(2700, withTiming(1, { duration: 1000 }));
     cardTranslateY.value = withDelay(2700, withSpring(0));
 
-    // Animate the dev button only in the active quest scenario.
-    if (activeQuest && Constants.expoConfig?.extra?.development) {
-      devButtonOpacity.value = withDelay(
-        3600,
-        withTiming(1, { duration: 625 })
-      );
-    }
+    // Animate the start quest button
+    startQuestButtonOpacity.value = withDelay(
+      3600,
+      withTiming(1, { duration: 625 })
+    );
   }, [activeQuest]);
 
   const headerStyle = useAnimatedStyle(() => ({
@@ -132,10 +124,7 @@ export default function HomeScreen() {
     transform: [{ translateY: cardTranslateY.value }],
   }));
 
-  const devButtonStyle = useAnimatedStyle(() => ({
-    opacity: devButtonOpacity.value,
-  }));
-
+  // @todo: move quest complete to its own screen.
   const handleQuestComplete = (ignoreDuration = false) => {
     if (!character) return;
     const completion = completeQuest(ignoreDuration);
@@ -182,28 +171,6 @@ export default function HomeScreen() {
     }
   };
 
-  const handleAcknowledgeFailure = () => {
-    resetFailedQuest();
-  };
-
-  // Development helper function
-  const handleDevComplete = () => {
-    if (activeQuest) {
-      handleQuestComplete(true);
-    }
-  };
-
-  // Render logic
-  if (failedQuest) {
-    // Render the QuestFailed component when a quest has failed
-    return (
-      <QuestFailed
-        quest={failedQuest}
-        onAcknowledge={handleAcknowledgeFailure}
-      />
-    );
-  }
-
   if (showingCompletion && currentCompletion) {
     return (
       <QuestComplete
@@ -216,100 +183,71 @@ export default function HomeScreen() {
 
   return (
     <ErrorBoundary FallbackComponent={ScreenErrorFallback}>
-      <View style={layoutStyles.fullScreen}>
-        <View style={layoutStyles.backgroundImageContainer}>
-          <Image
-            source={require("@/assets/images/background/active-quest.jpg")}
-            style={layoutStyles.backgroundImage}
-            resizeMode="cover"
-          />
-        </View>
-        <View style={layoutStyles.contentContainer}>
-          <Animated.View
-            style={[styles.header, headerStyle, { marginBottom: 0 }]}
-          >
-            <ThemedText type="title">
-              {activeQuest ? "Active Quest" : "Next Quest"}
-            </ThemedText>
-          </Animated.View>
-
-          <Animated.View style={[styles.subtitle, subtitleStyle]}>
-            <ThemedText type="subtitle">
-              {activeQuest
-                ? "You grow stronger while you're away."
-                : "Continue your journey"}
-            </ThemedText>
-          </Animated.View>
-
-          <Animated.View style={[styles.blurCard, cardStyle]}>
-            <BlurView
-              intensity={5}
-              style={styles.blurContent}
-              experimentalBlurMethod="dimezisBlurView"
-            >
-              {activeQuest ? (
-                <>
-                  <ActiveQuest onComplete={handleQuestComplete} />
-
-                  {/* Development Mode Button */}
-                  {Constants.expoConfig?.extra?.development && (
-                    <Animated.View style={[devButtonStyle]}>
-                      <Pressable
-                        style={styles.devButton}
-                        onPressOut={handleDevComplete}
-                      >
-                        <ThemedText
-                          type="bodyBold"
-                          style={styles.devButtonText}
-                        >
-                          [DEV] Complete Quest Now
-                        </ThemedText>
-                      </Pressable>
-                    </Animated.View>
-                  )}
-                </>
-              ) : (
-                <View style={styles.availableQuestsContainer}>
-                  {availableQuests.length > 0 ? (
-                    <QuestList
-                      quests={availableQuests}
-                      onSelectQuest={handleSelectQuest}
-                    />
-                  ) : (
-                    <ThemedView style={styles.noQuestsContainer}>
-                      <ThemedText type="bodyLight">
-                        No quests available at the moment. Complete your current
-                        quest or check back later.
-                      </ThemedText>
-                    </ThemedView>
-                  )}
-                </View>
-              )}
-            </BlurView>
-          </Animated.View>
-        </View>
-        {/* Render the new Start Quest button above the tab bar */}
-        {!activeQuest && availableQuests.length > 0 && (
-          <Animated.View
-            style={[
-              styles.startQuestButtonContainer,
-              {
-                // Move the button up by adding the safe area bottom and tab bar height (60)
-                bottom: insets.bottom + 80 + Spacing.md,
-              },
-            ]}
-          >
-            <Pressable
-              onPress={handleStartQuest}
-              style={styles.startQuestButton}
-            >
-              <ThemedText type="bodyBold" style={styles.startQuestButtonText}>
-                Start Quest
-              </ThemedText>
-            </Pressable>
-          </Animated.View>
-        )}
+      <View style={layoutStyles.backgroundImageContainer}>
+        <Image
+          source={require("@/assets/images/background/active-quest.jpg")}
+          style={layoutStyles.backgroundImage}
+          resizeMode="cover"
+        />
       </View>
+      <View style={layoutStyles.contentContainer}>
+        <Animated.View
+          style={[styles.header, headerStyle, { marginBottom: 0 }]}
+        >
+          <ThemedText type="title">Next Quest</ThemedText>
+        </Animated.View>
+
+        <Animated.View style={[styles.subtitle, subtitleStyle]}>
+          <ThemedText type="subtitle">Continue your journey</ThemedText>
+        </Animated.View>
+
+        <Animated.View style={[styles.blurCard, cardStyle]}>
+          <BlurView
+            intensity={5}
+            style={styles.blurContent}
+            experimentalBlurMethod="dimezisBlurView"
+          >
+            {!activeQuest && (
+              <View style={styles.availableQuestsContainer}>
+                {availableQuests.length > 0 ? (
+                  <QuestList
+                    quests={availableQuests}
+                    onSelectQuest={handleSelectQuest}
+                  />
+                ) : (
+                  <ThemedView style={styles.noQuestsContainer}>
+                    <ThemedText type="bodyLight">
+                      No quests available at the moment. Complete your current
+                      quest or check back later.
+                    </ThemedText>
+                  </ThemedView>
+                )}
+              </View>
+            )}
+          </BlurView>
+        </Animated.View>
+      </View>
+      {/* Render the new Start Quest button above the tab bar */}
+      {!activeQuest && availableQuests.length > 0 && (
+        <Animated.View
+          style={[
+            styles.startQuestButtonContainer,
+            {
+              // Move the button up by adding the safe area bottom and tab bar height (60)
+              bottom: insets.bottom + 80 + Spacing.md,
+            },
+          ]}
+        >
+          <Pressable
+            onPress={handleStartQuest}
+            style={[styles.startQuestButton]}
+          >
+            <ThemedText type="bodyBold" style={styles.startQuestButtonText}>
+              Start Quest
+            </ThemedText>
+          </Pressable>
+        </Animated.View>
+      )}
     </ErrorBoundary>
   );
 }
@@ -375,16 +313,6 @@ const styles = StyleSheet.create({
     color: Colors.cream,
     textAlign: "center",
     lineHeight: 24,
-  },
-  devButton: {
-    backgroundColor: "#FF0000",
-    padding: Spacing.md,
-    borderRadius: BorderRadius.md,
-  },
-  devButtonText: {
-    color: Colors.cream,
-    textAlign: "center",
-    fontWeight: "600",
   },
   // New styles for the Start Quest button
   startQuestButtonContainer: {

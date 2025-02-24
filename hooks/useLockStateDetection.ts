@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { NativeEventEmitter, NativeModules, Platform } from "react-native";
 import { useQuestStore } from "@/store/quest-store";
-import { QuestTimer } from "@/services/quest-timer";
+import QuestTimer from "@/services/quest-timer";
 
 export default function useLockStateDetection() {
   const { LockState } = NativeModules;
@@ -33,13 +33,20 @@ export default function useLockStateDetection() {
 
         const { completeQuest, failQuest } = questStoreState;
 
+        console.log("activeQuest", activeQuest);
+
         if (activeQuest) {
           // There was an active quest
           const questDurationInSeconds = activeQuest.durationMinutes * 60;
           const timeSinceQuestStarted =
             (timeNow - activeQuest.startTime) / 1000;
 
-          await QuestTimer.stopQuest();
+          console.log("timeSinceQuestStarted", timeSinceQuestStarted);
+          try {
+            await QuestTimer.stopQuest();
+          } catch (error) {
+            console.error("Error stopping quest", error);
+          }
 
           if (timeSinceQuestStarted >= questDurationInSeconds) {
             // Quest duration has passed, complete the quest

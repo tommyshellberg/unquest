@@ -17,6 +17,7 @@ export function OnboardingGuard({ children }: { children: React.ReactNode }) {
       // No saved data and not in onboarding - redirect to onboarding
       router.replace("/onboarding");
     } else if (hasCompletedOnboarding && inOnboarding) {
+      console.log("Has saved data and in onboarding - redirecting to home");
       // Has saved data but in onboarding - redirect to home
       router.replace("/home");
     }

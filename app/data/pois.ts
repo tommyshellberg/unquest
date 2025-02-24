@@ -5,7 +5,7 @@ export const INITIAL_POIS: POI[] = [
     slug: "the-beginning",
     name: "?",
     x: 120,
-    y: 0,
+    y: 20,
     isRevealed: true,
     mapId: "map-1",
   },

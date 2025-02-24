@@ -1,4 +1,4 @@
-import { StyleSheet, View, Pressable, Image } from "react-native";
+import { StyleSheet, View, Pressable, Image, StatusBar } from "react-native";
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -9,13 +9,12 @@ import React from "react";
 import { ThemedText } from "@/components/ThemedText";
 import { Colors, Spacing, BorderRadius, FontSizes } from "@/constants/theme";
 import { buttonStyles } from "@/styles/buttons";
-import { Quest } from "@/store/types";
+import { layoutStyles } from "@/styles/layouts";
 type Props = {
-  quest: Quest;
   onAcknowledge: () => void;
 };
 
-export function QuestFailed({ quest, onAcknowledge }: Props) {
+export default function QuestFailed({ onAcknowledge }: Props) {
   // Create animated values for header, message, and button animations
   const headerAnim = useSharedValue(0);
   const messageAnim = useSharedValue(0);
@@ -44,39 +43,42 @@ export function QuestFailed({ quest, onAcknowledge }: Props) {
   }));
 
   return (
-    <View style={styles.container}>
+    <View style={layoutStyles.fullScreen}>
+      <StatusBar hidden />
       <Image
         source={require("@/assets/images/background/onboarding.jpg")}
         style={styles.backgroundImage}
         resizeMode="cover"
       />
-      <Animated.View style={[styles.content, headerAnimatedStyle]}>
-        <ThemedText type="title">Quest Failed</ThemedText>
-      </Animated.View>
-      <Animated.View style={[styles.content, messageAnimatedStyle]}>
-        <ThemedText type="bodyBold" style={styles.message}>
-          It's okay to fail – every setback teaches you a lesson.
-        </ThemedText>
-        <ThemedText type="body" style={styles.message}>
-          Resist unlocking out of boredom.
-        </ThemedText>
-        <ThemedText type="body" style={styles.message}>
-          Using your phone less helps build focus and mindfulness.
-        </ThemedText>
-      </Animated.View>
-      <Animated.View style={[styles.content, buttonAnimatedStyle]}>
-        <Pressable
-          style={({ pressed }) => [
-            styles.button,
-            pressed && styles.buttonPressed,
-          ]}
-          onPressOut={onAcknowledge}
-        >
-          <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
-            Keep Going!
+      <View style={[layoutStyles.contentContainer, { marginTop: 0 }]}>
+        <Animated.View style={[styles.content, headerAnimatedStyle]}>
+          <ThemedText type="title">Quest Failed</ThemedText>
+        </Animated.View>
+        <Animated.View style={[styles.content, messageAnimatedStyle]}>
+          <ThemedText type="bodyBold" style={styles.message}>
+            It's okay to fail – every setback teaches you a lesson.
           </ThemedText>
-        </Pressable>
-      </Animated.View>
+          <ThemedText type="body" style={styles.message}>
+            Resist unlocking out of boredom.
+          </ThemedText>
+          <ThemedText type="body" style={styles.message}>
+            Using your phone less helps build focus and mindfulness.
+          </ThemedText>
+        </Animated.View>
+        <Animated.View style={[styles.content, buttonAnimatedStyle]}>
+          <Pressable
+            style={({ pressed }) => [
+              styles.button,
+              pressed && styles.buttonPressed,
+            ]}
+            onPressOut={onAcknowledge}
+          >
+            <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
+              Keep Going!
+            </ThemedText>
+          </Pressable>
+        </Animated.View>
+      </View>
     </View>
   );
 }
