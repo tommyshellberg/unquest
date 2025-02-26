@@ -11,9 +11,21 @@ Notifications.setNotificationHandler({
 export const scheduleQuestCompletionNotification = async () => {
   await Notifications.scheduleNotificationAsync({
     content: {
-      title: "Congratulations!",
-      body: "You completed the quest. Uncover more about yourself and the kingdom.",
+      title: "Quest Completed!",
+      body: "Your quest has been completed successfully. Claim your reward!",
+      data: { screen: "quest-complete" },
     },
-    trigger: null, // null trigger means present immediately
+    trigger: null, // Show immediately
   });
 };
+
+export function setupNotifications() {
+  // Configure how notifications appear when the app is in the foreground
+  Notifications.setNotificationHandler({
+    handleNotification: async () => ({
+      shouldShowAlert: true,
+      shouldPlaySound: true,
+      shouldSetBadge: false,
+    }),
+  });
+}

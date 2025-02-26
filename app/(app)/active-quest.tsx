@@ -45,9 +45,6 @@ export default function ActiveQuestScreen() {
         completeQuest();
         // redirect to the Home screen for now (will be replaced with a quest complete screen)
         // make sure to redirect after interactions and state are updated.
-        setTimeout(() => {
-          router.replace("/home");
-        }, 1000);
       } else {
         setRemainingMinutes(Math.floor(timeLeft / 60));
         setRemainingSeconds(Math.floor(timeLeft % 60));

@@ -34,18 +34,23 @@ export default function RootLayout() {
     const hasCompletedOnboarding = character && account;
     const currentSegment = segments[0] || "";
 
-    // Only redirect if we're at the root route or onboarding
+    // Handle initial navigation or when segments change
     if (!currentSegment) {
+      // Only at the root route
       if (!hasCompletedOnboarding) {
+        console.log("redirecting to onboarding");
         router.replace("/onboarding");
       } else {
+        console.log("redirecting to home");
         router.replace("/(app)/home");
       }
     } else if (!hasCompletedOnboarding && currentSegment !== "onboarding") {
-      // Force onboarding if not completed
+      // Force onboarding if not completed and trying to access other screens
       router.replace("/onboarding");
     }
-  }, [character, account, segments, fontsLoaded, mounted]);
+    // Add this to prevent unwanted redirects after initial navigation
+    // This ensures we only redirect on initial load or segment changes
+  }, [segments, fontsLoaded, mounted, character, account]);
 
   useEffect(() => {
     if (fontsLoaded) {

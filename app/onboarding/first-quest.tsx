@@ -50,9 +50,7 @@ export default function FirstQuestScreen() {
 
   // When the user taps the "I'm ready" button, navigate to the home page.
   const handleReady = () => {
-    setTimeout(() => {
-      router.replace("/home");
-    }, 500);
+    router.replace("/home");
   };
 
   // Create animated styles based on shared values.

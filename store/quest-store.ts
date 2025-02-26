@@ -11,11 +11,13 @@ interface QuestState {
   availableQuests: QuestTemplate[];
   failedQuest: Quest | null;
   completedQuests: Quest[];
+  recentCompletedQuest: Quest | null;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
   failQuest: () => void;
   refreshAvailableQuests: () => void;
   resetFailedQuest: () => void;
+  clearRecentCompletedQuest: () => void;
   reset: () => void;
   getCompletedQuests: () => Quest[];
 }
@@ -27,6 +29,7 @@ export const useQuestStore = create<QuestState>()(
       availableQuests: [],
       failedQuest: null,
       completedQuests: [],
+      recentCompletedQuest: null,
 
       startQuest: (quest: Quest) => {
         const startedQuest = {
@@ -51,6 +54,7 @@ export const useQuestStore = create<QuestState>()(
 
             set((state) => ({
               activeQuest: null,
+              recentCompletedQuest: completedQuest,
               completedQuests: [...state.completedQuests, completedQuest],
             }));
 
@@ -96,6 +100,10 @@ export const useQuestStore = create<QuestState>()(
         set({ failedQuest: null });
       },
 
+      clearRecentCompletedQuest: () => {
+        set({ recentCompletedQuest: null });
+      },
+
       getCompletedQuests: () => {
         return get().completedQuests;
       },
@@ -106,6 +114,7 @@ export const useQuestStore = create<QuestState>()(
           availableQuests: [],
           completedQuests: [],
           failedQuest: null,
+          recentCompletedQuest: null,
         });
       },
     }),
