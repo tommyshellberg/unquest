@@ -35,11 +35,15 @@ import { getMapForQuest } from "@/utils/mapUtils";
 import { MAP_IMAGES, MapId } from "@/app/data/maps";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Asset } from "expo-asset";
+
 const { width: screenWidth, height: screenHeight } = Dimensions.get("window");
 const IMAGE_WIDTH = 1200;
 const IMAGE_HEIGHT = 834;
 const maskWidth = 500;
 const maskHeight = 500;
+
+// Define the height of your bottom navigation
+const BOTTOM_NAV_HEIGHT = 60; // Adjust this to match your actual navigation height
 
 // Debug the image source immediately
 const MASK_IMAGE = require("@/assets/images/fog-mask-2.png");
@@ -55,10 +59,14 @@ export default function MapScreen() {
 
   const insets = useSafeAreaInsets();
 
+  // Calculate the effective screen height (accounting for bottom navigation)
+  const effectiveScreenHeight = screenHeight - BOTTOM_NAV_HEIGHT;
+
+  // Calculate boundaries with explicit consideration for bottom navigation
   const maxTranslateX = 0;
   const minTranslateX = screenWidth - IMAGE_WIDTH;
   const maxTranslateY = 0;
-  const minTranslateY = screenHeight - IMAGE_HEIGHT + insets.bottom + 20;
+  const minTranslateY = effectiveScreenHeight - IMAGE_HEIGHT;
 
   const pois = usePOIStore((state) => state.pois);
   const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);
@@ -190,6 +198,7 @@ export default function MapScreen() {
       const newTranslateX = ctx.startX + event.translationX;
       const newTranslateY = ctx.startY + event.translationY;
 
+      // Apply constraints to prevent scrolling beyond map boundaries
       translateX.value = Math.max(
         Math.min(newTranslateX, maxTranslateX),
         minTranslateX

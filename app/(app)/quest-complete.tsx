@@ -32,6 +32,7 @@ export default function QuestCompleteScreen() {
       // Clear the recent completed quest state
       clearRecentCompletedQuest();
 
+      console.log("navigating to profile");
       // Navigate to profile screen
       router.replace("/profile");
     } catch (error) {

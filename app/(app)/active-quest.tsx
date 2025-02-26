@@ -1,17 +1,10 @@
-import React, { useEffect, useState } from "react";
-import {
-  View,
-  StyleSheet,
-  Image,
-  StatusBar,
-  FlatList,
-  Pressable,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, StyleSheet, Image, StatusBar, Pressable } from "react-native";
 import { BlurView } from "expo-blur";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { ThemedText } from "@/components/ThemedText";
 import { QuestCard } from "@/components/QuestCard";
-import { Colors, Spacing, Typography } from "@/constants/theme";
+import { Colors, Spacing, Typography, FontSizes } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import Animated, {
   useAnimatedStyle,
@@ -19,84 +12,36 @@ import Animated, {
   withDelay,
   withTiming,
 } from "react-native-reanimated";
-import { router } from "expo-router";
 import { buttonStyles } from "@/styles/buttons";
+
 export default function ActiveQuestScreen() {
   const activeQuest = useQuestStore((state) => state.activeQuest);
-  const [remainingMinutes, setRemainingMinutes] = useState(0);
-  const [remainingSeconds, setRemainingSeconds] = useState(0);
+  const pendingQuest = useQuestStore((state) => state.pendingQuest);
   const insets = useSafeAreaInsets();
-  const completeQuest = useQuestStore((state) => state.completeQuest);
-  const cancelQuest = useQuestStore((state) => state.failQuest);
-  // Return early if there is no active quest.
-  if (!activeQuest) return null;
+  const cancelQuest = useQuestStore((state) => state.cancelQuest);
 
-  // Timer logic: update the remaining time every second.
-  useEffect(() => {
-    const timer = setInterval(() => {
-      const now = Date.now();
-      const timeElapsed = (now - activeQuest.startTime) / 1000;
-      const totalDuration = activeQuest.durationMinutes * 60;
-      const timeLeft = totalDuration - timeElapsed;
+  // Determine if we're in pending state
+  const isPending = !!pendingQuest;
 
-      if (timeLeft <= 0) {
-        clearInterval(timer);
-        // @todo: do we need this at all or can the background task do it all?
-        completeQuest();
-        // redirect to the Home screen for now (will be replaced with a quest complete screen)
-        // make sure to redirect after interactions and state are updated.
-      } else {
-        setRemainingMinutes(Math.floor(timeLeft / 60));
-        setRemainingSeconds(Math.floor(timeLeft % 60));
-      }
-    }, 1000);
+  // Get the quest to display (either pending or active)
+  const displayQuest = pendingQuest || activeQuest;
 
-    return () => clearInterval(timer);
-  }, [activeQuest]);
-
-  // Header animation using react-native-reanimated.
+  // Header animation using react-native-reanimated
   const headerOpacity = useSharedValue(0);
   const headerScale = useSharedValue(0.9);
-  const timerOpacity = useSharedValue(0);
-  const timerScale = useSharedValue(0.9);
-  const instructionsOpacity = useSharedValue(0);
-  const instructionsScale = useSharedValue(0.9);
-  const activitiesOpacity = useSharedValue(0);
-  const activitiesScale = useSharedValue(0.9);
-  const questTitleOpacity = useSharedValue(0);
-  const questTitleScale = useSharedValue(0.9);
-  const descriptionOpacity = useSharedValue(0);
-  const descriptionScale = useSharedValue(0.9);
-  const cancelQuestButtonOpacity = useSharedValue(0);
-  const cancelQuestButtonScale = useSharedValue(0.9);
+  const cardOpacity = useSharedValue(0);
+  const cardScale = useSharedValue(0.9);
+  const buttonOpacity = useSharedValue(0);
+  const buttonScale = useSharedValue(0.9);
 
   useEffect(() => {
+    // Simple animation sequence
     headerOpacity.value = withTiming(1, { duration: 500 });
     headerScale.value = withTiming(1, { duration: 500 });
-    timerOpacity.value = withDelay(1500, withTiming(1, { duration: 500 }));
-    timerScale.value = withDelay(1500, withTiming(1, { duration: 500 }));
-    questTitleOpacity.value = withDelay(1500, withTiming(1, { duration: 500 }));
-    questTitleScale.value = withDelay(1500, withTiming(1, { duration: 500 }));
-    instructionsOpacity.value = withDelay(
-      2500,
-      withTiming(1, { duration: 500 })
-    );
-    instructionsScale.value = withDelay(2500, withTiming(1, { duration: 500 }));
-    activitiesOpacity.value = withDelay(3500, withTiming(1, { duration: 500 }));
-    activitiesScale.value = withDelay(3500, withTiming(1, { duration: 500 }));
-    descriptionOpacity.value = withDelay(
-      1500,
-      withTiming(1, { duration: 500 })
-    );
-    descriptionScale.value = withDelay(1500, withTiming(1, { duration: 500 }));
-    cancelQuestButtonOpacity.value = withDelay(
-      4500,
-      withTiming(1, { duration: 500 })
-    );
-    cancelQuestButtonScale.value = withDelay(
-      4500,
-      withTiming(1, { duration: 500 })
-    );
+    cardOpacity.value = withDelay(500, withTiming(1, { duration: 500 }));
+    cardScale.value = withDelay(500, withTiming(1, { duration: 500 }));
+    buttonOpacity.value = withDelay(1000, withTiming(1, { duration: 500 }));
+    buttonScale.value = withDelay(1000, withTiming(1, { duration: 500 }));
   }, []);
 
   const headerAnimatedStyle = useAnimatedStyle(() => ({
@@ -104,42 +49,19 @@ export default function ActiveQuestScreen() {
     transform: [{ scale: headerScale.value }],
   }));
 
-  const timerAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: timerOpacity.value,
-    transform: [{ scale: timerScale.value }],
-    delay: 1500,
+  const cardAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: cardOpacity.value,
+    transform: [{ scale: cardScale.value }],
   }));
 
-  const instructionsAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: instructionsOpacity.value,
-    transform: [{ scale: instructionsScale.value }],
+  const buttonAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: buttonOpacity.value,
+    transform: [{ scale: buttonScale.value }],
   }));
 
-  const activitiesAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: activitiesOpacity.value,
-    transform: [{ scale: activitiesScale.value }],
-  }));
-
-  const questTitleAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: questTitleOpacity.value,
-    transform: [{ scale: questTitleScale.value }],
-  }));
-
-  const descriptionAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: descriptionOpacity.value,
-    transform: [{ scale: descriptionScale.value }],
-  }));
-
-  const cancelQuestButtonAnimatedStyle = useAnimatedStyle(() => ({
-    opacity: cancelQuestButtonOpacity.value,
-    transform: [{ scale: cancelQuestButtonScale.value }],
-  }));
-
-  const exampleActivities = [
-    { description: "Take a relaxing walk outside." },
-    { description: "Catch up with someone you care about." },
-    { description: "Read a book or write in a journal." },
-  ];
+  const handleCancelQuest = () => {
+    cancelQuest();
+  };
 
   return (
     <View style={styles.fullScreen}>
@@ -161,64 +83,45 @@ export default function ActiveQuestScreen() {
       >
         <StatusBar hidden />
         <Animated.View style={[styles.headerContainer, headerAnimatedStyle]}>
-          <ThemedText type="title">Active Quest</ThemedText>
+          <ThemedText type="title">Quest Ready</ThemedText>
         </Animated.View>
 
-        <QuestCard style={{ backgroundColor: Colors.background.light }}>
-          {/* Quest details inside the card */}
-          <Animated.View style={questTitleAnimatedStyle}>
+        <Animated.View style={[styles.cardContainer, cardAnimatedStyle]}>
+          <QuestCard style={{ backgroundColor: Colors.background.light }}>
             <ThemedText type="subtitle" style={styles.questTitle}>
-              {activeQuest.title}
+              {displayQuest?.title}
             </ThemedText>
-          </Animated.View>
-          <View
-            style={{
-              borderBottomColor: Colors.primary,
-              borderBottomWidth: StyleSheet.hairlineWidth,
-              marginBottom: Spacing.md,
-            }}
-          />
-          <Animated.View style={timerAnimatedStyle}>
-            <ThemedText type="bodyBold" style={styles.timer}>
-              Time Remaining: {remainingMinutes}:
-              {remainingSeconds.toString().padStart(2, "0")}
-            </ThemedText>
-          </Animated.View>
-          <Animated.View style={descriptionAnimatedStyle}>
-            <ThemedText type="body" style={styles.instructions}>
-              {activeQuest.description}
-            </ThemedText>
-          </Animated.View>
-        </QuestCard>
 
-        <Animated.View
-          style={[styles.instructionsContainer, instructionsAnimatedStyle]}
-        >
-          <ThemedText type="body" style={styles.instructions}>
-            Close the app and enjoy some time away from the screen. Here are
-            some ideas:
-          </ThemedText>
+            <View style={styles.divider} />
+
+            <ThemedText type="bodyBold" style={styles.lockInstruction}>
+              Lock your phone to begin your quest
+            </ThemedText>
+
+            <ThemedText type="body" style={styles.description}>
+              Your character is ready to embark on their journey, but they need
+              you to put your phone away first. The quest will begin when your
+              phone is locked.
+            </ThemedText>
+
+            <View style={styles.divider} />
+
+            <ThemedText type="bodyLight" style={styles.warning}>
+              Remember, unlocking your phone before the quest is complete will
+              result in failure.
+            </ThemedText>
+          </QuestCard>
         </Animated.View>
-        <FlatList
-          data={exampleActivities}
-          renderItem={({ item }) => (
-            <Animated.View
-              style={[styles.activityItem, activitiesAnimatedStyle]}
-            >
-              <ThemedText type="body" style={styles.activityItem}>
-                - {item.description}
-              </ThemedText>
-            </Animated.View>
-          )}
-          keyExtractor={(item) => item.description}
-        />
+
+        <View style={styles.spacer} />
+
         <Animated.View
           style={[
-            cancelQuestButtonAnimatedStyle,
+            buttonAnimatedStyle,
             { marginBottom: insets.bottom + Spacing.lg },
           ]}
         >
-          <Pressable onPress={() => cancelQuest()} style={buttonStyles.primary}>
+          <Pressable onPress={handleCancelQuest} style={buttonStyles.primary}>
             <ThemedText type="bodyBold" style={buttonStyles.primaryText}>
               Cancel Quest
             </ThemedText>
@@ -245,26 +148,39 @@ const styles = StyleSheet.create({
   },
   headerContainer: {
     alignItems: "center",
-    marginBottom: Spacing.md,
+    marginBottom: Spacing.xl,
   },
-  timer: {
-    ...Typography.bodyBold,
-    marginBottom: Spacing.lg,
+  cardContainer: {
+    flex: 0,
   },
   questTitle: {
     ...Typography.subtitle,
+    textAlign: "center",
+    marginBottom: Spacing.md,
   },
-  instructions: {
+  lockInstruction: {
+    fontSize: FontSizes.lg,
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+    color: Colors.primary,
+  },
+  description: {
     ...Typography.body,
+    textAlign: "center",
+    marginBottom: Spacing.lg,
+    lineHeight: 24,
+  },
+  warning: {
+    ...Typography.body,
+    textAlign: "center",
+    fontStyle: "italic",
+  },
+  divider: {
+    borderBottomColor: Colors.primary,
+    borderBottomWidth: StyleSheet.hairlineWidth,
     marginVertical: Spacing.md,
   },
-  activityItem: {
-    marginBottom: Spacing.sm,
-  },
-  instructionsContainer: {
-    marginBottom: Spacing.lg,
-  },
-  cancelQuestButton: {
-    ...buttonStyles.primary,
+  spacer: {
+    flex: 1,
   },
 });

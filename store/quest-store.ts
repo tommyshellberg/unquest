@@ -8,10 +8,12 @@ import QuestTimer from "@/services/quest-timer";
 
 interface QuestState {
   activeQuest: Quest | null;
+  pendingQuest: QuestTemplate | null;
   availableQuests: QuestTemplate[];
-  failedQuest: Quest | null;
+  failedQuest: Quest | QuestTemplate | null;
   completedQuests: Quest[];
   recentCompletedQuest: Quest | null;
+  cancelQuest: () => void;
   startQuest: (quest: Quest) => void;
   completeQuest: (ignoreDuration?: boolean) => Quest | null;
   failQuest: () => void;
@@ -20,24 +22,29 @@ interface QuestState {
   clearRecentCompletedQuest: () => void;
   reset: () => void;
   getCompletedQuests: () => Quest[];
+  prepareQuest: (quest: QuestTemplate) => void;
 }
 
 export const useQuestStore = create<QuestState>()(
   persist(
     (set, get) => ({
       activeQuest: null,
+      pendingQuest: null,
       availableQuests: [],
       failedQuest: null,
       completedQuests: [],
       recentCompletedQuest: null,
+
+      prepareQuest: (quest: QuestTemplate) => {
+        set({ pendingQuest: quest, availableQuests: [] });
+      },
 
       startQuest: (quest: Quest) => {
         const startedQuest = {
           ...quest,
           startTime: Date.now(),
         };
-        set({ activeQuest: startedQuest, availableQuests: [] });
-        QuestTimer.startQuest(quest);
+        set({ activeQuest: startedQuest, pendingQuest: null });
       },
 
       completeQuest: (ignoreDuration = false) => {
@@ -71,10 +78,22 @@ export const useQuestStore = create<QuestState>()(
         return null;
       },
 
+      cancelQuest: () => {
+        const { activeQuest, pendingQuest } = get();
+        if (activeQuest || pendingQuest) {
+          set({ activeQuest: null, pendingQuest: null });
+        }
+        QuestTimer.stopQuest();
+      },
+
       failQuest: () => {
-        const { activeQuest } = get();
-        if (activeQuest) {
-          set({ failedQuest: activeQuest, activeQuest: null });
+        const { activeQuest, pendingQuest } = get();
+        if (activeQuest || pendingQuest) {
+          set({
+            failedQuest: activeQuest || pendingQuest,
+            activeQuest: null,
+            pendingQuest: null,
+          });
         }
         QuestTimer.stopQuest();
       },
