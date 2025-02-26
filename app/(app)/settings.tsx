@@ -7,6 +7,7 @@ import { usePOIStore } from "@/store/poi-store";
 import { Colors } from "@/constants/Colors";
 import { buttonStyles } from "@/styles/buttons";
 import { layoutStyles } from "@/styles/layouts";
+import { Spacing, Typography } from "@/constants/theme";
 const resetAppData = () => {
   Alert.alert(
     "Reset App Data",
@@ -47,13 +48,21 @@ export default function SettingsScreen() {
       >
         <View>
           <ThemedText type="title">Settings Screen</ThemedText>
-          <ThemedText type="body">
+          <ThemedText type="body" style={{ ...Typography.body }}>
             Here you can manage your settings and reset your app data.
           </ThemedText>
         </View>
         <View>
-          <ThemedText type="subtitle">Reset App Data</ThemedText>
-          <ThemedText type="bodyBold">
+          <ThemedText
+            type="bodyBold"
+            style={{ ...Typography.bodyBold, marginBottom: Spacing.md }}
+          >
+            Reset App Data
+          </ThemedText>
+          <ThemedText
+            type="body"
+            style={{ ...Typography.body, marginBottom: Spacing.xl }}
+          >
             Your progress will be reset, your character will be deleted, and you
             will have to start over.
           </ThemedText>
@@ -72,7 +81,7 @@ const styles = StyleSheet.create({
   resetButton: {
     ...buttonStyles.primary,
     padding: 16,
-    backgroundColor: "red",
+    backgroundColor: "#C4797A",
     width: "66%",
     alignSelf: "center",
   },

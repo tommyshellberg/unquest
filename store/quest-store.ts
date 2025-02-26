@@ -130,6 +130,7 @@ export const useQuestStore = create<QuestState>()(
       reset: () => {
         set({
           activeQuest: null,
+          pendingQuest: null,
           availableQuests: [],
           completedQuests: [],
           failedQuest: null,

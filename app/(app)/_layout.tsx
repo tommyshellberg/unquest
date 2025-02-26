@@ -46,10 +46,18 @@ export default function MainAppLayout() {
       return;
     }
 
+    // Only redirect if we're on the home screen or a tab screen
+    const isTabScreen = ["/home", "/map", "/profile", "/settings"].some(
+      (path) => pathname === path || pathname.startsWith(path + "/")
+    );
+
+    if (!isTabScreen) {
+      return;
+    }
+
     if (failedQuest) {
       router.replace("/failed-quest");
     } else if (activeQuest || pendingQuest) {
-      // Check for either active or pending quest
       router.replace("/active-quest");
     } else if (recentCompletedQuest) {
       router.replace("/quest-complete");

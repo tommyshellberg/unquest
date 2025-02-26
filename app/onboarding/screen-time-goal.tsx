@@ -99,7 +99,7 @@ export default function ScreenTimeGoalScreen() {
     if (currentTime < 30 || targetTime < 30) return;
     // Save screen time goals to the account store
     createAccount(currentTime, targetTime);
-    router.push("/onboarding/first-quest");
+    router.push("/onboarding/app-introduction");
   };
 
   // Hide header and drawer for onboarding flow

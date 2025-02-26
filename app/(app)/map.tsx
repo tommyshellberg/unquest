@@ -63,14 +63,13 @@ export default function MapScreen() {
   const effectiveScreenHeight = screenHeight - BOTTOM_NAV_HEIGHT;
 
   // Calculate boundaries with explicit consideration for bottom navigation
-  const maxTranslateX = 0;
+  const maxTranslateX = 1;
   const minTranslateX = screenWidth - IMAGE_WIDTH;
-  const maxTranslateY = 0;
+  const maxTranslateY = 1;
   const minTranslateY = effectiveScreenHeight - IMAGE_HEIGHT;
 
   const pois = usePOIStore((state) => state.pois);
   const lastRevealedPOISlug = usePOIStore((state) => state.lastRevealedPOISlug);
-  console.log("lastRevealedPOISlug", lastRevealedPOISlug);
   const resetLastRevealedPOI = usePOIStore(
     (state) => state.resetLastRevealedPOI
   );
@@ -83,6 +82,11 @@ export default function MapScreen() {
   // Get the last completed quest
   const completedQuests = useQuestStore((state) => state.completedQuests);
   const lastCompletedQuest = completedQuests[completedQuests.length - 1];
+
+  console.log("minTranslateX", minTranslateX);
+  console.log("minTranslateY", minTranslateY);
+  console.log("translateX", translateX.value);
+  console.log("translateY", translateY.value);
 
   // Determine the map to display
   const mapId = useMemo<MapId>(
@@ -139,6 +143,8 @@ export default function MapScreen() {
         // Calculate center if a POI has been revealed:
         const centerX = -(poi.x - screenWidth / 2);
         const centerY = -(poi.y - screenHeight / 2);
+        console.log("centerX", centerX);
+        console.log("centerY", centerY);
 
         // Bound the translation so that it doesn't move off the map
         translateX.value = Math.max(

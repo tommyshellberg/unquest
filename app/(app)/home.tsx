@@ -72,26 +72,6 @@ export default function HomeScreen() {
   const cardTranslateY = useSharedValue(50);
   const startQuestButtonOpacity = useSharedValue(0);
 
-  // Request notification permissions on mount
-  useEffect(() => {
-    const requestPermissions = async () => {
-      const { status: existingStatus } =
-        await Notifications.getPermissionsAsync();
-
-      if (existingStatus !== "granted") {
-        await Notifications.requestPermissionsAsync({
-          ios: {
-            allowAlert: true,
-            allowBadge: true,
-            allowSound: true,
-          },
-        });
-      }
-    };
-    setupNotifications();
-    requestPermissions();
-  }, []);
-
   // Refresh available quests when there's no active quest
   useEffect(() => {
     if (!activeQuest) {

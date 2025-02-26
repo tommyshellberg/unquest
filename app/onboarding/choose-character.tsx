@@ -158,13 +158,11 @@ export default function ChooseCharacterScreen() {
         <ThemedText type="title">Choose Your Character</ThemedText>
       </ThemedView>
 
-      {/* Always visible TextInput for naming */}
       <View style={styles.nameInputContainer}>
         <ThemedText type="body">Name Your Character</ThemedText>
         <TextInput
           style={styles.textInput}
           value={inputName}
-          // Only allow alphanumeric and space characters (filter out special characters).
           onChangeText={(text) => {
             const filtered = text.replace(/[^a-zA-Z0-9\s]/g, "");
             setInputName(filtered);
@@ -174,12 +172,11 @@ export default function ChooseCharacterScreen() {
         />
       </View>
 
-      {/* Animated container for character archetypes (FlatList) */}
       <Animated.View
         style={[styles.characterScrollContainer, animatedScrollStyle]}
       >
         <View
-          style={{ marginHorizontal: Spacing.xxl, marginBottom: Spacing.md }}
+          style={{ marginHorizontal: Spacing.xl, marginBottom: Spacing.md }}
         >
           <ThemedText type="body">Next, choose a character type.</ThemedText>
         </View>
@@ -313,7 +310,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   nameInputContainer: {
-    paddingHorizontal: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
     marginBottom: Spacing.xxl,
   },
   textInput: {
