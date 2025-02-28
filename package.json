@@ -15,7 +15,6 @@
     "preset": "jest-expo"
   },
   "dependencies": {
-    "@expo-google-fonts/cinzel-decorative": "^0.2.3",
     "@expo-google-fonts/im-fell-dw-pica": "^0.2.3",
     "@expo-google-fonts/inter": "^0.2.3",
     "@expo/vector-icons": "^14.0.2",

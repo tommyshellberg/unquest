@@ -40,8 +40,9 @@ export default function ChooseCharacterScreen() {
   const navigation = useNavigation();
   const createCharacter = useCharacterStore((state) => state.createCharacter);
 
-  const [selectedCharacter, setSelectedCharacter] = useState<string | null>(
-    null
+  // Initialize with the first character selected
+  const [selectedCharacter, setSelectedCharacter] = useState<string>(
+    CHARACTERS[0].id
   );
   const [inputName, setInputName] = useState<string>("");
   const [debouncedName, setDebouncedName] = useState<string>("");
@@ -55,33 +56,20 @@ export default function ChooseCharacterScreen() {
   }, [inputName]);
 
   // Shared values for animation: for scroll container and button
-  const scrollContainerOpacity = useSharedValue(0);
-  const buttonOpacity = useSharedValue(0);
-
-  // Animate the scroll container and Continue button based on a valid debouncedName.
-  useEffect(() => {
-    if (debouncedName.trim().length > 0) {
-      scrollContainerOpacity.value = withTiming(1, { duration: 500 });
-      buttonOpacity.value = withTiming(1, { duration: 500 });
-    } else {
-      scrollContainerOpacity.value = withTiming(0, { duration: 500 });
-      buttonOpacity.value = withTiming(0, { duration: 500 });
-    }
-  }, [debouncedName, scrollContainerOpacity, buttonOpacity]);
+  const scrollContainerOpacity = useSharedValue(1); // Start visible
+  const buttonOpacity = useSharedValue(1); // Start visible
 
   // Animated styles for container and continue button.
   const animatedScrollStyle = useAnimatedStyle(() => ({
     opacity: scrollContainerOpacity.value,
-    transform: [{ translateY: (1 - scrollContainerOpacity.value) * 20 }], // animate from 20px below
   }));
 
   const animatedButtonStyle = useAnimatedStyle(() => ({
     opacity: buttonOpacity.value,
-    transform: [{ translateY: (1 - buttonOpacity.value) * 20 }],
   }));
 
   const handleContinue = () => {
-    if (!selectedCharacter || !debouncedName.trim()) return;
+    if (!debouncedName.trim()) return;
     const selected = CHARACTERS.find((c) => c.id === selectedCharacter);
     if (!selected) return;
     // Pass the character's archetype from constants and the user-defined name.
@@ -176,7 +164,7 @@ export default function ChooseCharacterScreen() {
         style={[styles.characterScrollContainer, animatedScrollStyle]}
       >
         <View
-          style={{ marginHorizontal: Spacing.xl, marginBottom: Spacing.md }}
+          style={{ marginHorizontal: Spacing.xl, marginBottom: Spacing.xl }}
         >
           <ThemedText type="body">Next, choose a character type.</ThemedText>
         </View>
@@ -187,6 +175,12 @@ export default function ChooseCharacterScreen() {
           decelerationRate="fast"
           showsHorizontalScrollIndicator={false}
           keyExtractor={(item) => item.id}
+          initialScrollIndex={0} // Start at the first item
+          getItemLayout={(data, index) => ({
+            length: cardWidth,
+            offset: cardWidth * index,
+            index,
+          })}
           contentContainerStyle={{
             paddingHorizontal: (screenWidth - cardWidth) / 2,
           }}
@@ -205,10 +199,9 @@ export default function ChooseCharacterScreen() {
           <Pressable
             style={[
               styles.continueButton,
-              (!selectedCharacter || !debouncedName.trim()) &&
-                styles.continueButtonDisabled,
+              !debouncedName.trim() && styles.continueButtonDisabled,
             ]}
-            disabled={!selectedCharacter || !debouncedName.trim()}
+            disabled={!debouncedName.trim()}
             onPress={handleContinue}
           >
             <ThemedText type="bodyBold" style={buttonStyles.primaryText}>

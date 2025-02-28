@@ -19,21 +19,36 @@ export async function setupNotificationChannels() {
   }
 }
 
+// Clear all notifications from our app
+export const clearAllNotifications = async () => {
+  try {
+    // This will clear all notifications from our app
+    await Notifications.dismissAllNotificationsAsync();
+    console.log("All notifications cleared");
+  } catch (error) {
+    console.error("Error clearing notifications:", error);
+  }
+};
+
 export const scheduleQuestCompletionNotification = async () => {
   await Notifications.scheduleNotificationAsync({
     content: {
       title: "Quest Completed!",
       body: "Your quest has been completed successfully. Claim your reward!",
       data: { screen: "quest-complete" },
-      // Specify the channel ID for Android
-      channelId: Platform.OS === "android" ? QUEST_CHANNEL_ID : undefined,
-      // Additional properties to enhance visibility
+      // These properties are valid in the content object
       priority: Notifications.AndroidNotificationPriority.MAX,
       sound: true,
       vibrate: [0, 250, 250, 250],
       color: "#FF9500", // Use your app's primary color
     },
-    trigger: null, // Show immediately
+    trigger:
+      Platform.OS === "android"
+        ? {
+            channelId: QUEST_CHANNEL_ID,
+            seconds: 1, // Minimum delay required when specifying channelId
+          }
+        : null, // Show immediately on iOS
   });
 };
 

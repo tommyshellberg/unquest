@@ -1,7 +1,10 @@
 import BackgroundService from "react-native-bg-actions";
 import { Quest, QuestTemplate } from "../store/types";
 import { useQuestStore } from "@/store/quest-store";
-import { scheduleQuestCompletionNotification } from "@/services/notifications";
+import {
+  scheduleQuestCompletionNotification,
+  clearAllNotifications,
+} from "@/services/notifications";
 
 export default class QuestTimer {
   private static isPhoneLocked: boolean = false;
@@ -11,6 +14,10 @@ export default class QuestTimer {
   // Single entry point - prepare the quest and wait for phone lock
   static async prepareQuest(questTemplate: QuestTemplate) {
     console.log("preparing quest", questTemplate);
+
+    // Clear any existing notifications before starting a new quest
+    await clearAllNotifications();
+
     this.questTemplate = questTemplate;
     this.questStartTime = null;
 
@@ -109,11 +116,11 @@ export default class QuestTimer {
           const questStoreState = useQuestStore.getState();
           questStoreState.completeQuest(true);
 
-          // Trigger the congratulatory notification
-          scheduleQuestCompletionNotification();
-
-          // Stop the background quest
+          // Stop the background quest first to remove the progress notification
           await this.stopQuest();
+
+          // Then trigger the congratulatory notification
+          await scheduleQuestCompletionNotification();
           break;
         }
       }
