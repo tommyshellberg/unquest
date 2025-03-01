@@ -1,5 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { StyleSheet, View, Image, Pressable } from "react-native";
+import {
+  StyleSheet,
+  View,
+  Image,
+  Pressable,
+  TextInput,
+  ActivityIndicator,
+} from "react-native";
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
@@ -10,17 +17,19 @@ import Animated, {
 } from "react-native-reanimated";
 import { ThemedText } from "@/components/ThemedText";
 import { layoutStyles } from "@/styles/layouts";
-import { Colors, FontSizes, Spacing, Typography } from "@/constants/theme";
+import { Colors, Spacing, Typography } from "@/constants/theme";
 import { useRouter } from "expo-router";
 import { buttonStyles } from "@/styles/buttons";
 import * as Notifications from "expo-notifications";
 import { setupNotifications } from "@/services/notifications";
+import { registerUser } from "@/services/auth";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-// Define the steps of our onboarding flow
 enum OnboardingStep {
   WELCOME,
   NOTIFICATIONS,
-  PERMISSIONS_REQUESTED,
+  REGISTRATION,
+  READY_TO_START,
 }
 
 export default function AppIntroductionScreen() {
@@ -29,6 +38,13 @@ export default function AppIntroductionScreen() {
     OnboardingStep.WELCOME
   );
   const [permissionsGranted, setPermissionsGranted] = useState(false);
+  // Registration form state
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [registrationError, setRegistrationError] = useState("");
+  const [registeredUser, setRegisteredUser] = useState<any>(null);
 
   // Animation values for a smooth fade/scale-in effect.
   const contentOpacity = useSharedValue(0);
@@ -36,11 +52,15 @@ export default function AppIntroductionScreen() {
   const buttonOpacity = useSharedValue(0);
 
   useEffect(() => {
-    console.log("app introduction screen mounted");
+    console.log("name", name);
+    console.log("email", email);
+    console.log("password", password);
+    console.log("isRegistering", isRegistering);
+    console.log("registrationError", registrationError);
     return () => {
       console.log("app introduction screen unmounted");
     };
-  }, []);
+  }, [name, email, password, isRegistering, registrationError]);
 
   // Reset and play animations when step changes
   useEffect(() => {
@@ -65,10 +85,8 @@ export default function AppIntroductionScreen() {
       setPermissionsGranted(status === "granted");
     };
 
-    if (currentStep === OnboardingStep.PERMISSIONS_REQUESTED) {
-      checkPermissions();
-    }
-  }, [currentStep]);
+    checkPermissions();
+  }, []);
 
   // Request notification permissions
   const requestPermissions = async () => {
@@ -88,8 +106,51 @@ export default function AppIntroductionScreen() {
       setPermissionsGranted(false);
     }
 
-    // Move to the next step regardless of permission result
-    setCurrentStep(OnboardingStep.PERMISSIONS_REQUESTED);
+    // Move to the registration step after permissions
+    setCurrentStep(OnboardingStep.REGISTRATION);
+  };
+
+  const handleRegistration = async () => {
+    // Basic validation
+    if (!name.trim() || !email.trim() || !password.trim()) {
+      setRegistrationError("All fields are required");
+      return;
+    }
+
+    if (password.length < 8) {
+      setRegistrationError("Password must be at least 8 characters");
+      return;
+    }
+
+    if (!email.includes("@") || !email.includes(".")) {
+      setRegistrationError("Please enter a valid email address");
+      return;
+    }
+
+    setIsRegistering(true);
+    setRegistrationError("");
+
+    try {
+      // Temporarily use AsyncStorage instead of SecureStore until the native module issue is fixed
+      const response = await registerUser(name, email, password);
+      console.log("Registration successful:", response);
+
+      // Store the registered user data
+      setRegisteredUser(response.user);
+
+      // Move to the ready to start step
+      setCurrentStep(OnboardingStep.READY_TO_START);
+    } catch (error: any) {
+      // Handle registration errors
+      console.error("Registration failed:", error);
+      if (error.response?.data?.message) {
+        setRegistrationError(error.response.data.message);
+      } else {
+        setRegistrationError("Registration failed. Please try again.");
+      }
+    } finally {
+      setIsRegistering(false);
+    }
   };
 
   // Handle button press based on current step
@@ -101,7 +162,10 @@ export default function AppIntroductionScreen() {
       case OnboardingStep.NOTIFICATIONS:
         requestPermissions();
         break;
-      case OnboardingStep.PERMISSIONS_REQUESTED:
+      case OnboardingStep.REGISTRATION:
+        handleRegistration();
+        break;
+      case OnboardingStep.READY_TO_START:
         router.replace("/(app)/home");
         break;
     }
@@ -199,12 +263,10 @@ export default function AppIntroductionScreen() {
           </>
         );
 
-      case OnboardingStep.PERMISSIONS_REQUESTED:
+      case OnboardingStep.REGISTRATION:
         return (
           <>
-            <ThemedText type="title">
-              {permissionsGranted ? "You're all set!" : "Let's continue anyway"}
-            </ThemedText>
+            <ThemedText type="title">Create Your Account</ThemedText>
             <ThemedText
               type="bodyBold"
               style={{
@@ -213,24 +275,94 @@ export default function AppIntroductionScreen() {
                 marginBottom: Spacing.xl,
               }}
             >
-              {permissionsGranted
-                ? "Notifications are enabled"
-                : "You can enable notifications later"}
+              Just a few details to get started
             </ThemedText>
+
+            <View style={styles.formContainer}>
+              <TextInput
+                style={styles.input}
+                placeholder="Your Name"
+                placeholderTextColor={Colors.forest}
+                value={name}
+                onChangeText={setName}
+                autoCapitalize="words"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Email Address"
+                placeholderTextColor={Colors.forest}
+                value={email}
+                onChangeText={setEmail}
+                keyboardType="email-address"
+                autoCapitalize="none"
+              />
+
+              <TextInput
+                style={styles.input}
+                placeholder="Password (min 8 characters)"
+                placeholderTextColor={Colors.forest}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+              />
+
+              {registrationError ? (
+                <ThemedText type="body" style={styles.errorText}>
+                  {registrationError}
+                </ThemedText>
+              ) : null}
+            </View>
+
             <ThemedText
               type="body"
               style={{ ...Typography.body, ...styles.paragraph }}
             >
-              {permissionsGranted
-                ? "Great! You'll receive updates about your quests on your lock screen."
-                : "You can still use unQuest without notifications, but you'll miss out on some features."}
+              By creating an account, you agree to our Terms of Service and
+              Privacy Policy.
             </ThemedText>
+          </>
+        );
+
+      case OnboardingStep.READY_TO_START:
+        return (
+          <>
+            <ThemedText type="title">You're All Set!</ThemedText>
+            <ThemedText
+              type="bodyBold"
+              style={{
+                ...Typography.bodyBold,
+                color: Colors.text.light,
+                marginBottom: Spacing.xl,
+              }}
+            >
+              Welcome, {registeredUser?.name || "Adventurer"}!
+            </ThemedText>
+
+            <ThemedText
+              type="body"
+              style={{ ...Typography.body, ...styles.paragraph }}
+            >
+              Your account has been created successfully.
+              {permissionsGranted
+                ? " You'll receive notifications about your quests on your lock screen."
+                : " You can enable notifications later in your device settings."}
+            </ThemedText>
+
             <ThemedText
               type="body"
               style={{ ...Typography.body, ...styles.paragraph }}
             >
               You're now ready to start your first quest and begin your journey
-              of mindful breaks.
+              of mindful breaks. Each quest will challenge you to step away from
+              your screen and reconnect with the world around you.
+            </ThemedText>
+
+            <ThemedText
+              type="bodyBold"
+              style={{ ...Typography.bodyBold, ...styles.paragraph }}
+            >
+              Are you ready to embark on this adventure?
             </ThemedText>
           </>
         );
@@ -244,7 +376,9 @@ export default function AppIntroductionScreen() {
         return "Got it";
       case OnboardingStep.NOTIFICATIONS:
         return "Enable notifications";
-      case OnboardingStep.PERMISSIONS_REQUESTED:
+      case OnboardingStep.REGISTRATION:
+        return isRegistering ? "Creating account..." : "Create account";
+      case OnboardingStep.READY_TO_START:
         return "Start my journey";
     }
   };
@@ -270,12 +404,25 @@ export default function AppIntroductionScreen() {
             style={({ pressed }) => [
               buttonStyles.primary,
               pressed && buttonStyles.primaryPressed,
+              isRegistering && styles.disabledButton,
             ]}
             onPress={handleButtonPress}
+            disabled={isRegistering}
           >
-            <ThemedText style={buttonStyles.primaryText}>
-              {getButtonText()}
-            </ThemedText>
+            {isRegistering ? (
+              <View style={styles.loadingContainer}>
+                <ActivityIndicator size="small" color={Colors.text.light} />
+                <ThemedText
+                  style={[buttonStyles.primaryText, styles.loadingText]}
+                >
+                  Creating account...
+                </ThemedText>
+              </View>
+            ) : (
+              <ThemedText style={buttonStyles.primaryText}>
+                {getButtonText()}
+              </ThemedText>
+            )}
           </Pressable>
         </Animated.View>
       </View>
@@ -311,5 +458,30 @@ const styles = StyleSheet.create({
   },
   buttonContainer: {
     marginBottom: Spacing.xl,
+  },
+  disabledButton: {
+    opacity: 0.7,
+  },
+  formContainer: {
+    marginBottom: Spacing.lg,
+  },
+  input: {
+    ...Typography.body,
+    backgroundColor: Colors.background.light,
+    borderRadius: 8,
+    padding: Spacing.md,
+    marginBottom: Spacing.sm,
+  },
+  errorText: {
+    color: "#ff6b6b", // Error color
+    marginBottom: Spacing.sm,
+  },
+  loadingContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  loadingText: {
+    marginLeft: Spacing.sm,
   },
 });

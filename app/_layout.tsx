@@ -6,6 +6,7 @@ import { useAccountStore } from "@/store/account-store";
 import { useFonts } from "expo-font";
 import { fonts } from "@/constants/fonts";
 import * as SplashScreen from "expo-splash-screen";
+import { AuthProvider } from "@/contexts/AuthContext";
 
 export const TAB_BAR_HEIGHT = 100;
 
@@ -64,5 +65,9 @@ export default function RootLayout() {
     return null;
   }
 
-  return <Slot />;
+  return (
+    <AuthProvider>
+      <Slot />
+    </AuthProvider>
+  );
 }

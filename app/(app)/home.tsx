@@ -3,13 +3,7 @@ import { StyleSheet, View, Image, Pressable, Text } from "react-native";
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
 import { QuestList } from "@/components/QuestList";
-import {
-  Colors,
-  FontSizes,
-  Spacing,
-  BorderRadius,
-  Typography,
-} from "@/constants/theme";
+import { Colors, FontSizes, Spacing, BorderRadius } from "@/constants/theme";
 import { useQuestStore } from "@/store/quest-store";
 import { QuestTemplate } from "@/store/types";
 import { layoutStyles } from "@/styles/layouts";
@@ -24,11 +18,11 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import * as Notifications from "expo-notifications";
 import { Provider as PaperProvider } from "react-native-paper";
 import customTheme from "@/constants/customTheme";
-import { setupNotifications } from "@/services/notifications";
 import QuestTimer from "@/services/quest-timer";
+import { getRefreshToken } from "@/services/auth";
+import { getUserDetails } from "@/services/user";
 
 function ScreenErrorFallback({
   error,
@@ -58,7 +52,6 @@ function ScreenErrorFallback({
 export default function HomeScreen() {
   const insets = useSafeAreaInsets();
   const activeQuest = useQuestStore((state) => state.activeQuest);
-  const startQuest = useQuestStore((state) => state.startQuest);
   const refreshAvailableQuests = useQuestStore(
     (state) => state.refreshAvailableQuests
   );
@@ -78,6 +71,20 @@ export default function HomeScreen() {
       refreshAvailableQuests();
     }
   }, [activeQuest, refreshAvailableQuests]);
+
+  useEffect(() => {
+    // Test the authentication and user details fetch
+    const fetchUserData = async () => {
+      try {
+        const userData = await getUserDetails();
+        console.log("Fetched user data:", userData);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
+      }
+    };
+
+    fetchUserData();
+  }, []); // Empty dependency array means this runs once when component mounts
 
   // Initialize animations
   useEffect(() => {
