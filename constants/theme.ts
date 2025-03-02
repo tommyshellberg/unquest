@@ -27,6 +27,7 @@ export const Colors = {
     light: "rgba(250, 240, 217, 0.8)", // cream with opacity
     dark: "rgba(44, 62, 80, 0.8)", // dark with opacity
   },
+  error: "#FF4444",
 };
 
 export const Spacing = {

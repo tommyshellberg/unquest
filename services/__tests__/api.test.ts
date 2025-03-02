@@ -4,18 +4,24 @@ import axios, {
   AxiosResponse,
 } from "axios";
 import apiClient from "../api";
-import { getAccessToken, isTokenExpired, refreshAccessToken } from "../auth";
+import { getAccessToken, isTokenExpired } from "../token";
+import { refreshAccessToken } from "../auth";
 
 // Define a type for headers to avoid TypeScript errors
 interface Headers {
   [key: string]: string | undefined;
-  Authorization?: string;
 }
 
-// Mock auth functions
-jest.mock("../auth", () => ({
+// Mock token service and auth functions
+jest.mock("../token", () => ({
   getAccessToken: jest.fn(),
+  getRefreshToken: jest.fn(),
   isTokenExpired: jest.fn(),
+  storeTokens: jest.fn(),
+  removeTokens: jest.fn(),
+}));
+
+jest.mock("../auth", () => ({
   refreshAccessToken: jest.fn(),
 }));
 
@@ -69,6 +75,7 @@ describe("API Client", () => {
       (isTokenExpired as jest.Mock).mockResolvedValueOnce(true);
       (refreshAccessToken as jest.Mock).mockResolvedValueOnce({
         access: { token: "new-token", expires: "2024-03-01" },
+        refresh: { token: "new-refresh-token", expires: "2024-04-01" },
       });
 
       // Create a mock config and headers with proper typing
@@ -122,6 +129,7 @@ describe("API Client", () => {
       // Setup mocks
       const mockNewTokens = {
         access: { token: "new-token", expires: "2024-03-01" },
+        refresh: { token: "new-refresh-token", expires: "2024-04-01" },
       };
       (refreshAccessToken as jest.Mock).mockResolvedValueOnce(mockNewTokens);
       (apiClient.post as jest.Mock).mockResolvedValueOnce({ data: "success" });
@@ -162,6 +170,7 @@ describe("API Client", () => {
       // Setup mocks
       const mockNewTokens = {
         access: { token: "new-token", expires: "2024-03-01" },
+        refresh: { token: "new-refresh-token", expires: "2024-04-01" },
       };
 
       let isRefreshing = false;

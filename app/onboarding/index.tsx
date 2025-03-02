@@ -1,4 +1,15 @@
-import { Image, StyleSheet, Platform, Pressable, View } from "react-native";
+import {
+  Image,
+  StyleSheet,
+  Platform,
+  Pressable,
+  View,
+  TextInput,
+  TouchableOpacity,
+  StatusBar,
+  Animated,
+  ActivityIndicator,
+} from "react-native";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import {
@@ -9,11 +20,88 @@ import {
   Typography,
 } from "@/constants/theme";
 import { useRouter } from "expo-router";
-import { useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { buttonStyles } from "@/styles/buttons";
+import { useAuth } from "@/contexts/AuthContext";
+import { BlurView } from "expo-blur";
+import LoginForm from "@/components/LoginForm";
 
 export default function OnboardingScreen() {
   const router = useRouter();
+  const { login, isLoggedIn, isLoading } = useAuth();
+  const [showLoginForm, setShowLoginForm] = useState(false);
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(1)).current;
+  const loginFormAnim = useRef(new Animated.Value(0)).current;
+
+  // Hide status bar
+  useEffect(() => {
+    console.log("Setting status bar to hidden");
+    StatusBar.setHidden(true, "fade");
+    return () => StatusBar.setHidden(false, "fade");
+  }, []);
+
+  // Redirect if logged in (reacting to changes in isLoggedIn from AuthContext)
+  useEffect(() => {
+    console.log("Checking if user is logged in");
+    if (isLoggedIn) {
+      console.log("User is logged in, redirecting to home");
+      router.replace("/(app)/home");
+    } else {
+      console.log("User is not logged in, showing login form");
+    }
+  }, [isLoggedIn]);
+
+  const handleShowLogin = () => {
+    console.log("Showing login form");
+    // Fade out buttons
+    Animated.timing(fadeAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowLoginForm(true);
+      // Fade in login form
+      Animated.timing(loginFormAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const handleCancelLogin = () => {
+    console.log("Cancelling login");
+    // Fade out login form
+    Animated.timing(loginFormAnim, {
+      toValue: 0,
+      duration: 200,
+      useNativeDriver: true,
+    }).start(() => {
+      setShowLoginForm(false);
+      // Fade in buttons
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 300,
+        useNativeDriver: true,
+      }).start();
+    });
+  };
+
+  const handleForgotPassword = () => {
+    console.log("Forgot password clicked");
+    // This will be implemented later
+  };
+
+  // If AuthContext is loading, display a loading indicator to avoid white screen
+  if (isLoading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color={Colors.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -53,17 +141,64 @@ for not playing it.`}
           </ThemedView>
 
           <View style={styles.buttonContainer}>
-            <Pressable
-              style={({ pressed }) => [
-                styles.ctaButton,
-                pressed && styles.ctaButtonPressed,
-              ]}
-              onPress={() => router.push("/onboarding/choose-character")}
-            >
-              <ThemedText style={buttonStyles.primaryText}>
-                Begin Your Journey
-              </ThemedText>
-            </Pressable>
+            {!showLoginForm ? (
+              <Animated.View style={{ opacity: fadeAnim }}>
+                <BlurView
+                  intensity={80}
+                  tint="dark"
+                  style={styles.loginLinkBlur}
+                >
+                  <Pressable
+                    onPress={handleShowLogin}
+                    style={styles.loginLink}
+                    accessibilityRole="button"
+                    accessibilityLabel="Login to existing account"
+                  >
+                    <ThemedText style={styles.loginText}>
+                      Already have an account? Login
+                    </ThemedText>
+                  </Pressable>
+                </BlurView>
+
+                <Pressable
+                  style={({ pressed }) => [
+                    buttonStyles.primary,
+                    pressed && buttonStyles.primaryPressed,
+                    { marginTop: Spacing.md },
+                  ]}
+                  onPress={() => router.push("/onboarding/choose-character")}
+                  accessibilityRole="button"
+                  accessibilityLabel="Begin your journey"
+                >
+                  <ThemedText style={buttonStyles.primaryText}>
+                    Begin Your Journey
+                  </ThemedText>
+                </Pressable>
+              </Animated.View>
+            ) : (
+              <Animated.View
+                style={[
+                  styles.loginFormContainer,
+                  {
+                    opacity: loginFormAnim,
+                    transform: [
+                      {
+                        translateY: loginFormAnim.interpolate({
+                          inputRange: [0, 1],
+                          outputRange: [20, 0],
+                        }),
+                      },
+                    ],
+                  },
+                ]}
+              >
+                <LoginForm
+                  onLogin={login}
+                  onCancel={handleCancelLogin}
+                  onForgotPassword={handleForgotPassword}
+                />
+              </Animated.View>
+            )}
           </View>
         </ThemedView>
       </ThemedView>
@@ -97,23 +232,9 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginTop: Spacing.sm,
   },
-  appName: {
-    textAlign: "center",
-    color: Colors.forest,
-    fontWeight: "bold",
-  },
-  headline: {
-    textAlign: "center",
-    color: Colors.text.light,
-  },
   descriptionSection: {
     gap: Spacing.lg,
     marginTop: "25%",
-  },
-  description: {
-    textAlign: "center",
-    lineHeight: 28,
-    color: Colors.text.light,
   },
   buttonContainer: {
     position: "absolute",
@@ -121,19 +242,26 @@ const styles = StyleSheet.create({
     left: Spacing.xl,
     right: Spacing.xl,
   },
-  ctaButton: {
-    backgroundColor: Colors.primary,
-    paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xl,
-    borderRadius: BorderRadius.pill,
+  loginLinkBlur: {
+    borderRadius: BorderRadius.lg,
+    overflow: "hidden",
+  },
+  loginLink: {
     alignItems: "center",
+    padding: Spacing.sm,
   },
-  ctaButtonPressed: {
-    backgroundColor: Colors.secondary,
-  },
-  ctaText: {
+  loginText: {
     color: Colors.cream,
-    fontSize: FontSizes.lg,
-    fontWeight: "600",
+    fontSize: FontSizes.md,
+    textDecorationLine: "underline",
+  },
+  loginFormContainer: {
+    width: "100%",
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: Colors.background.dark,
   },
 });

@@ -1,21 +1,21 @@
-import * as SecureStore from "expo-secure-store";
-import {
-  registerUser,
-  storeTokens,
-  getAccessToken,
-  isTokenExpired,
-  refreshAccessToken,
-  logout,
-} from "../auth";
-import apiClient from "../api";
+import * as tokenService from "../token";
+import { authClient, registerUser, refreshAccessToken } from "../auth";
+import { AxiosInstance } from "axios";
 
-// Mock SecureStore
+// Mock dependencies
 jest.mock("expo-secure-store");
-
-// Mock axios client
-jest.mock("../api", () => ({
-  post: jest.fn(),
-  get: jest.fn(),
+jest.mock("axios", () => ({
+  create: jest.fn(() => ({
+    post: jest.fn(),
+    get: jest.fn(),
+  })),
+}));
+jest.mock("../token", () => ({
+  storeTokens: jest.fn(),
+  getAccessToken: jest.fn(),
+  getRefreshToken: jest.fn(),
+  isTokenExpired: jest.fn(),
+  removeTokens: jest.fn(),
 }));
 
 describe("Auth Service", () => {
@@ -35,7 +35,11 @@ describe("Auth Service", () => {
         },
       };
 
-      (apiClient.post as jest.Mock).mockResolvedValueOnce(mockResponse);
+      // Mock the auth client's post method with proper type casting
+      (authClient.post as jest.Mock).mockResolvedValueOnce(mockResponse);
+
+      // Mock token service functions
+      (tokenService.storeTokens as jest.Mock).mockResolvedValueOnce(undefined);
 
       const result = await registerUser(
         "Test User",
@@ -43,47 +47,24 @@ describe("Auth Service", () => {
         "password123"
       );
 
-      expect(apiClient.post).toHaveBeenCalledWith("/auth/register", {
+      expect(authClient.post).toHaveBeenCalledWith("/auth/register", {
         name: "Test User",
         email: "test@test.com",
         password: "password123",
       });
-      expect(SecureStore.setItemAsync).toHaveBeenCalledTimes(3);
+      expect(tokenService.storeTokens).toHaveBeenCalledWith(
+        mockResponse.data.tokens
+      );
       expect(result).toEqual(mockResponse.data);
     });
 
     it("should handle registration errors", async () => {
       const error = new Error("Registration failed");
-      (apiClient.post as jest.Mock).mockRejectedValueOnce(error);
+      (authClient.post as jest.Mock).mockRejectedValueOnce(error);
 
       await expect(
         registerUser("Test", "test@test.com", "pass123")
       ).rejects.toThrow("Registration failed");
-    });
-  });
-
-  describe("isTokenExpired", () => {
-    it("should return true when no expiry date exists", async () => {
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(null);
-
-      const result = await isTokenExpired();
-      expect(result).toBe(true);
-    });
-
-    it("should return true when token is expired", async () => {
-      const pastDate = new Date(Date.now() - 1000).toISOString();
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(pastDate);
-
-      const result = await isTokenExpired();
-      expect(result).toBe(true);
-    });
-
-    it("should return false when token is not expired", async () => {
-      const futureDate = new Date(Date.now() + 1000000).toISOString();
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(futureDate);
-
-      const result = await isTokenExpired();
-      expect(result).toBe(false);
     });
   });
 
@@ -95,41 +76,49 @@ describe("Auth Service", () => {
         refresh: { token: "newRefresh123", expires: "2024-04-01" },
       };
 
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(
+      // Mock getting the refresh token
+      (tokenService.getRefreshToken as jest.Mock).mockResolvedValueOnce(
         mockRefreshToken
       );
-      (apiClient.post as jest.Mock).mockResolvedValueOnce({
+
+      // Mock the auth client's post method
+      (authClient.post as jest.Mock).mockResolvedValueOnce({
         data: mockNewTokens,
       });
 
       const result = await refreshAccessToken();
 
-      expect(apiClient.post).toHaveBeenCalledWith("/auth/refresh-tokens", {
+      expect(authClient.post).toHaveBeenCalledWith("/auth/refresh-tokens", {
         refreshToken: mockRefreshToken,
       });
+      expect(tokenService.storeTokens).toHaveBeenCalledWith(mockNewTokens);
       expect(result).toEqual(mockNewTokens);
     });
 
     it("should return null when no refresh token exists", async () => {
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(null);
+      // Mock getting a null refresh token
+      (tokenService.getRefreshToken as jest.Mock).mockResolvedValueOnce(null);
 
       const result = await refreshAccessToken();
       expect(result).toBeNull();
     });
 
     it("should handle refresh errors and logout", async () => {
-      (SecureStore.getItemAsync as jest.Mock).mockResolvedValueOnce(
+      // Mock getting the refresh token
+      (tokenService.getRefreshToken as jest.Mock).mockResolvedValueOnce(
         "refresh123"
       );
-      (apiClient.post as jest.Mock).mockRejectedValueOnce(
+
+      // Mock the auth client's post method to throw an error
+      (authClient.post as jest.Mock).mockRejectedValueOnce(
         new Error("Refresh failed")
       );
 
       const result = await refreshAccessToken();
 
       expect(result).toBeNull();
-      // Verify logout was called
-      expect(SecureStore.deleteItemAsync).toHaveBeenCalledTimes(3);
+      // Verify removeTokens was called
+      expect(tokenService.removeTokens).toHaveBeenCalled();
     });
   });
 });

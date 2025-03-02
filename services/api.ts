@@ -1,6 +1,7 @@
 import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import Constants from "expo-constants";
-import { getAccessToken, isTokenExpired, refreshAccessToken } from "./auth";
+import * as tokenService from "./token";
+import { refreshAccessToken } from "./auth";
 
 // Set up API configuration
 const API_URL =
@@ -44,7 +45,7 @@ apiClient.interceptors.request.use(
   async (config) => {
     try {
       // Check if token is expired before making the request
-      const isExpired = await isTokenExpired();
+      const isExpired = await tokenService.isTokenExpired();
 
       if (isExpired) {
         const newTokens = await refreshAccessToken();
@@ -54,7 +55,7 @@ apiClient.interceptors.request.use(
           throw new Error("Token refresh failed");
         }
       } else {
-        const token = await getAccessToken();
+        const token = await tokenService.getAccessToken();
         if (token) {
           config.headers.Authorization = `Bearer ${token}`;
         }

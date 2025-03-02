@@ -5,7 +5,7 @@ export const buttonStyles = StyleSheet.create({
   primary: {
     backgroundColor: Colors.primary,
     paddingVertical: Spacing.md,
-    paddingHorizontal: Spacing.xxl,
+    paddingHorizontal: Spacing.xl,
     borderRadius: BorderRadius.pill,
     width: "100%",
   },
@@ -14,6 +14,24 @@ export const buttonStyles = StyleSheet.create({
   },
   primaryText: {
     color: Colors.cream,
+    fontSize: FontSizes.lg,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  secondary: {
+    backgroundColor: Colors.background.light,
+    paddingVertical: Spacing.md,
+    paddingHorizontal: Spacing.xl,
+    borderRadius: BorderRadius.pill,
+    width: "100%",
+    borderWidth: 1,
+    borderColor: Colors.stone,
+  },
+  secondaryPressed: {
+    backgroundColor: Colors.background.dark,
+  },
+  secondaryText: {
+    color: Colors.text.dark,
     fontSize: FontSizes.lg,
     fontWeight: "600",
     textAlign: "center",

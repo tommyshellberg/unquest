@@ -1,5 +1,18 @@
-import * as SecureStore from "expo-secure-store";
-import apiClient from "./api";
+import axios from "axios";
+import Constants from "expo-constants";
+import * as tokenService from "./token";
+
+// Set up API configuration for auth requests
+const API_URL =
+  Constants.expoConfig?.extra?.apiUrl || "http://192.168.178.67:3001/v1";
+
+// Create a separate axios instance for auth requests to avoid circular dependencies
+export const authClient = axios.create({
+  baseURL: API_URL,
+  headers: {
+    "Content-Type": "application/json",
+  },
+});
 
 // Keys for secure storage
 const ACCESS_TOKEN_KEY = "auth_access_token";
@@ -7,17 +20,6 @@ const REFRESH_TOKEN_KEY = "auth_refresh_token";
 const TOKEN_EXPIRY_KEY = "auth_token_expiry";
 
 // Types
-export interface AuthTokens {
-  access: {
-    token: string;
-    expires: string;
-  };
-  refresh: {
-    token: string;
-    expires: string;
-  };
-}
-
 export interface User {
   id: string;
   name: string;
@@ -27,7 +29,7 @@ export interface User {
 
 export interface RegisterResponse {
   user: User;
-  tokens: AuthTokens;
+  tokens: tokenService.AuthTokens;
 }
 
 /**
@@ -39,16 +41,14 @@ export const registerUser = async (
   password: string
 ): Promise<RegisterResponse> => {
   try {
-    const response = await apiClient.post("/auth/register", {
+    const response = await authClient.post("/auth/register", {
       name,
       email,
       password,
     });
 
-    console.log("response", response);
-
     // Store tokens securely
-    await storeTokens(response.data.tokens);
+    await tokenService.storeTokens(response.data.tokens);
 
     return response.data;
   } catch (error) {
@@ -58,43 +58,10 @@ export const registerUser = async (
 };
 
 /**
- * Store authentication tokens securely
- */
-export const storeTokens = async (tokens: AuthTokens): Promise<void> => {
-  try {
-    await SecureStore.setItemAsync(ACCESS_TOKEN_KEY, tokens.access.token);
-    await SecureStore.setItemAsync(REFRESH_TOKEN_KEY, tokens.refresh.token);
-    await SecureStore.setItemAsync(TOKEN_EXPIRY_KEY, tokens.access.expires);
-  } catch (error) {
-    console.error("Error storing tokens:", error);
-    throw error;
-  }
-};
-
-/**
- * Get the stored access token
- */
-export const getAccessToken = async (): Promise<string | null> => {
-  try {
-    return await SecureStore.getItemAsync(ACCESS_TOKEN_KEY);
-  } catch (error) {
-    console.error("Error getting access token:", error);
-    return null;
-  }
-};
-
-/**
- * Get the stored refresh token
- */
-export const getRefreshToken = async (): Promise<string | null> => {
-  return await SecureStore.getItemAsync(REFRESH_TOKEN_KEY);
-};
-
-/**
  * Check if user is authenticated
  */
 export const isAuthenticated = async (): Promise<boolean> => {
-  const token = await getAccessToken();
+  const token = await tokenService.getAccessToken();
   return !!token;
 };
 
@@ -103,57 +70,66 @@ export const isAuthenticated = async (): Promise<boolean> => {
  */
 export const logout = async (): Promise<void> => {
   try {
-    await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
-    await SecureStore.deleteItemAsync(TOKEN_EXPIRY_KEY);
+    await tokenService.removeTokens();
   } catch (error) {
     console.error("Error during logout:", error);
-  }
-};
-
-/**
- * Check if the access token is expired
- */
-export const isTokenExpired = async (): Promise<boolean> => {
-  try {
-    const expiryString = await SecureStore.getItemAsync(TOKEN_EXPIRY_KEY);
-    if (!expiryString) return true;
-
-    const expiryDate = new Date(expiryString);
-    // Add a small buffer (e.g., 10 seconds) to account for network latency
-    const now = new Date(Date.now() + 10000);
-
-    return now >= expiryDate;
-  } catch (error) {
-    console.error("Error checking token expiry:", error);
-    return true; // Assume expired on error
+    throw error;
   }
 };
 
 /**
  * Refresh the access token using the refresh token
  */
-export const refreshAccessToken = async (): Promise<AuthTokens | null> => {
-  try {
-    const refreshToken = await getRefreshToken();
-    if (!refreshToken) {
-      console.log("No refresh token available");
-      // @todo: does this mean they need to login again?
+export const refreshAccessToken =
+  async (): Promise<tokenService.AuthTokens | null> => {
+    try {
+      const refreshToken = await tokenService.getRefreshToken();
+      if (!refreshToken) {
+        console.log("No refresh token available");
+        return null;
+      }
+
+      const response = await authClient.post("/auth/refresh-tokens", {
+        refreshToken,
+      });
+
+      const newTokens: tokenService.AuthTokens = response.data;
+      await tokenService.storeTokens(newTokens);
+      return newTokens;
+    } catch (error) {
+      console.error("Error refreshing token:", error);
+      // If refresh fails, clear tokens
+      await tokenService.removeTokens();
       return null;
     }
+  };
 
-    // Create a new axios instance without interceptors to avoid infinite loop
-    const response = await apiClient.post("/auth/refresh-tokens", {
-      refreshToken,
+/**
+ * Login user with email and password
+ */
+export const loginUser = async (email: string, password: string) => {
+  try {
+    const response = await authClient.post("/auth/login", {
+      email,
+      password,
     });
 
-    const newTokens: AuthTokens = response.data;
-    await storeTokens(newTokens);
-    return newTokens;
+    const { tokens } = response.data;
+
+    // Store tokens
+    await tokenService.storeTokens(tokens);
+
+    return tokens;
   } catch (error) {
-    console.error("Error refreshing token:", error);
-    // If refresh fails, clear tokens and force re-authentication
-    await logout();
-    return null;
+    console.error("Login error in auth.ts:", error);
+    throw error;
   }
 };
+
+/**
+ * Remove all tokens (alias for backward compatibility)
+ */
+export const removeTokens = tokenService.removeTokens;
+
+// Re-export token types for backward compatibility
+export type { AuthTokens } from "./token";
